@@ -7,9 +7,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/CourtIQ/backend-courtiq/user-service/graph"
-	"github.com/CourtIQ/backend-courtiq/user-service/graph/resolvers"
-	"github.com/CourtIQ/backend-courtiq/user-service/services" // Import your service
+	"github.com/CourtIQ/courtiq-backend/user-service/graph"
+	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/user-service/services" // Import your service
 )
 
 func main() {
@@ -27,7 +27,6 @@ func main() {
 	}
 
 	// Create the GraphQL server
-	resolver := &resolvers.Resolver{}
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
 	// Set up routes

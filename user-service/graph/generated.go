@@ -15,7 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
-	"github.com/CourtIQ/backend-courtiq/user-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -91,7 +91,7 @@ type ComplexityRoot struct {
 }
 
 type EntityResolver interface {
-	FindUserByID(ctx context.Context, id string) (model.User, error)
+	FindUserByID(ctx context.Context, obj fedruntime.Entity, id string) (model.User, error)
 }
 type MutationResolver interface {
 	UpdateUser(ctx context.Context, input model.UserUpdateInput) (model.User, error)
@@ -412,7 +412,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/user.gql"
+//go:embed "schema/user-mutations.gql" "schema/user-queries.gql" "schema/user.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -424,6 +424,8 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "schema/user-mutations.gql", Input: sourceData("schema/user-mutations.gql"), BuiltIn: false},
+	{Name: "schema/user-queries.gql", Input: sourceData("schema/user-queries.gql"), BuiltIn: false},
 	{Name: "schema/user.gql", Input: sourceData("schema/user.gql"), BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
@@ -563,7 +565,7 @@ func (ec *executionContext) field_Mutation_updateUser_argsInput(
 ) (model.UserUpdateInput, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNUserUpdateInput2githubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUserUpdateInput(ctx, tmp)
+		return ec.unmarshalNUserUpdateInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUserUpdateInput(ctx, tmp)
 	}
 
 	var zeroVal model.UserUpdateInput
@@ -716,7 +718,7 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field graphql.CollectedField, obj fedruntime.Entity) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Entity_findUserByID(ctx, field)
 	if err != nil {
 		return graphql.Null
@@ -730,7 +732,7 @@ func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindUserByID(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Entity().FindUserByID(rctx, obj, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -744,7 +746,7 @@ func (ec *executionContext) _Entity_findUserByID(ctx context.Context, field grap
 	}
 	res := resTmp.(model.User)
 	fc.Result = res
-	return ec.marshalNUser2githubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -821,7 +823,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}
 	res := resTmp.(model.User)
 	fc.Result = res
-	return ec.marshalNUser2githubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1082,7 +1084,7 @@ func (ec *executionContext) _Query_user(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1156,7 +1158,7 @@ func (ec *executionContext) _Query_me(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1799,7 +1801,7 @@ func (ec *executionContext) _User_profileImage(ctx context.Context, field graphq
 	}
 	res := resTmp.(*model.ProfileImage)
 	fc.Result = res
-	return ec.marshalOProfileImage2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImage(ctx, field.Selections, res)
+	return ec.marshalOProfileImage2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_profileImage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3807,7 +3809,7 @@ func (ec *executionContext) unmarshalInputUserUpdateInput(ctx context.Context, o
 			it.DisplayName = data
 		case "profileImage":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("profileImage"))
-			data, err := ec.unmarshalOProfileImageInput2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImageInput(ctx, v)
+			data, err := ec.unmarshalOProfileImageInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImageInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3865,20 +3867,12 @@ func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, 
 
 var entityImplementors = []string{"Entity"}
 
-func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet, obj fedruntime.Entity) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, entityImplementors)
-	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
-		Object: "Entity",
-	})
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
-		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
-			Object: field.Name,
-			Field:  field,
-		})
-
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Entity")
@@ -3891,19 +3885,33 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Entity_findUserByID(ctx, field)
+				res = ec._Entity_findUserByID(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
 				return res
 			}
 
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
 			}
 
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4671,11 +4679,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNUserUpdateInput2githubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUserUpdateInput(ctx context.Context, v interface{}) (model.UserUpdateInput, error) {
+func (ec *executionContext) unmarshalNUserUpdateInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUserUpdateInput(ctx context.Context, v interface{}) (model.UserUpdateInput, error) {
 	res, err := ec.unmarshalInputUserUpdateInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -5212,14 +5220,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOProfileImage2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImage(ctx context.Context, sel ast.SelectionSet, v *model.ProfileImage) graphql.Marshaler {
+func (ec *executionContext) marshalOProfileImage2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImage(ctx context.Context, sel ast.SelectionSet, v *model.ProfileImage) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._ProfileImage(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOProfileImageInput2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImageInput(ctx context.Context, v interface{}) (*model.ProfileImageInput, error) {
+func (ec *executionContext) unmarshalOProfileImageInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐProfileImageInput(ctx context.Context, v interface{}) (*model.ProfileImageInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -5291,7 +5299,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋCourtIQᚋbackendᚑcourtiqᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

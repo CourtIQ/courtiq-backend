@@ -1,26 +1,22 @@
+version: '3'
+
 services:
   api-gateway:
     build:
       context: ../api-gateway
       dockerfile: Dockerfile
-      args:
-        SERVICE_NAME: api-gateway
-        SERVICE_PORT: ${API_GATEWAY_PORT}
     ports:
-      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
+      - "4000:4000"
     environment:
-      - PORT=${API_GATEWAY_PORT}
-      - USER_SERVICE_URL=http://user-service:${USER_SERVICE_PORT}
-      - STRING_SERVICE_URL=http://string-service:${STRING_SERVICE_PORT}
-      - RELATIONSHIP_SERVICE_URL=http://relationship-service:${RELATIONSHIP_SERVICE_PORT}
-      - MATCHUP_SERVICE_URL=http://matchup-service:${MATCHUP_SERVICE_PORT}
+      - USER_SERVICE_URL=http://user-service:8081/query
+      - STRING_SERVICE_URL=http://string-service:8082/query
+      - MATCHUP_SERVICE_URL=http://matchup-service:8083/query
+      - RELATIONSHIP_SERVICE_URL=http://relationship-service:8084/query
     depends_on:
       - user-service
       - string-service
-      - relationship-service
       - matchup-service
-    env_file:
-      - .env.populated
+      - relationship-service
 
   user-service:
     build:
@@ -28,13 +24,9 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: user-service
-        SERVICE_PORT: ${USER_SERVICE_PORT}
+        SERVICE_PORT: 8081
     ports:
-      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
-    environment:
-      - PORT=${USER_SERVICE_PORT}
-    env_file:
-      - .env.populated
+      - "8081:8081"
 
   string-service:
     build:
@@ -42,27 +34,9 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: string-service
-        SERVICE_PORT: ${STRING_SERVICE_PORT}
+        SERVICE_PORT: 8082
     ports:
-      - "${STRING_SERVICE_PORT}:${STRING_SERVICE_PORT}"
-    environment:
-      - PORT=${STRING_SERVICE_PORT}
-    env_file:
-      - .env.populated
-
-  relationship-service:
-    build:
-      context: ../relationship-service
-      dockerfile: Dockerfile
-      args:
-        SERVICE_NAME: relationship-service
-        SERVICE_PORT: ${RELATIONSHIP_SERVICE_PORT}
-    ports:
-      - "${RELATIONSHIP_SERVICE_PORT}:${RELATIONSHIP_SERVICE_PORT}"
-    environment:
-      - PORT=${RELATIONSHIP_SERVICE_PORT}
-    env_file:
-      - .env.populated
+      - "8082:8082"
 
   matchup-service:
     build:
@@ -70,23 +44,16 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: matchup-service
-        SERVICE_PORT: ${MATCHUP_SERVICE_PORT}
+        SERVICE_PORT: 8083
     ports:
-      - "${MATCHUP_SERVICE_PORT}:${MATCHUP_SERVICE_PORT}"
-    environment:
-      - PORT=${MATCHUP_SERVICE_PORT}
-    env_file:
-      - .env.populated
+      - "8083:8083"
 
-  # If you need a local MongoDB for development, uncomment this:
-  # mongodb:
-  #   image: mongo:latest
-  #   ports:
-  #     - "${MONGODB_PORT:-27017}:27017"
-  #   volumes:
-  #     - mongodb_data:/data/db
-  #   env_file:
-  #     - .env.populated
-
-volumes:
-  mongodb_data:
+  relationship-service:
+    build:
+      context: ../relationship-service
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: relationship-service
+        SERVICE_PORT: 8084
+    ports:
+      - "8084:8084"

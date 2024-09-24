@@ -38,28 +38,6 @@ type ProfileImage {
   large: String!
 }
 
-# Queries related to the User
-type Query {
-  # Get a user by their Firebase UID (id)
-  user(id: ID!): User
-
-  # Get the current logged-in user's profile
-  me: User
-
-  # Check if a username is available
-  isUsernameAvailable(username: String!): Boolean!
-}
-
-# Mutations related to User creation and updates
-type Mutation {
-
-  # Update an existing user
-  updateUser(input: UserUpdateInput!): User!
-
-  # Delete a user by their Firebase UID
-  deleteUser(id: ID!): Boolean!
-}
-
 # Input type for updating a user
 input UserUpdateInput {
   id: ID!  # Firebase UID is required to identify the user
