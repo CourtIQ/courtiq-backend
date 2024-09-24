@@ -1,4 +1,4 @@
-.PHONY: start stop restart clean logs build test help
+.PHONY: start stop restart clean logs build test help populate-env
 
 # Default target
 .DEFAULT_GOAL := help
@@ -10,9 +10,13 @@ DEPLOY_DIR = deploy
 YELLOW := \033[1;33m
 NC := \033[0m # No Color
 
-start: ## Start the application
+populate-env: ## Populate environment variables from 1Password
+	@echo "$(YELLOW)Populating environment variables...$(NC)"
+	@cd $(DEPLOY_DIR) && ./populate-env.sh
+
+start: populate-env ## Start the application
 	@echo "$(YELLOW)Starting the application...$(NC)"
-	@cd $(DEPLOY_DIR) && ./start-dev.sh
+	@cd $(DEPLOY_DIR) && docker-compose up -d
 
 stop: ## Stop the application
 	@echo "$(YELLOW)Stopping the application...$(NC)"
@@ -20,9 +24,10 @@ stop: ## Stop the application
 
 restart: stop start ## Restart the application
 
-clean: ## Remove generated files
+clean: ## Remove generated files and stop containers
 	@echo "$(YELLOW)Cleaning up...$(NC)"
 	@cd $(DEPLOY_DIR) && rm -f .env.populated
+	@$(MAKE) stop
 	@docker system prune -f
 
 logs: ## View logs of all services

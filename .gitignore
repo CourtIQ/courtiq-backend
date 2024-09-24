@@ -11,8 +11,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Dependency directories
+vendor/
 
 # Go workspace file
 go.work
@@ -20,6 +20,8 @@ go.work
 # IDE-specific files
 .idea/
 .vscode/
+*.swp
+*.swo
 
 # OS-specific files
 .DS_Store
@@ -27,6 +29,7 @@ Thumbs.db
 
 # Environment variables
 .env
+deploy/.env.populated
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
@@ -40,43 +43,27 @@ Thumbs.db
 
 # Docker volumes
 data/
-
-# Environment files
-deploy/.env
-deploy/.env.populated
-
-# Scripts
-deploy/populate-env.sh
-deploy/start-dev.sh
-
-# Logs
-*.log
-
-# Dependencies
-/vendor/
-/node_modules/
+.docker/
 
 # Build output
 /build/
 /dist/
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
+# Node.js dependencies
+/node_modules/
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Keep populate-env.sh in version control, but ignore start-dev.sh if it's not needed
+# deploy/populate-env.sh
+deploy/start-dev.sh
 
-# Docker
-.docker/
+# Ignore any local override files
+docker-compose.override.yml
 
-# Temporary files
-*.tmp
+# Ignore generated API documentation
+/docs/api/
 
-# Go specific
-*.exe
-*.test
-*.out
+# Ignore any local backup files
+*.bak
+
+# Ignore any local database files
+*.db
