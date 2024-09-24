@@ -8,21 +8,33 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/backend-courtiq/user-service/graph"
+	"github.com/CourtIQ/backend-courtiq/user-service/graph/resolvers"
+	"github.com/CourtIQ/backend-courtiq/user-service/services" // Import your service
 )
-
-const defaultPort = "8081"
 
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = defaultPort
+		port = "8080"
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	// Initialize your UserService implementation
+	userService := &services.UserServiceImpl{}
 
+	// Create a new Resolver and inject the service
+	resolver := &resolvers.Resolver{
+		UserService: userService,
+	}
+
+	// Create the GraphQL server
+	resolver := &resolvers.Resolver{}
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
+
+	// Set up routes
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
+	// Start the server
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

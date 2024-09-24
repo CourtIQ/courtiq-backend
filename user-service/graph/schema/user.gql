@@ -1,0 +1,80 @@
+# The User type represents a user in the system
+# The 'id' field is the Firebase Auth UID, ensuring that the user's identity is unique
+type User @key(fields: "id") {
+  # The Firebase Auth UID, which uniquely identifies the user
+  id: ID!  # Non-nullable, must always exist
+
+  # The username chosen by the user, nullable initially when the user profile is first created
+  username: String
+
+  # The display name of the user, optional
+  displayName: String
+
+  # The email address of the user, required
+  email: String!
+
+  # Optional personal details about the user
+  gender: String
+  nationality: String
+  dob: String
+
+  # The user's profile images in various sizes, required
+  profileImage: ProfileImage
+
+  # Timestamps for when the user was created and last updated
+  createdAt: String!  # Non-nullable, must always exist
+  lastUpdated: String # Nullable, can be null if the profile was never updated
+}
+
+# The ProfileImage type represents the user's profile images in different sizes
+type ProfileImage {
+  # URL for the small-sized profile image, required
+  small: String!
+
+  # URL for the medium-sized profile image, required
+  medium: String!
+
+  # URL for the large-sized profile image, required
+  large: String!
+}
+
+# Queries related to the User
+type Query {
+  # Get a user by their Firebase UID (id)
+  user(id: ID!): User
+
+  # Get the current logged-in user's profile
+  me: User
+
+  # Check if a username is available
+  isUsernameAvailable(username: String!): Boolean!
+}
+
+# Mutations related to User creation and updates
+type Mutation {
+
+  # Update an existing user
+  updateUser(input: UserUpdateInput!): User!
+
+  # Delete a user by their Firebase UID
+  deleteUser(id: ID!): Boolean!
+}
+
+# Input type for updating a user
+input UserUpdateInput {
+  id: ID!  # Firebase UID is required to identify the user
+  username: String
+  email: String
+  displayName: String
+  profileImage: ProfileImageInput
+  gender: String
+  nationality: String
+  dob: String
+}
+
+# Input type for profile image URLs
+input ProfileImageInput {
+  small: String!
+  medium: String!
+  large: String!
+}

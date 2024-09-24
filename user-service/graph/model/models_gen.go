@@ -5,22 +5,43 @@ package model
 type Mutation struct {
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type ProfileImage struct {
+	Small  string `json:"small"`
+	Medium string `json:"medium"`
+	Large  string `json:"large"`
+}
+
+type ProfileImageInput struct {
+	Small  string `json:"small"`
+	Medium string `json:"medium"`
+	Large  string `json:"large"`
 }
 
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type User struct {
+	ID           string        `json:"id"`
+	Username     *string       `json:"username,omitempty"`
+	DisplayName  *string       `json:"displayName,omitempty"`
+	Email        string        `json:"email"`
+	Gender       *string       `json:"gender,omitempty"`
+	Nationality  *string       `json:"nationality,omitempty"`
+	Dob          *string       `json:"dob,omitempty"`
+	ProfileImage *ProfileImage `json:"profileImage,omitempty"`
+	CreatedAt    string        `json:"createdAt"`
+	LastUpdated  *string       `json:"lastUpdated,omitempty"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+func (User) IsEntity() {}
+
+type UserUpdateInput struct {
+	ID           string             `json:"id"`
+	Username     *string            `json:"username,omitempty"`
+	Email        *string            `json:"email,omitempty"`
+	DisplayName  *string            `json:"displayName,omitempty"`
+	ProfileImage *ProfileImageInput `json:"profileImage,omitempty"`
+	Gender       *string            `json:"gender,omitempty"`
+	Nationality  *string            `json:"nationality,omitempty"`
+	Dob          *string            `json:"dob,omitempty"`
 }

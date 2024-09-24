@@ -3,6 +3,9 @@ services:
     build:
       context: ../api-gateway
       dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: api-gateway
+        SERVICE_PORT: ${API_GATEWAY_PORT}
     ports:
       - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
     environment:
@@ -23,6 +26,9 @@ services:
     build:
       context: ../user-service
       dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: user-service
+        SERVICE_PORT: ${USER_SERVICE_PORT}
     ports:
       - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
     environment:
@@ -34,6 +40,9 @@ services:
     build:
       context: ../string-service
       dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: string-service
+        SERVICE_PORT: ${STRING_SERVICE_PORT}
     ports:
       - "${STRING_SERVICE_PORT}:${STRING_SERVICE_PORT}"
     environment:
@@ -45,6 +54,9 @@ services:
     build:
       context: ../relationship-service
       dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: relationship-service
+        SERVICE_PORT: ${RELATIONSHIP_SERVICE_PORT}
     ports:
       - "${RELATIONSHIP_SERVICE_PORT}:${RELATIONSHIP_SERVICE_PORT}"
     environment:
@@ -56,6 +68,9 @@ services:
     build:
       context: ../matchup-service
       dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: matchup-service
+        SERVICE_PORT: ${MATCHUP_SERVICE_PORT}
     ports:
       - "${MATCHUP_SERVICE_PORT}:${MATCHUP_SERVICE_PORT}"
     environment:
@@ -67,9 +82,11 @@ services:
   # mongodb:
   #   image: mongo:latest
   #   ports:
-  #     - "27017:27017"
+  #     - "${MONGODB_PORT:-27017}:27017"
   #   volumes:
   #     - mongodb_data:/data/db
+  #   env_file:
+  #     - .env.populated
 
 volumes:
   mongodb_data:

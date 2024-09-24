@@ -10,12 +10,10 @@ import (
 	"github.com/CourtIQ/backend-courtiq/relationship-service/graph"
 )
 
-const defaultPort = "8083"
-
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = defaultPort
+		port = "8080"
 	}
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))

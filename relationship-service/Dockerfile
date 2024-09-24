@@ -1,33 +1,36 @@
-# Stage 1: Build Go 1.23.1 from source
-FROM golang:1.23 AS builder
+# Use the official Golang image, version 1.23.1, based on Alpine Linux for minimal image size
+# Alpine is a small Linux distribution commonly used for containers
+FROM golang:1.23.1-alpine
 
-# Set the working directory inside the container
+# Set the working directory inside the container to /app
 WORKDIR /app
 
-# Copy go.mod and go.sum files
+# Install git as it is required for go mod to download dependencies from repositories
+RUN apk add --no-cache git
+
+# Copy the go.mod and go.sum files to the /app directory in the container
+# These files are used to manage the Go dependencies for your project
 COPY go.mod go.sum ./
 
-# Download all dependencies
+# Download the Go module dependencies based on go.mod and go.sum
 RUN go mod download
 
-# Copy the source code into the container
+# Copy the entire project code from your local machine to the /app directory in the container
 COPY . .
 
-# Build the Go app
-RUN go build -o service-binary .
+# Define build-time variables for the service name and service port
+# SERVICE_NAME will be used to name the final binary, and SERVICE_PORT will be the port the service listens on
+ARG SERVICE_NAME
+ARG SERVICE_PORT
 
-# Stage 2: Run the application
-FROM alpine:latest
+# Build the Go project using the provided SERVICE_NAME
+# CGO_ENABLED=0 disables CGO (which allows Go to interact with C libraries)
+# GOOS=linux sets the operating system target to Linux
+RUN CGO_ENABLED=0 GOOS=linux go build -o ${SERVICE_NAME} .
 
-# Set the working directory
-WORKDIR /app
+# Expose the SERVICE_PORT environment variable as the port that will be exposed by the container
+EXPOSE ${SERVICE_PORT}
 
-# Copy the built binary from the builder stage
-COPY --from=builder /app/service-binary .
-
-# Expose the port specified by the environment variable
-ENV PORT=${PORT:-8083}
-EXPOSE ${PORT}
-
-# Command to run the executable
-CMD ["./service-binary"]
+# Define the command that will be run when the container starts
+# This command will execute the binary built earlier, using the SERVICE_NAME
+CMD ["/bin/sh", "-c", "./${SERVICE_NAME}"]
