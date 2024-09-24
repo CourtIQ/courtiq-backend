@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  api-gateway:
+    build:
+      context: ../api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
+    environment:
+      - PORT=${API_GATEWAY_PORT}
+      - USER_SERVICE_URL=http://user-service:${USER_SERVICE_PORT}
+      - STRING_SERVICE_URL=http://string-service:${STRING_SERVICE_PORT}
+      - RELATIONSHIP_SERVICE_URL=http://relationship-service:${RELATIONSHIP_SERVICE_PORT}
+      - MATCHUP_SERVICE_URL=http://matchup-service:${MATCHUP_SERVICE_PORT}
+    depends_on:
+      - user-service
+      - string-service
+      - relationship-service
+      - matchup-service
+    env_file:
+      - .env.populated
+
+  user-service:
+    build:
+      context: ../user-service
+      dockerfile: Dockerfile
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    environment:
+      - PORT=${USER_SERVICE_PORT}
+    env_file:
+      - .env.populated
+
+  string-service:
+    build:
+      context: ../string-service
+      dockerfile: Dockerfile
+    ports:
+      - "${STRING_SERVICE_PORT}:${STRING_SERVICE_PORT}"
+    environment:
+      - PORT=${STRING_SERVICE_PORT}
+    env_file:
+      - .env.populated
+
+  relationship-service:
+    build:
+      context: ../relationship-service
+      dockerfile: Dockerfile
+    ports:
+      - "${RELATIONSHIP_SERVICE_PORT}:${RELATIONSHIP_SERVICE_PORT}"
+    environment:
+      - PORT=${RELATIONSHIP_SERVICE_PORT}
+    env_file:
+      - .env.populated
+
+  matchup-service:
+    build:
+      context: ../matchup-service
+      dockerfile: Dockerfile
+    ports:
+      - "${MATCHUP_SERVICE_PORT}:${MATCHUP_SERVICE_PORT}"
+    environment:
+      - PORT=${MATCHUP_SERVICE_PORT}
+    env_file:
+      - .env.populated
+
+  # If you need a local MongoDB for development, uncomment this:
+  # mongodb:
+  #   image: mongo:latest
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:

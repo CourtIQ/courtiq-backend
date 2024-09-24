@@ -1,12 +1,11 @@
-# Use the latest official Golang image as a parent image
-FROM golang:1.22-alpine3.20
+# Stage 1: Build Go 1.23.1 from source
+FROM alpine:latest AS go-builder
 
 # Set the working directory inside the container
 WORKDIR /app
 
 # Copy go.mod and go.sum files
-COPY go.mod ./
-COPY go.sum ./
+COPY go.mod go.sum ./
 
 # Download all dependencies
 RUN go mod download
@@ -15,10 +14,20 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN go build -o main .
+RUN go build -o service-binary .
 
-# Expose port 8080 to the outside world
-EXPOSE 8080
+# Stage 2: Run the application
+FROM alpine:latest
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the built binary from the builder stage
+COPY --from=builder /app/service-binary .
+
+# Expose the port specified by the environment variable
+ENV PORT=${PORT:-8080}
+EXPOSE ${PORT}
 
 # Command to run the executable
-CMD ["./main"]
+CMD ["./service-binary"]

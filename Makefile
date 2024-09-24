@@ -43,3 +43,7 @@ test: ## Run tests (implement per your testing strategy)
 
 help: ## Display this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(YELLOW)%-30s$(NC) %s\n", $$1, $$2}'
+
+status: ## Show status of Docker containers
+	@echo "$(YELLOW)Docker Containers Status:$(NC)"
+	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

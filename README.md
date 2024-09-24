@@ -1,51 +1,47 @@
-## Local Development
+# CourtIQ Backend
 
-This project uses a Makefile to simplify common development tasks and integrates with 1Password for secure environment variable management.
+CourtIQ Backend is a microservices-based application designed to provide robust and scalable APIs for court-related data and functionalities.
 
-### Prerequisites
+## Table of Contents
 
-- Docker and Docker Compose
-- Make
-- 1Password CLI (configured and authenticated)
+- [Prerequisites](#prerequisites)
+- [Credential Management](#credential-management)
+  - [MongoDB Credentials Setup](#mongodb-credentials-setup)
+  - [Firebase Configuration](#firebase-configuration)
+  - [Populating Environment Variables](#populating-environment-variables)
+  - [Updating Credentials](#updating-credentials)
+- [Setup Instructions](#setup-instructions)
+  - [Clone the Repository](#clone-the-repository)
+  - [Install Dependencies](#install-dependencies)
+- [Running Locally](#running-locally)
+- [Deployment](#deployment)
+- [Makefile Commands](#makefile-commands)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-### Available Commands
+---
 
-To see all available commands, run:
+## Prerequisites
 
-```
-make help
-```
+- **Docker** installed and running
+- **Docker Compose** installed
+- **1Password CLI** installed and authenticated
+- **Go** installed (if you need to build services locally)
+- **Make** installed
 
-### Starting the Application
+## Credential Management
 
-To start the application:
+This project uses 1Password for secure credential management. Credentials are stored in a shared vault called **"CourtIQ Backend"**.
 
-```
-make start
-```
+### MongoDB Credentials Setup
 
-This command will:
-1. Populate environment variables from 1Password using the `populate-env.sh` script.
-2. Start all services using Docker Compose.
+1. In the 1Password **"CourtIQ Backend"** vault, there should be an item named **"courtiq-mongodb-user"** with:
+   - A **"username"** field containing the MongoDB username
+   - A **"password"** field containing the MongoDB password
 
-### Other Useful Commands
+2. The `.env` file references these credentials as:
 
-- Stop the application: `make stop`
-- Restart the application: `make restart`
-- View logs: `make logs`
-- Rebuild Docker images: `make build`
-- Run tests: `make test`
-- Clean up generated files and Docker resources: `make clean`
-- Manually populate environment variables: `make populate-env`
-
-### Development Workflow
-
-1. Ensure your 1Password CLI is authenticated.
-2. Start the application with `make start`
-3. Make changes to your code
-4. Rebuild and restart the affected service(s) with `make build` followed by `make restart`
-5. View logs with `make logs` to check for any issues
-6. Run tests with `make test` to ensure everything is working correctly
-7. When you're done, stop the application with `make stop`
-
-Remember to never commit the `.env.populated` file to version control.
+   ```dotenv
+   MONGO_USERNAME=op:courtiq-mongodb-user/username
+   MONGO_PASSWORD=op:courtiq-mongodb-user/password
