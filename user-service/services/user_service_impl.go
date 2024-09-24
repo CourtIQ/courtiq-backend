@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/CourtIQ/backend-courtiq/user-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
 )
 
 // UserServiceImpl implements the UserService interface
@@ -14,7 +14,7 @@ type UserServiceImpl struct{}
 func (s *UserServiceImpl) FindUserByID(ctx context.Context, id string) (*model.User, error) {
 	if id == "test-user-id" {
 		return &model.User{
-			ID:          "test-user-id",
+			ID:          "test-user-ab",
 			Username:    strPtr("testuser"),
 			DisplayName: strPtr("Test User"),
 			Email:       "testuser@example.com",

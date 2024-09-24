@@ -1,0 +1,7 @@
+extend type Mutation {
+  # Update an existing user
+  updateUser(input: UserUpdateInput!): User!
+
+  # Delete a user by their Firebase UID
+  deleteUser(id: ID!): Boolean!
+}

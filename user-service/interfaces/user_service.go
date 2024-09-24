@@ -3,7 +3,7 @@ package interfaces
 import (
 	"context"
 
-	"github.com/CourtIQ/backend-courtiq/user-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
 )
 
 type UserService interface {

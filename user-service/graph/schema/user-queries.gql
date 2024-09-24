@@ -1,0 +1,10 @@
+extend type Query {
+  # Get a user by their Firebase UID (id)
+  user(id: ID!): User
+
+  # Get the current logged-in user's profile
+  me: User
+
+  # Check if a username is available
+  isUsernameAvailable(username: String!): Boolean!
+}

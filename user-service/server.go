@@ -9,7 +9,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/user-service/services" // Import your service
+	"github.com/CourtIQ/courtiq-backend/user-service/services"
 )
 
 func main() {
