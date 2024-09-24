@@ -1,5 +1,5 @@
-# Stage 1: Build Go 1.23.1 from source
-FROM alpine:latest AS go-builder
+# Stage 1: Build the Go application
+FROM golang:1.23-buster AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -13,11 +13,11 @@ RUN go mod download
 # Copy the source code into the container
 COPY . .
 
-# Build the Go app
-RUN go build -o service-binary .
+# Build the Go app for Linux
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o service-binary .
 
 # Stage 2: Run the application
-FROM alpine:latest
+FROM debian:buster-slim
 
 # Set the working directory
 WORKDIR /app

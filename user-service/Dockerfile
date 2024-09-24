@@ -1,5 +1,5 @@
 # Stage 1: Build Go 1.23.1 from source
-FROM alpine:latest AS go-builder
+FROM golang:1.23 AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
