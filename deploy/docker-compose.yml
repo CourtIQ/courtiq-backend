@@ -24,12 +24,14 @@ services:
       dockerfile: ../deploy/Dockerfile
       args:
         SERVICE_NAME: user-service
-        SERVICE_PORT: 8081
+        SERVICE_PORT: ${USER_SERVICE_PORT}  # Pass at build time
     container_name: ${USER_SERVICE_NAME}
     ports:
-      - "8081:8081"
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"  # Expose the correct port
     env_file:
       - .env.populated
+    environment:
+      - PORT=${USER_SERVICE_PORT}  # Map USER_SERVICE_PORT to PORT
     networks:
       - backend-network
 
@@ -39,12 +41,14 @@ services:
       dockerfile: ../deploy/Dockerfile
       args:
         SERVICE_NAME: string-service
-        SERVICE_PORT: 8082
+        SERVICE_PORT: ${STRING_SERVICE_PORT}
     container_name: ${STRING_SERVICE_NAME}
     ports:
-      - "8082:8082"
+      - "${STRING_SERVICE_PORT}:${STRING_SERVICE_PORT}"
     env_file:
       - .env.populated
+    environment:
+      - PORT=${STRING_SERVICE_PORT}  # Map STRING_SERVICE_PORT to PORT
     networks:
       - backend-network
 
@@ -54,12 +58,14 @@ services:
       dockerfile: ../deploy/Dockerfile
       args:
         SERVICE_NAME: matchup-service
-        SERVICE_PORT: 8083
+        SERVICE_PORT: ${MATCHUP_SERVICE_PORT}
     container_name: ${MATCHUP_SERVICE_NAME}
     ports:
-      - "8083:8083"
+      - "${MATCHUP_SERVICE_PORT}:${MATCHUP_SERVICE_PORT}"
     env_file:
       - .env.populated
+    environment:
+      - PORT=${MATCHUP_SERVICE_PORT}  # Map MATCHUP_SERVICE_PORT to PORT
     networks:
       - backend-network
 
@@ -69,12 +75,14 @@ services:
       dockerfile: ../deploy/Dockerfile
       args:
         SERVICE_NAME: relationship-service
-        SERVICE_PORT: 8084
+        SERVICE_PORT: ${RELATIONSHIP_SERVICE_PORT}
     container_name: ${RELATIONSHIP_SERVICE_NAME}
     ports:
-      - "8084:8084"
+      - "${RELATIONSHIP_SERVICE_PORT}:${RELATIONSHIP_SERVICE_PORT}"
     env_file:
       - .env.populated
+    environment:
+      - PORT=${RELATIONSHIP_SERVICE_PORT}  # Map RELATIONSHIP_SERVICE_PORT to PORT
     networks:
       - backend-network
 
