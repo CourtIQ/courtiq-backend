@@ -1,10 +1,15 @@
-require('dotenv').config();
 const { ApolloServer } = require('apollo-server');
-const { ApolloGateway } = require('@apollo/gateway');
-const { services } = require('./config');
+const { ApolloGateway, IntrospectAndCompose } = require('@apollo/gateway');
 
 const gateway = new ApolloGateway({
-  serviceList: services,
+  supergraphSdl: new IntrospectAndCompose({
+    subgraphs: [
+      { name: 'user', url: process.env.USER_SERVICE_URL },
+      { name: 'string', url: process.env.STRING_SERVICE_URL },
+      { name: 'matchup', url: process.env.MATCHUP_SERVICE_URL },
+      { name: 'relationship', url: process.env.RELATIONSHIP_SERVICE_URL },
+    ],
+  }),
 });
 
 const server = new ApolloServer({
@@ -12,8 +17,8 @@ const server = new ApolloServer({
   subscriptions: false,
 });
 
-const port = process.env.PORT || 4000;
-
-server.listen({ port }).then(({ url }) => {
-  console.log(`🚀 API Gateway ready at ${url}`);
+server.listen({ port: 4000 }).then(({ url }) => {
+  console.log(`🚀 Gateway ready at ${url}`);
+}).catch(err => {
+  console.error('Failed to start the Apollo Gateway:', err);
 });
