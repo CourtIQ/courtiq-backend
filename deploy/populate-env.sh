@@ -12,8 +12,6 @@ cd "$(dirname "$0")"
 # Define the input and output files
 ENV_FILE=".env"
 POPULATED_ENV_FILE=".env.populated"
-TARGET_DIR="../api-gateway"
-SERVICE_ACCOUNT_PATH="$TARGET_DIR/firebase-service-account.json"
 
 # Check if the 1Password CLI (op) is installed
 if ! command -v op &> /dev/null
@@ -25,6 +23,10 @@ fi
 # Check if the user is signed in to 1Password CLI
 if ! op account list &> /dev/null; then
     echo "Signing in to 1Password CLI..."
+    # Replace the following line with your specific sign-in command or instructions
+    # For example:
+    # eval $(op signin my)
+    # It's recommended to handle authentication securely and possibly interactively
     op signin
 fi
 
@@ -54,6 +56,7 @@ do
     # Check if the value starts with 'op://'
     if [[ "$value" == op://* ]]; then
         # Extract vault, item, and field from the op:// URL
+        # Format: op://vault/item/field
         op_path=${value#op://}
         vault=$(echo "$op_path" | cut -d'/' -f1)
         item=$(echo "$op_path" | cut -d'/' -f2)
@@ -65,7 +68,7 @@ do
         fi
 
         # Fetch the secret using op read
-        secret=$(op read "$value" 2>/dev/null || true)
+        secret=$(op read "op://$vault/$item/$field" 2>/dev/null || true)
 
         # Check if the secret was successfully fetched
         if [ -z "$secret" ]; then
@@ -73,24 +76,17 @@ do
             exit 1
         fi
 
-        # Special handling for FIREBASE_ADMIN_SECRET
-        if [ "$key" == "FIREBASE_ADMIN_SECRET" ]; then
-            # Validate JSON
-            if ! echo "$secret" | jq empty > /dev/null 2>&1; then
-                echo "Error: FIREBASE_ADMIN_SECRET is not valid JSON"
-                exit 1
-            fi
+        # Escape double quotes and backslashes in the secret
+        escaped_secret=$(echo "$secret" | sed 's/\\/\\\\/g; s/"/\\"/g')
 
-            # Save the secret to the api-gateway directory
-            echo "$secret" > "$SERVICE_ACCOUNT_PATH"
-            echo "Firebase service account JSON saved to $SERVICE_ACCOUNT_PATH"
-        else
-            # For other secrets, handle as before
-            escaped_secret=$(echo "$secret" | sed 's/\\/\\\\/g; s/"/\\"/g')
-            escaped_secret=$(echo "$escaped_secret" | awk '{printf "%s\\n", $0}')
-            escaped_secret=${escaped_secret%\\n}
-            echo "$key=\"$escaped_secret\"" >> "$POPULATED_ENV_FILE"
-        fi
+        # Handle multiline secrets by replacing newlines with \n
+        escaped_secret=$(echo "$escaped_secret" | awk '{printf "%s\\n", $0}')
+
+        # Remove the trailing \n
+        escaped_secret=${escaped_secret%\\n}
+
+        # Append the key-value pair to .env.populated with quotes
+        echo "$key=\"$escaped_secret\"" >> "$POPULATED_ENV_FILE"
     else
         # For non-1Password variables, append them as-is
         echo "$key=$value" >> "$POPULATED_ENV_FILE"

@@ -1,3 +1,4 @@
+version: '3'
 
 services:
   api-gateway:
@@ -10,22 +11,12 @@ services:
     env_file:
       - .env.populated
     depends_on:
-      user-service:
-        condition: service_healthy
-      string-service:
-        condition: service_healthy
-      matchup-service:
-        condition: service_healthy
-      relationship-service:
-        condition: service_healthy
+      - user-service
+      - string-service
+      - matchup-service
+      - relationship-service
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${API_GATEWAY_PORT}/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 15s
 
   user-service:
     build:
@@ -43,11 +34,6 @@ services:
       - PORT=${USER_SERVICE_PORT}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${USER_SERVICE_PORT}/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   string-service:
     build:
@@ -65,11 +51,6 @@ services:
       - PORT=${STRING_SERVICE_PORT}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${STRING_SERVICE_PORT}/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   matchup-service:
     build:
@@ -87,11 +68,6 @@ services:
       - PORT=${MATCHUP_SERVICE_PORT}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${MATCHUP_SERVICE_PORT}/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   relationship-service:
     build:
@@ -109,11 +85,6 @@ services:
       - PORT=${RELATIONSHIP_SERVICE_PORT}
     networks:
       - backend-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:${RELATIONSHIP_SERVICE_PORT}/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
 networks:
   backend-network:

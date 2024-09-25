@@ -1,74 +1,49 @@
-# Variables
-DOCKER = docker
-DOCKER_COMPOSE = docker-compose
-COMPOSE_FILE = deploy/docker-compose.yml
-ENV_POPULATOR = deploy/populate-env.sh
-ENV_POPULATED = deploy/.env.populated
-
-# Phony targets
-.PHONY: build start stop restart logs clean pull status test shell secrets
+.PHONY: start stop restart clean logs build test help populate-env
 
 # Default target
-all: start
+.DEFAULT_GOAL := help
 
-# Populate secrets from 1Password
-secrets:
-	@echo "Populating secrets from 1Password..."
-	$(ENV_POPULATOR)
+# Variables
+DEPLOY_DIR = deploy
 
-# Build or rebuild services
-build: secrets
-	@echo "Building fresh Docker images..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build --no-cache
+# Colors for output
+YELLOW := \033[1;33m
+NC := \033[0m # No Color
 
-# Start services
-start: secrets
-	@echo "Starting services..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
+populate-env: ## Populate environment variables from 1Password
+	@echo "$(YELLOW)Populating environment variables...$(NC)"
+	@cd $(DEPLOY_DIR) && ./populate-env.sh
 
-# Stop services
-stop:
-	@echo "Stopping services..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
-	@echo "Removing populated .env file..."
-	rm -f $(ENV_POPULATED)
+start: populate-env ## Start the application
+	@echo "$(YELLOW)Starting the application...$(NC)"
+	@cd $(DEPLOY_DIR) && docker-compose up -d
 
-# Restart services
-restart: stop start
+stop: ## Stop the application
+	@echo "$(YELLOW)Stopping the application...$(NC)"
+	@cd $(DEPLOY_DIR) && docker-compose down
 
-# View output from containers
-logs:
-	@echo "Showing logs..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) logs -f
+restart: stop start ## Restart the application
 
-# Remove stopped containers, networks, volumes, images, and populated env file
-clean: stop
-	@echo "Cleaning up Docker resources..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down -v --rmi all --remove-orphans
-	@echo "Removing populated .env file..."
-	rm -f $(ENV_POPULATED)
+clean: ## Remove generated files and stop containers
+	@echo "$(YELLOW)Cleaning up...$(NC)"
+	@cd $(DEPLOY_DIR) && rm -f .env.populated
+	@$(MAKE) stop
+	@docker system prune -f
 
-# Pull latest images
-pull:
-	@echo "Pulling latest Docker images..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) pull
+logs: ## View logs of all services
+	@cd $(DEPLOY_DIR) && docker-compose logs -f
 
-# Show status of services
-status:
-	@echo "Showing status of services..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) ps
+build: ## Rebuild the Docker images
+	@echo "$(YELLOW)Rebuilding Docker images...$(NC)"
+	@cd $(DEPLOY_DIR) && docker-compose build
 
-# Run tests (adjust as needed for your test setup)
-test: secrets
-	@echo "Running tests..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) run --rm test-service npm test
+test: ## Run tests (implement per your testing strategy)
+	@echo "$(YELLOW)Running tests...$(NC)"
+	@echo "Implement your test command here"
 
-# Enter a specific service's container (usage: make shell SERVICE=service_name)
-shell:
-	@echo "Entering shell for $(SERVICE)..."
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) exec $(SERVICE) /bin/sh
+help: ## Display this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(YELLOW)%-30s$(NC) %s\n", $$1, $$2}'
 
-# Remove the populated env file
-clean-secrets:
-	@echo "Removing populated .env file..."
-	rm -f $(ENV_POPULATED)
+status: ## Show status of Docker containers
+	@echo "$(YELLOW)Docker Containers Status:$(NC)"
+	@docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

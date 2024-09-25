@@ -50,8 +50,6 @@ jspm_packages/
 .env*.local
 deploy/.env.populated
 
-api-gateway/key.json
-
 # Existing entries
 *.exe
 *.exe~

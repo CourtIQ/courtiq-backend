@@ -14,5 +14,5 @@ type UserServiceProvider interface {
 	UpdateUser(ctx context.Context, input model.UserUpdateInput) (*model.User, error)
 	DeleteUser(ctx context.Context, id string) (bool, error)
 	IsUsernameAvailable(ctx context.Context, username string) (bool, error)
-	FetchCurrentUser(ctx context.Context) (*model.User, error)
+	FetchCurrentUser(ctx context.Context) (*model.User, error) // Added method to fetch the current user
 }
