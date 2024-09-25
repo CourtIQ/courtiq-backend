@@ -1,0 +1,11 @@
+# Extend the Query type for Apollo Federation
+extend type Query {
+  # Fetch a single StringEntry by ID
+  getStringEntry(id: ID!): StringEntry
+
+  # Fetch all StringEntries for a particular user
+  getAllStringEntries(userID: String!): [StringEntry!]
+
+  # Fetch unique StringEntries
+  getUniqueStringEntries: [StringEntry!]
+}

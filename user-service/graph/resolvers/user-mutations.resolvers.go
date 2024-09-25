@@ -7,9 +7,11 @@ package resolvers
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/user-service/providers"
 )
 
 // UpdateUser is the resolver for the updateUser field.
@@ -19,10 +21,19 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UserUpdat
 
 // DeleteUser is the resolver for the deleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (bool, error) {
-	panic(fmt.Errorf("not implemented: DeleteUser - deleteUser"))
+	success, err := r.UserService.DeleteUser(ctx, id)
+	if err != nil {
+		log.Printf("Failed to delete user with ID %s: %v", id, err)
+		return false, err
+	}
+	return success, nil
 }
 
 // Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
+func (r *Resolver) Mutation() graph.MutationResolver {
+	return &mutationResolver{UserService: r.UserService}
+}
 
-type mutationResolver struct{ *Resolver }
+type mutationResolver struct {
+	UserService providers.UserServiceProvider
+}

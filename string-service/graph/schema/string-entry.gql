@@ -1,0 +1,23 @@
+# The StringEntry type defines the structure of an entry
+type StringEntry @key(fields: "id") {
+  id: ID!
+  userID: String!
+  stringName: String!
+  racketName: String!
+  stringingDate: String!
+  stringMainsTension: Int!
+  stringCrossTensions: Int!
+  lastUpdated: String!
+  entryDate: String!
+}
+
+# Input type for creating or updating a StringEntry
+input StringEntryInput {
+  userID: String!
+  stringName: String!
+  racketName: String!
+  stringingDate: String!
+  stringMainsTension: Int!
+  stringCrossTensions: Int!
+  entryDate: String!
+}

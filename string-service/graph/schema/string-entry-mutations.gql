@@ -1,0 +1,12 @@
+
+# Extend the Mutation type for Apollo Federation
+extend type Mutation {
+  # Create a new StringEntry
+  createStringEntry(input: StringEntryInput!): StringEntry
+
+  # Update an existing StringEntry by ID
+  updateStringEntry(id: ID!, input: StringEntryInput!): StringEntry
+
+  # Delete a StringEntry by ID
+  deleteStringEntry(id: ID!): Boolean
+}

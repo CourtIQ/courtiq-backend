@@ -3,7 +3,7 @@ module github.com/CourtIQ/backend-courtiq/string-service
 go 1.23.1
 
 require (
-	github.com/99designs/gqlgen v0.17.54
+	github.com/99designs/gqlgen v0.17.53
 	github.com/vektah/gqlparser/v2 v2.5.16
 )
 

@@ -33,6 +33,7 @@ type User struct {
 	LastUpdated  *string       `json:"lastUpdated,omitempty"`
 }
 
+
 func (User) IsEntity() {}
 
 type UserUpdateInput struct {

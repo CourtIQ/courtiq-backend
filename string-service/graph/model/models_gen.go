@@ -5,22 +5,29 @@ package model
 type Mutation struct {
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
-}
-
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type StringEntry struct {
+	ID                  string `json:"id"`
+	UserID              string `json:"userID"`
+	StringName          string `json:"stringName"`
+	RacketName          string `json:"racketName"`
+	StringingDate       string `json:"stringingDate"`
+	StringMainsTension  int    `json:"stringMainsTension"`
+	StringCrossTensions int    `json:"stringCrossTensions"`
+	LastUpdated         string `json:"lastUpdated"`
+	EntryDate           string `json:"entryDate"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+func (StringEntry) IsEntity() {}
+
+type StringEntryInput struct {
+	UserID              string `json:"userID"`
+	StringName          string `json:"stringName"`
+	RacketName          string `json:"racketName"`
+	StringingDate       string `json:"stringingDate"`
+	StringMainsTension  int    `json:"stringMainsTension"`
+	StringCrossTensions int    `json:"stringCrossTensions"`
+	EntryDate           string `json:"entryDate"`
 }

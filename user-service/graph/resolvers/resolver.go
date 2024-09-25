@@ -1,11 +1,11 @@
 package resolvers
 
-import "github.com/CourtIQ/courtiq-backend/user-service/interfaces"
+import "github.com/CourtIQ/courtiq-backend/user-service/providers"
 
 // This file will not be regenerated automatically.
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserService interfaces.UserService
+	UserService providers.UserServiceProvider
 }

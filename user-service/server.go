@@ -13,13 +13,18 @@ import (
 )
 
 func main() {
+	// Retrieve port from environment variables, defaulting to 8080
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
+	// Initialize MongoDB connection
+	services.ConnectToMongoDB()
+	defer services.DisconnectFromMongoDB()
+
 	// Initialize your UserService implementation
-	userService := &services.UserServiceImpl{}
+	userService := services.NewUserService() // Use the proper constructor
 
 	// Create a new Resolver and inject the service
 	resolver := &resolvers.Resolver{
@@ -29,7 +34,7 @@ func main() {
 	// Create the GraphQL server
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
-	// Set up routes
+	// Set up HTTP routes for the GraphQL playground and query handler
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 

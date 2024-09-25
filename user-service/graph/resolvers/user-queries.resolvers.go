@@ -9,6 +9,7 @@ import (
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/user-service/providers"
 )
 
 // User is the resolver for the user field.
@@ -39,6 +40,10 @@ func (r *queryResolver) IsUsernameAvailable(ctx context.Context, username string
 }
 
 // Query returns graph.QueryResolver implementation.
-func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
+func (r *Resolver) Query() graph.QueryResolver {
+	return &queryResolver{UserService: r.UserService}
+}
 
-type queryResolver struct{ *Resolver }
+type queryResolver struct {
+	UserService providers.UserServiceProvider
+}

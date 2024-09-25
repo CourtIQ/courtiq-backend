@@ -24,14 +24,14 @@ services:
       dockerfile: ../deploy/Dockerfile
       args:
         SERVICE_NAME: user-service
-        SERVICE_PORT: ${USER_SERVICE_PORT}  # Pass at build time
+        SERVICE_PORT: ${USER_SERVICE_PORT}
     container_name: ${USER_SERVICE_NAME}
     ports:
-      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"  # Expose the correct port
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}" 
     env_file:
       - .env.populated
     environment:
-      - PORT=${USER_SERVICE_PORT}  # Map USER_SERVICE_PORT to PORT
+      - PORT=${USER_SERVICE_PORT}
     networks:
       - backend-network
 
@@ -48,7 +48,7 @@ services:
     env_file:
       - .env.populated
     environment:
-      - PORT=${STRING_SERVICE_PORT}  # Map STRING_SERVICE_PORT to PORT
+      - PORT=${STRING_SERVICE_PORT}
     networks:
       - backend-network
 
@@ -65,7 +65,7 @@ services:
     env_file:
       - .env.populated
     environment:
-      - PORT=${MATCHUP_SERVICE_PORT}  # Map MATCHUP_SERVICE_PORT to PORT
+      - PORT=${MATCHUP_SERVICE_PORT}
     networks:
       - backend-network
 
@@ -82,7 +82,7 @@ services:
     env_file:
       - .env.populated
     environment:
-      - PORT=${RELATIONSHIP_SERVICE_PORT}  # Map RELATIONSHIP_SERVICE_PORT to PORT
+      - PORT=${RELATIONSHIP_SERVICE_PORT}
     networks:
       - backend-network
 

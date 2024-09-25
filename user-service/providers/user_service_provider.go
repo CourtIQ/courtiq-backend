@@ -1,4 +1,6 @@
-package interfaces
+// user_service_provider.go
+
+package providers
 
 import (
 	"context"
@@ -6,19 +8,11 @@ import (
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
 )
 
-type UserService interface {
-	// Find user by ID
+// UserServiceProvider defines the contract for user-related operations.
+type UserServiceProvider interface {
 	FindUserByID(ctx context.Context, id string) (*model.User, error)
-
-	// Update user details
 	UpdateUser(ctx context.Context, input model.UserUpdateInput) (*model.User, error)
-
-	// Delete user
 	DeleteUser(ctx context.Context, id string) (bool, error)
-
-	// Check username availability
 	IsUsernameAvailable(ctx context.Context, username string) (bool, error)
-
-	// Fetch current user profile
-	FetchCurrentUser(ctx context.Context) (*model.User, error)
+	FetchCurrentUser(ctx context.Context) (*model.User, error) // Added method to fetch the current user
 }
