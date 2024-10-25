@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: string-service
+  namespace: court-iq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: string-service
+  template:
+    metadata:
+      labels:
+        app: string-service
+    spec:
+      containers:
+      - name: string-service
+        image: us-central1-docker.pkg.dev/court-iq-api/court-iq-repo/string-service:latest
+        ports:
+        - containerPort: 8082
+        env:
+        - name: PORT
+          value: "8082"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8082
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: string-service
+  namespace: court-iq
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8082
+    targetPort: 8082
+  selector:
+    app: string-service

@@ -6,7 +6,7 @@ ENV_POPULATOR = deploy/populate-env.sh
 ENV_POPULATED = deploy/.env.populated
 
 # Phony targets
-.PHONY: build start stop restart logs clean pull status test shell secrets
+.PHONY: build start stop restart logs clean pull status test shell secrets refresh refresh-service
 
 # Default target
 all: start
@@ -35,6 +35,38 @@ stop:
 
 # Restart services
 restart: stop start
+
+# Complete refresh cycle (stop, rebuild, start)
+refresh: 
+	@echo "🔄 Starting complete refresh cycle..."
+	@echo "🛑 Stopping all services..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
+	@echo "🧹 Cleaning up..."
+	rm -f $(ENV_POPULATED)
+	@echo "🔑 Regenerating secrets..."
+	$(ENV_POPULATOR)
+	@echo "🏗️  Rebuilding services..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build --no-cache
+	@echo "🚀 Starting services..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
+	@echo "📝 Showing logs..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) logs -f
+
+# Refresh specific service
+refresh-service:
+	@if [ -z "$(SERVICE)" ]; then \
+		echo "❌ Error: SERVICE not specified. Usage: make refresh-service SERVICE=service-name"; \
+		exit 1; \
+	fi
+	@echo "🔄 Refreshing service: $(SERVICE)"
+	@echo "🛑 Stopping service..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) stop $(SERVICE)
+	@echo "🏗️  Rebuilding service..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build --no-cache $(SERVICE)
+	@echo "🚀 Starting service..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d $(SERVICE)
+	@echo "📝 Showing service logs..."
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) logs -f $(SERVICE)
 
 # View output from containers
 logs:
@@ -72,3 +104,32 @@ shell:
 clean-secrets:
 	@echo "Removing populated .env file..."
 	rm -f $(ENV_POPULATED)
+
+	# Deploy to development
+.PHONY: deploy-dev
+deploy-dev: secrets
+	@echo "Deploying to development environment..."
+	./deploy/scripts/deploy.sh development
+
+# Deploy to production
+.PHONY: deploy-prod
+deploy-prod: secrets
+	@echo "Deploying to production environment..."
+	./deploy/scripts/deploy.sh production
+
+# Get cluster credentials
+.PHONY: cluster-credentials
+cluster-credentials:
+	gcloud container clusters get-credentials court-iq-cluster --region us-central1
+
+# Show cluster status
+.PHONY: cluster-status
+cluster-status: cluster-credentials
+	@echo "Cluster Status:"
+	kubectl get nodes
+	@echo "\nPods Status:"
+	kubectl get pods -n court-iq
+	@echo "\nServices Status:"
+	kubectl get services -n court-iq
+	@echo "\nIngress Status:"
+	kubectl get ingress -n court-iq

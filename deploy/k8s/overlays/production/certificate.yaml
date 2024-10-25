@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: court-iq-cert
+  namespace: court-iq
+spec:
+  domains:
+    - api.court-iq.com

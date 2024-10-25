@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matchup-service
+  namespace: court-iq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matchup-service
+  template:
+    metadata:
+      labels:
+        app: matchup-service
+    spec:
+      containers:
+      - name: matchup-service
+        image: us-central1-docker.pkg.dev/court-iq-api/court-iq-repo/matchup-service:latest
+        ports:
+        - containerPort: 8083
+        env:
+        - name: PORT
+          value: "8083"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8083
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: matchup-service
+  namespace: court-iq
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8083
+    targetPort: 8083
+  selector:
+    app: matchup-service

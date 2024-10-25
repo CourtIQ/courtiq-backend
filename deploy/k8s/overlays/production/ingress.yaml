@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: court-iq-ingress
+  namespace: court-iq
+  annotations:
+    networking.gke.io/managed-certificates: "court-iq-cert"
+spec:
+  rules:
+  - host: api.court-iq.com
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 80

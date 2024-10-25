@@ -8,7 +8,11 @@ COPY package*.json ./
 RUN npm install && npm update && \
     apk add --no-cache curl
 
+# Copy everything except node_modules
 COPY . .
+
+# Ensure the service account file has correct permissions if it exists
+RUN chmod 600 firebase-service-account.json || true
 
 EXPOSE 4000
 
