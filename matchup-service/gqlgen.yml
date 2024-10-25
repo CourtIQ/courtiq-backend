@@ -7,13 +7,11 @@ exec:
   filename: graph/generated.go
   package: graph
 
-# Uncomment to enable federation
+# Uncomment to enable federation (adjust as needed)
 federation:
   filename: graph/federation.go
   package: graph
   version: 2
-  options:
-    computed_requires: true
 
 # Where should any generated models go?
 model:
@@ -26,8 +24,6 @@ resolver:
   dir: graph/resolvers
   package: resolvers
   filename_template: "{name}.resolvers.go"
-  # Optional: turn on to not generate template comments above resolvers
-  # omit_template_comment: false
 
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
 # struct_tag: json
@@ -58,27 +54,20 @@ resolvers_always_return_pointers: false
 # return_pointers_in_unmarshalinput: false
 
 # Optional: wrap nullable input fields with Omittable
-# nullable_input_omittable: true
+nullable_input_omittable: true
 
 # Optional: set to speed up generation time by not performing a final validation pass.
-# skip_validation: true
+skip_validation: true
 
 # Optional: set to skip running `go mod tidy` when generating server code
-# skip_mod_tidy: true
-
-# Optional: if this is set to true, argument directives that
-# decorate a field with a null value will still be called.
-#
-# This enables argumment directives to not just mutate
-# argument values but to set them even if they're null.
-call_argument_directives_with_null: true
+skip_mod_tidy: true
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
- - "github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
+  - "github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 
-# This section declares type mapping between the GraphQL and go type systems
+# This section declares type mapping between the GraphQL and Go type systems
 #
 # The first line in each type will be used as defaults for resolver arguments and
 # modelgen, the others will be allowed when binding to fields. Configure them to

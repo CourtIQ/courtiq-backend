@@ -18,3 +18,7 @@ enum ShotType {
   """
   VOLLEY
 }
+
+type Query {
+  shotTypes: [ShotType!]!
+}
