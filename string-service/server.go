@@ -7,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/CourtIQ/backend-courtiq/string-service/graph"
-	"github.com/CourtIQ/backend-courtiq/string-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/string-service/graph"
+	"github.com/CourtIQ/courtiq-backend/string-service/graph/resolvers"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-module github.com/CourtIQ/backend-courtiq/string-service
+module github.com/CourtIQ/courtiq-backend/string-service
 
 go 1.23.1
 

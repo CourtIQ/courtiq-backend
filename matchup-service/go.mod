@@ -1,4 +1,4 @@
-module github.com/CourtIQ/backend-courtiq/matchup-service
+module github.com/CourtIQ/courtiq-backend/matchup-service
 
 go 1.23.1
 

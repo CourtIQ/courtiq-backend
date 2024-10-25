@@ -7,7 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/CourtIQ/backend-courtiq/matchup-service/graph"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 )
 
 func main() {
