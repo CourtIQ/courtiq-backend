@@ -1,0 +1,5 @@
+type Health @key(fields: "service") {
+    service: String!
+    status: HealthStatus!
+    timestamp: String!
+}

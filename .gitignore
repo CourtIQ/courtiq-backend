@@ -1,0 +1,50 @@
+# Common OS Files
+.DS_Store
+Thumbs.db
+
+# Node.js (for api-gateway service)
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+
+# Go Build Artifacts
+**/*.exe
+**/*.exe~
+**/*.dll
+**/*.so
+**/*.dylib
+**/*.test
+**/dist/
+bin/
+*.out
+*.a
+
+# Docker
+*.log
+.dockerignore
+
+# Kubernetes
+k8s/*.secret.yaml
+k8s/secrets.yaml
+k8s/configmaps.yaml
+*.tpl  # Template files if you’re using any templating
+
+# Config and Secrets (general)
+config.mk
+secrets/
+.env
+
+# Logs and Cache Files
+**/logs/
+**/*.log
+.cache/
+tmp/
+.temp/
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
