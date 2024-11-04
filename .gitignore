@@ -22,6 +22,7 @@ bin/
 
 # Docker
 *.log
+docker-compose.override.yml
 .dockerignore
 
 # Kubernetes
