@@ -1,0 +1,146 @@
+{
+  "app": {
+    "name": "court-iq",
+    "domain": "court-iq.com"
+  },
+  "services": {
+    "api_gateway": {
+      "name": "api-gateway",
+      "port": 3000,
+      "internal_port": 3000,
+      "graphql_path": "/graphql",
+      "env_variables": {
+        "development": {
+          "NODE_ENV": "development",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "debug"
+        },
+        "staging": {
+          "NODE_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "info"
+        },
+        "production": {
+          "NODE_ENV": "production",
+          "GRAPHQL_PLAYGROUND": false,
+          "LOG_LEVEL": "warn"
+        }
+      }
+    },
+    "user_service": {
+      "name": "user-service",
+      "port": 8081,
+      "internal_port": 8080,
+      "graphql_path": "/graphql",
+      "env_variables": {
+        "development": {
+          "GO_ENV": "development",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "debug",
+          "GIN_MODE": "debug"
+        },
+        "staging": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "info",
+          "GIN_MODE": "release"
+        },
+        "production": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": false,
+          "LOG_LEVEL": "warn",
+          "GIN_MODE": "release"
+        }
+      }
+    },
+    "relationship_service": {
+      "name": "relationship-service",
+      "port": 8082,
+      "internal_port": 8080,
+      "graphql_path": "/graphql",
+      "env_variables": {
+        "development": {
+          "GO_ENV": "development",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "debug",
+          "GIN_MODE": "debug"
+        },
+        "staging": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "info",
+          "GIN_MODE": "release"
+        },
+        "production": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": false,
+          "LOG_LEVEL": "warn",
+          "GIN_MODE": "release"
+        }
+      }
+    },
+    "matchup_service": {
+      "name": "matchup-service",
+      "port": 8083,
+      "internal_port": 8080,
+      "graphql_path": "/graphql",
+      "env_variables": {
+        "development": {
+          "GO_ENV": "development",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "debug",
+          "GIN_MODE": "debug"
+        },
+        "staging": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "info",
+          "GIN_MODE": "release"
+        },
+        "production": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": false,
+          "LOG_LEVEL": "warn",
+          "GIN_MODE": "release"
+        }
+      }
+    },
+    "equipment_service": {
+      "name": "equipment-service",
+      "port": 8084,
+      "internal_port": 8080,
+      "graphql_path": "/graphql",
+      "env_variables": {
+        "development": {
+          "GO_ENV": "development",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "debug",
+          "GIN_MODE": "debug"
+        },
+        "staging": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "info",
+          "GIN_MODE": "release"
+        },
+        "production": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": false,
+          "LOG_LEVEL": "warn",
+          "GIN_MODE": "release"
+        }
+      }
+    }
+  },
+  "environments": {
+    "development": {
+      "base_url": "http://localhost"
+    },
+    "staging": {
+      "base_url": "https://staging-{service}.court-iq.com"
+    },
+    "production": {
+      "base_url": "https://{service}.court-iq.com"
+    }
+  }
+}

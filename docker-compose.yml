@@ -1,0 +1,61 @@
+version: '3.9'
+
+services:
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    env_file:
+      - ./api-gateway/.env
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"  # Use default 3000 if PORT is not set
+    networks:
+      - court-iq-network
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./user-service/.env
+    ports:
+      - "${PORT:-8081}:${INTERNAL_PORT:-8080}"  # Use 8081:8080 as default
+    networks:
+      - court-iq-network
+
+  relationship-service:
+    build:
+      context: ./relationship-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./relationship-service/.env
+    ports:
+      - "${PORT:-8082}:${INTERNAL_PORT:-8080}"
+    networks:
+      - court-iq-network
+
+  matchup-service:
+    build:
+      context: ./matchup-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./matchup-service/.env
+    ports:
+      - "${PORT:-8083}:${INTERNAL_PORT:-8080}"
+    networks:
+      - court-iq-network
+
+  equipment-service:
+    build:
+      context: ./equipment-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./equipment-service/.env
+    ports:
+      - "${PORT:-8084}:${INTERNAL_PORT:-8080}"
+    networks:
+      - court-iq-network
+
+networks:
+  court-iq-network:
+    driver: bridge
