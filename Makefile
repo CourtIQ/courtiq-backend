@@ -12,7 +12,7 @@ TS_NODE := $(NODE_BIN)/ts-node
 YELLOW := \033[1;33m
 GREEN := \033[1;32m
 RED := \033[1;31m
-NC := \033[0m # No Color
+NC := \033[0m
 
 # Logging functions
 define log
