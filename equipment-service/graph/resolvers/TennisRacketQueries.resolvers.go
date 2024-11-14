@@ -6,21 +6,20 @@ package resolvers
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
 )
 
-// HealthCheck is the resolver for the healthCheck field.
-func (r *queryResolver) HealthCheck(ctx context.Context) (*model.Health, error) {
-	status := model.HealthStatusHealthy
+// MyRackets is the resolver for the myRackets field.
+func (r *queryResolver) MyRackets(ctx context.Context) ([]*model.TennisRacket, error) {
+	panic(fmt.Errorf("not implemented: MyRackets - myRackets"))
+}
 
-	return &model.Health{
-		Service:   "equipment-service",
-		Status:    status,
-		Timestamp: time.Now().Format(time.RFC3339),
-	}, nil
+// GetTennisRacketByID is the resolver for the getTennisRacketById field.
+func (r *queryResolver) GetTennisRacketByID(ctx context.Context, id string) (*model.TennisRacket, error) {
+	panic(fmt.Errorf("not implemented: GetTennisRacketByID - getTennisRacketById"))
 }
 
 // Query returns graph.QueryResolver implementation.

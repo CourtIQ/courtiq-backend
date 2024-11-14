@@ -1,0 +1,5 @@
+input MatchUpFormatInput {
+    numberOfSets: NumberOfSets!
+    setFormat: SetFormatInput!
+    finalSetFormat: SetFormatInput
+}

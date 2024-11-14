@@ -153,21 +153,59 @@ func (ec *executionContext) resolveEntity(
 	}()
 
 	switch typeName {
-	case "Health":
-		resolverName, err := entityResolverNameForHealth(ctx, rep)
+	case "Equipment":
+		resolverName, err := entityResolverNameForEquipment(ctx, rep)
 		if err != nil {
-			return nil, fmt.Errorf(`finding resolver for Entity "Health": %w`, err)
+			return nil, fmt.Errorf(`finding resolver for Entity "Equipment": %w`, err)
 		}
 		switch resolverName {
 
-		case "findHealthByService":
-			id0, err := ec.unmarshalNString2string(ctx, rep["service"])
+		case "findEquipmentByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
 			if err != nil {
-				return nil, fmt.Errorf(`unmarshalling param 0 for findHealthByService(): %w`, err)
+				return nil, fmt.Errorf(`unmarshalling param 0 for findEquipmentByID(): %w`, err)
 			}
-			entity, err := ec.resolvers.Entity().FindHealthByService(ctx, id0)
+			entity, err := ec.resolvers.Entity().FindEquipmentByID(ctx, id0)
 			if err != nil {
-				return nil, fmt.Errorf(`resolving Entity "Health": %w`, err)
+				return nil, fmt.Errorf(`resolving Entity "Equipment": %w`, err)
+			}
+
+			return entity, nil
+		}
+	case "TennisRacket":
+		resolverName, err := entityResolverNameForTennisRacket(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "TennisRacket": %w`, err)
+		}
+		switch resolverName {
+
+		case "findTennisRacketByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findTennisRacketByID(): %w`, err)
+			}
+			entity, err := ec.resolvers.Entity().FindTennisRacketByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "TennisRacket": %w`, err)
+			}
+
+			return entity, nil
+		}
+	case "TennisString":
+		resolverName, err := entityResolverNameForTennisString(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "TennisString": %w`, err)
+		}
+		switch resolverName {
+
+		case "findTennisStringByID":
+			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findTennisStringByID(): %w`, err)
+			}
+			entity, err := ec.resolvers.Entity().FindTennisStringByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "TennisString": %w`, err)
 			}
 
 			return entity, nil
@@ -198,7 +236,7 @@ func (ec *executionContext) resolveManyEntities(
 	}
 }
 
-func entityResolverNameForHealth(ctx context.Context, rep EntityRepresentation) (string, error) {
+func entityResolverNameForEquipment(ctx context.Context, rep EntityRepresentation) (string, error) {
 	for {
 		var (
 			m   EntityRepresentation
@@ -210,7 +248,7 @@ func entityResolverNameForHealth(ctx context.Context, rep EntityRepresentation) 
 		// we shouldn't use use it
 		allNull := true
 		m = rep
-		val, ok = m["service"]
+		val, ok = m["id"]
 		if !ok {
 			break
 		}
@@ -220,7 +258,61 @@ func entityResolverNameForHealth(ctx context.Context, rep EntityRepresentation) 
 		if allNull {
 			break
 		}
-		return "findHealthByService", nil
+		return "findEquipmentByID", nil
 	}
-	return "", fmt.Errorf("%w for Health", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for Equipment", ErrTypeNotFound)
+}
+
+func entityResolverNameForTennisRacket(ctx context.Context, rep EntityRepresentation) (string, error) {
+	for {
+		var (
+			m   EntityRepresentation
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			break
+		}
+		return "findTennisRacketByID", nil
+	}
+	return "", fmt.Errorf("%w for TennisRacket", ErrTypeNotFound)
+}
+
+func entityResolverNameForTennisString(ctx context.Context, rep EntityRepresentation) (string, error) {
+	for {
+		var (
+			m   EntityRepresentation
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			break
+		}
+		return "findTennisStringByID", nil
+	}
+	return "", fmt.Errorf("%w for TennisString", ErrTypeNotFound)
 }

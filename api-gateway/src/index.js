@@ -84,8 +84,8 @@ async function startServer() {
 
     const { url } = await startStandaloneServer(server, {
       context: async ({ req }) => {
-        // If no auth header is present, use the generated token
-        const token = req.headers.authorization || `Bearer ${idToken}`;
+        // Check for the authorization header and forward it only if it exists
+        const token = req.headers.authorization || null;
         return { token };
       },
       listen: { port: parseInt(process.env.PORT || '80') },

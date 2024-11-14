@@ -1,0 +1,20 @@
+# graph/schema/types/MatchUpFormat.gql
+type MatchUpFormat {
+    id: ID!
+    numberOfSets: NumberOfSets!
+    setFormat: SetFormat!
+    finalSetFormat: SetFormat
+}
+
+type SetFormat {
+    numberOfGames: NumberOfGames!
+    deuceType: DeuceType!
+    mustWinByTwo: Boolean!
+    tiebreakFormat: TiebreakFormat
+    tiebreakAt: Int
+}
+
+type TiebreakFormat {
+    points: TiebreakPoints!
+    mustWinByTwo: Boolean!
+}

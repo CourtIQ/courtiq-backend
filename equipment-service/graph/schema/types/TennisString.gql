@@ -1,0 +1,14 @@
+# Tennis String Type
+type TennisString implements Equipment @key(fields: "id") {
+    # Interface fields must come first and match exactly
+    id: ID!
+    userId: ID!
+    name: String!
+    type: EquipmentType!
+
+    # String-specific fields
+    gauge: StringGauge
+    tension: StringTension
+    stringingDate: DateTime
+    burstDate: DateTime
+}

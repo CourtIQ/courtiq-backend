@@ -1,0 +1,4 @@
+type StringTension {
+    mains: Int       # Tension for the mains
+    crosses: Int     # Tension for the crosses
+}

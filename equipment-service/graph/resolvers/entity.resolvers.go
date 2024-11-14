@@ -12,9 +12,19 @@ import (
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
 )
 
-// FindHealthByService is the resolver for the findHealthByService field.
-func (r *entityResolver) FindHealthByService(ctx context.Context, service string) (*model.Health, error) {
-	panic(fmt.Errorf("not implemented: FindHealthByService - findHealthByService"))
+// FindEquipmentByID is the resolver for the findEquipmentByID field.
+func (r *entityResolver) FindEquipmentByID(ctx context.Context, id string) (model.Equipment, error) {
+	panic(fmt.Errorf("not implemented: FindEquipmentByID - findEquipmentByID"))
+}
+
+// FindTennisRacketByID is the resolver for the findTennisRacketByID field.
+func (r *entityResolver) FindTennisRacketByID(ctx context.Context, id string) (*model.TennisRacket, error) {
+	panic(fmt.Errorf("not implemented: FindTennisRacketByID - findTennisRacketByID"))
+}
+
+// FindTennisStringByID is the resolver for the findTennisStringByID field.
+func (r *entityResolver) FindTennisStringByID(ctx context.Context, id string) (*model.TennisString, error) {
+	panic(fmt.Errorf("not implemented: FindTennisStringByID - findTennisStringByID"))
 }
 
 // Entity returns graph.EntityResolver implementation.

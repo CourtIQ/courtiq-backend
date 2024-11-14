@@ -8,6 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"matchup-service/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -15,7 +16,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -40,7 +40,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
-	Entity() EntityResolver
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -48,20 +48,35 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Entity struct {
-		FindHealthByService func(childComplexity int, service string) int
+	MatchUpFormat struct {
+		FinalSetFormat func(childComplexity int) int
+		ID             func(childComplexity int) int
+		NumberOfSets   func(childComplexity int) int
+		SetFormat      func(childComplexity int) int
 	}
 
-	Health struct {
-		Service   func(childComplexity int) int
-		Status    func(childComplexity int) int
-		Timestamp func(childComplexity int) int
+	Mutation struct {
+		Empty func(childComplexity int) int
 	}
 
 	Query struct {
-		HealthCheck        func(childComplexity int) int
-		__resolve__service func(childComplexity int) int
-		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
+		DefaultMatchUpFormats func(childComplexity int) int
+		Empty                 func(childComplexity int) int
+		MatchUpFormat         func(childComplexity int, id string) int
+		__resolve__service    func(childComplexity int) int
+	}
+
+	SetFormat struct {
+		DeuceType      func(childComplexity int) int
+		MustWinByTwo   func(childComplexity int) int
+		NumberOfGames  func(childComplexity int) int
+		TiebreakAt     func(childComplexity int) int
+		TiebreakFormat func(childComplexity int) int
+	}
+
+	TiebreakFormat struct {
+		MustWinByTwo func(childComplexity int) int
+		Points       func(childComplexity int) int
 	}
 
 	_Service struct {
@@ -69,11 +84,13 @@ type ComplexityRoot struct {
 	}
 }
 
-type EntityResolver interface {
-	FindHealthByService(ctx context.Context, service string) (*model.Health, error)
+type MutationResolver interface {
+	Empty(ctx context.Context) (*string, error)
 }
 type QueryResolver interface {
-	HealthCheck(ctx context.Context) (*model.Health, error)
+	Empty(ctx context.Context) (*string, error)
+	MatchUpFormat(ctx context.Context, id string) (*model.MatchUpFormat, error)
+	DefaultMatchUpFormats(ctx context.Context) ([]*model.MatchUpFormat, error)
 }
 
 type executableSchema struct {
@@ -95,45 +112,66 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Entity.findHealthByService":
-		if e.complexity.Entity.FindHealthByService == nil {
+	case "MatchUpFormat.finalSetFormat":
+		if e.complexity.MatchUpFormat.FinalSetFormat == nil {
 			break
 		}
 
-		args, err := ec.field_Entity_findHealthByService_args(context.TODO(), rawArgs)
+		return e.complexity.MatchUpFormat.FinalSetFormat(childComplexity), true
+
+	case "MatchUpFormat.id":
+		if e.complexity.MatchUpFormat.ID == nil {
+			break
+		}
+
+		return e.complexity.MatchUpFormat.ID(childComplexity), true
+
+	case "MatchUpFormat.numberOfSets":
+		if e.complexity.MatchUpFormat.NumberOfSets == nil {
+			break
+		}
+
+		return e.complexity.MatchUpFormat.NumberOfSets(childComplexity), true
+
+	case "MatchUpFormat.setFormat":
+		if e.complexity.MatchUpFormat.SetFormat == nil {
+			break
+		}
+
+		return e.complexity.MatchUpFormat.SetFormat(childComplexity), true
+
+	case "Mutation._empty":
+		if e.complexity.Mutation.Empty == nil {
+			break
+		}
+
+		return e.complexity.Mutation.Empty(childComplexity), true
+
+	case "Query.defaultMatchUpFormats":
+		if e.complexity.Query.DefaultMatchUpFormats == nil {
+			break
+		}
+
+		return e.complexity.Query.DefaultMatchUpFormats(childComplexity), true
+
+	case "Query._empty":
+		if e.complexity.Query.Empty == nil {
+			break
+		}
+
+		return e.complexity.Query.Empty(childComplexity), true
+
+	case "Query.matchUpFormat":
+		if e.complexity.Query.MatchUpFormat == nil {
+			break
+		}
+
+		args, err := ec.field_Query_matchUpFormat_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Entity.FindHealthByService(childComplexity, args["service"].(string)), true
-
-	case "Health.service":
-		if e.complexity.Health.Service == nil {
-			break
-		}
-
-		return e.complexity.Health.Service(childComplexity), true
-
-	case "Health.status":
-		if e.complexity.Health.Status == nil {
-			break
-		}
-
-		return e.complexity.Health.Status(childComplexity), true
-
-	case "Health.timestamp":
-		if e.complexity.Health.Timestamp == nil {
-			break
-		}
-
-		return e.complexity.Health.Timestamp(childComplexity), true
-
-	case "Query.healthCheck":
-		if e.complexity.Query.HealthCheck == nil {
-			break
-		}
-
-		return e.complexity.Query.HealthCheck(childComplexity), true
+		return e.complexity.Query.MatchUpFormat(childComplexity, args["id"].(string)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -142,17 +180,54 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.__resolve__service(childComplexity), true
 
-	case "Query._entities":
-		if e.complexity.Query.__resolve_entities == nil {
+	case "SetFormat.deuceType":
+		if e.complexity.SetFormat.DeuceType == nil {
 			break
 		}
 
-		args, err := ec.field_Query__entities_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
+		return e.complexity.SetFormat.DeuceType(childComplexity), true
+
+	case "SetFormat.mustWinByTwo":
+		if e.complexity.SetFormat.MustWinByTwo == nil {
+			break
 		}
 
-		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
+		return e.complexity.SetFormat.MustWinByTwo(childComplexity), true
+
+	case "SetFormat.numberOfGames":
+		if e.complexity.SetFormat.NumberOfGames == nil {
+			break
+		}
+
+		return e.complexity.SetFormat.NumberOfGames(childComplexity), true
+
+	case "SetFormat.tiebreakAt":
+		if e.complexity.SetFormat.TiebreakAt == nil {
+			break
+		}
+
+		return e.complexity.SetFormat.TiebreakAt(childComplexity), true
+
+	case "SetFormat.tiebreakFormat":
+		if e.complexity.SetFormat.TiebreakFormat == nil {
+			break
+		}
+
+		return e.complexity.SetFormat.TiebreakFormat(childComplexity), true
+
+	case "TiebreakFormat.mustWinByTwo":
+		if e.complexity.TiebreakFormat.MustWinByTwo == nil {
+			break
+		}
+
+		return e.complexity.TiebreakFormat.MustWinByTwo(childComplexity), true
+
+	case "TiebreakFormat.points":
+		if e.complexity.TiebreakFormat.Points == nil {
+			break
+		}
+
+		return e.complexity.TiebreakFormat.Points(childComplexity), true
 
 	case "_Service.sdl":
 		if e.complexity._Service.SDL == nil {
@@ -166,12 +241,16 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 }
 
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
-	rc := graphql.GetOperationContext(ctx)
-	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	opCtx := graphql.GetOperationContext(ctx)
+	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputMatchUpFormatInput,
+		ec.unmarshalInputSetFormatInput,
+		ec.unmarshalInputTiebreakFormatInput,
+	)
 	first := true
 
-	switch rc.Operation.Operation {
+	switch opCtx.Operation.Operation {
 	case ast.Query:
 		return func(ctx context.Context) *graphql.Response {
 			var response graphql.Response
@@ -179,7 +258,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			if first {
 				first = false
 				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-				data = ec._Query(ctx, rc.Operation.SelectionSet)
+				data = ec._Query(ctx, opCtx.Operation.SelectionSet)
 			} else {
 				if atomic.LoadInt32(&ec.pendingDeferred) > 0 {
 					result := <-ec.deferredResults
@@ -201,6 +280,21 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 
 			return &response
+		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
+			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
 		}
 
 	default:
@@ -249,7 +343,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/healthStatus.gql" "schema/queries/healthCheck.gql" "schema/types/health.gql"
+//go:embed "schema/enums/DeuceType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PointWinReason.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/SetFormatInput.gql" "schema/inputs/TiebreakFormatInput.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/schema.gql" "schema/types/MatchUpFormat.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -261,9 +355,18 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
-	{Name: "schema/enums/healthStatus.gql", Input: sourceData("schema/enums/healthStatus.gql"), BuiltIn: false},
-	{Name: "schema/queries/healthCheck.gql", Input: sourceData("schema/queries/healthCheck.gql"), BuiltIn: false},
-	{Name: "schema/types/health.gql", Input: sourceData("schema/types/health.gql"), BuiltIn: false},
+	{Name: "schema/enums/DeuceType.gql", Input: sourceData("schema/enums/DeuceType.gql"), BuiltIn: false},
+	{Name: "schema/enums/MatchUpStatus.gql", Input: sourceData("schema/enums/MatchUpStatus.gql"), BuiltIn: false},
+	{Name: "schema/enums/NumberOfGames.gql", Input: sourceData("schema/enums/NumberOfGames.gql"), BuiltIn: false},
+	{Name: "schema/enums/NumberOfSets.gql", Input: sourceData("schema/enums/NumberOfSets.gql"), BuiltIn: false},
+	{Name: "schema/enums/PointWinReason.gql", Input: sourceData("schema/enums/PointWinReason.gql"), BuiltIn: false},
+	{Name: "schema/enums/TiebreakPoints.gql", Input: sourceData("schema/enums/TiebreakPoints.gql"), BuiltIn: false},
+	{Name: "schema/inputs/MatchUpFormatInput.gql", Input: sourceData("schema/inputs/MatchUpFormatInput.gql"), BuiltIn: false},
+	{Name: "schema/inputs/SetFormatInput.gql", Input: sourceData("schema/inputs/SetFormatInput.gql"), BuiltIn: false},
+	{Name: "schema/inputs/TiebreakFormatInput.gql", Input: sourceData("schema/inputs/TiebreakFormatInput.gql"), BuiltIn: false},
+	{Name: "schema/queries/MatchUpFormatQueries.gql", Input: sourceData("schema/queries/MatchUpFormatQueries.gql"), BuiltIn: false},
+	{Name: "schema/schema.gql", Input: sourceData("schema/schema.gql"), BuiltIn: false},
+	{Name: "schema/types/MatchUpFormat.gql", Input: sourceData("schema/types/MatchUpFormat.gql"), BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA
@@ -316,20 +419,11 @@ var sources = []*ast.Source{
 	scalar federation__Scope
 `, BuiltIn: true},
 	{Name: "../federation/entity.graphql", Input: `
-# a union of all types that use the @key directive
-union _Entity = Health
-
-# fake type to build resolver interfaces for users to implement
-type Entity {
-	findHealthByService(service: String!,): Health!
-}
-
 type _Service {
   sdl: String
 }
 
 extend type Query {
-  _entities(representations: [_Any!]!): [_Entity]!
   _service: _Service!
 }
 `, BuiltIn: true},
@@ -339,29 +433,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Entity_findHealthByService_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Entity_findHealthByService_argsService(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["service"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Entity_findHealthByService_argsService(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("service"))
-	if tmp, ok := rawArgs["service"]; ok {
-		return ec.unmarshalNString2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -386,26 +457,26 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_matchUpFormat_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query__entities_argsRepresentations(ctx, rawArgs)
+	arg0, err := ec.field_Query_matchUpFormat_argsID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["representations"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query__entities_argsRepresentations(
+func (ec *executionContext) field_Query_matchUpFormat_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) ([]map[string]interface{}, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("representations"))
-	if tmp, ok := rawArgs["representations"]; ok {
-		return ec.unmarshalN_Any2ᚕmapᚄ(ctx, tmp)
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
-	var zeroVal []map[string]interface{}
+	var zeroVal string
 	return zeroVal, nil
 }
 
@@ -463,8 +534,8 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Entity_findHealthByService(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Entity_findHealthByService(ctx, field)
+func (ec *executionContext) _MatchUpFormat_id(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpFormat_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -477,70 +548,7 @@ func (ec *executionContext) _Entity_findHealthByService(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Entity().FindHealthByService(rctx, fc.Args["service"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Health)
-	fc.Result = res
-	return ec.marshalNHealth2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealth(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Entity_findHealthByService(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Entity",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "service":
-				return ec.fieldContext_Health_service(ctx, field)
-			case "status":
-				return ec.fieldContext_Health_status(ctx, field)
-			case "timestamp":
-				return ec.fieldContext_Health_timestamp(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Health", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Entity_findHealthByService_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Health_service(ctx context.Context, field graphql.CollectedField, obj *model.Health) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Health_service(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Service, nil
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -554,15 +562,209 @@ func (ec *executionContext) _Health_service(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Health_service(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MatchUpFormat_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Health",
+		Object:     "MatchUpFormat",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpFormat_numberOfSets(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpFormat_numberOfSets(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NumberOfSets, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.NumberOfSets)
+	fc.Result = res
+	return ec.marshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpFormat_numberOfSets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type NumberOfSets does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpFormat_setFormat(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpFormat_setFormat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SetFormat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.SetFormat)
+	fc.Result = res
+	return ec.marshalNSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpFormat_setFormat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "numberOfGames":
+				return ec.fieldContext_SetFormat_numberOfGames(ctx, field)
+			case "deuceType":
+				return ec.fieldContext_SetFormat_deuceType(ctx, field)
+			case "mustWinByTwo":
+				return ec.fieldContext_SetFormat_mustWinByTwo(ctx, field)
+			case "tiebreakFormat":
+				return ec.fieldContext_SetFormat_tiebreakFormat(ctx, field)
+			case "tiebreakAt":
+				return ec.fieldContext_SetFormat_tiebreakAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SetFormat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpFormat_finalSetFormat(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpFormat_finalSetFormat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FinalSetFormat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.SetFormat)
+	fc.Result = res
+	return ec.marshalOSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpFormat_finalSetFormat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "numberOfGames":
+				return ec.fieldContext_SetFormat_numberOfGames(ctx, field)
+			case "deuceType":
+				return ec.fieldContext_SetFormat_deuceType(ctx, field)
+			case "mustWinByTwo":
+				return ec.fieldContext_SetFormat_mustWinByTwo(ctx, field)
+			case "tiebreakFormat":
+				return ec.fieldContext_SetFormat_tiebreakFormat(ctx, field)
+			case "tiebreakAt":
+				return ec.fieldContext_SetFormat_tiebreakAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type SetFormat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation__empty(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation__empty(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Empty(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation__empty(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -570,8 +772,8 @@ func (ec *executionContext) fieldContext_Health_service(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Health_status(ctx context.Context, field graphql.CollectedField, obj *model.Health) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Health_status(ctx, field)
+func (ec *executionContext) _Query__empty(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query__empty(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -584,73 +786,26 @@ func (ec *executionContext) _Health_status(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Status, nil
+		return ec.resolvers.Query().Empty(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(model.HealthStatus)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNHealthStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealthStatus(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Health_status(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query__empty(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Health",
+		Object:     "Query",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type HealthStatus does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Health_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.Health) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Health_timestamp(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Timestamp, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Health_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Health",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -658,8 +813,8 @@ func (ec *executionContext) fieldContext_Health_timestamp(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_healthCheck(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_healthCheck(ctx, field)
+func (ec *executionContext) _Query_matchUpFormat(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_matchUpFormat(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -672,7 +827,7 @@ func (ec *executionContext) _Query_healthCheck(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().HealthCheck(rctx)
+		return ec.resolvers.Query().MatchUpFormat(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -684,12 +839,12 @@ func (ec *executionContext) _Query_healthCheck(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Health)
+	res := resTmp.(*model.MatchUpFormat)
 	fc.Result = res
-	return ec.marshalNHealth2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealth(ctx, field.Selections, res)
+	return ec.marshalNMatchUpFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_healthCheck(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_matchUpFormat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -697,58 +852,16 @@ func (ec *executionContext) fieldContext_Query_healthCheck(_ context.Context, fi
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "service":
-				return ec.fieldContext_Health_service(ctx, field)
-			case "status":
-				return ec.fieldContext_Health_status(ctx, field)
-			case "timestamp":
-				return ec.fieldContext_Health_timestamp(ctx, field)
+			case "id":
+				return ec.fieldContext_MatchUpFormat_id(ctx, field)
+			case "numberOfSets":
+				return ec.fieldContext_MatchUpFormat_numberOfSets(ctx, field)
+			case "setFormat":
+				return ec.fieldContext_MatchUpFormat_setFormat(ctx, field)
+			case "finalSetFormat":
+				return ec.fieldContext_MatchUpFormat_finalSetFormat(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Health", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query__entities(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.__resolve_entities(ctx, fc.Args["representations"].([]map[string]interface{})), nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]fedruntime.Entity)
-	fc.Result = res
-	return ec.marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query__entities(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type _Entity does not have child fields")
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpFormat", field.Name)
 		},
 	}
 	defer func() {
@@ -758,9 +871,63 @@ func (ec *executionContext) fieldContext_Query__entities(ctx context.Context, fi
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query__entities_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_matchUpFormat_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_defaultMatchUpFormats(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_defaultMatchUpFormats(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().DefaultMatchUpFormats(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.MatchUpFormat)
+	fc.Result = res
+	return ec.marshalNMatchUpFormat2ᚕᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_defaultMatchUpFormats(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MatchUpFormat_id(ctx, field)
+			case "numberOfSets":
+				return ec.fieldContext_MatchUpFormat_numberOfSets(ctx, field)
+			case "setFormat":
+				return ec.fieldContext_MatchUpFormat_setFormat(ctx, field)
+			case "finalSetFormat":
+				return ec.fieldContext_MatchUpFormat_finalSetFormat(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpFormat", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -937,6 +1104,314 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SetFormat_numberOfGames(ctx context.Context, field graphql.CollectedField, obj *model.SetFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetFormat_numberOfGames(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NumberOfGames, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.NumberOfGames)
+	fc.Result = res
+	return ec.marshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetFormat_numberOfGames(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type NumberOfGames does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SetFormat_deuceType(ctx context.Context, field graphql.CollectedField, obj *model.SetFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetFormat_deuceType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeuceType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.DeuceType)
+	fc.Result = res
+	return ec.marshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetFormat_deuceType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DeuceType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SetFormat_mustWinByTwo(ctx context.Context, field graphql.CollectedField, obj *model.SetFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetFormat_mustWinByTwo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MustWinByTwo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetFormat_mustWinByTwo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SetFormat_tiebreakFormat(ctx context.Context, field graphql.CollectedField, obj *model.SetFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetFormat_tiebreakFormat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TiebreakFormat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TiebreakFormat)
+	fc.Result = res
+	return ec.marshalOTiebreakFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetFormat_tiebreakFormat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "points":
+				return ec.fieldContext_TiebreakFormat_points(ctx, field)
+			case "mustWinByTwo":
+				return ec.fieldContext_TiebreakFormat_mustWinByTwo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TiebreakFormat", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SetFormat_tiebreakAt(ctx context.Context, field graphql.CollectedField, obj *model.SetFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SetFormat_tiebreakAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TiebreakAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SetFormat_tiebreakAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SetFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TiebreakFormat_points(ctx context.Context, field graphql.CollectedField, obj *model.TiebreakFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TiebreakFormat_points(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Points, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.TiebreakPoints)
+	fc.Result = res
+	return ec.marshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TiebreakFormat_points(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TiebreakFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TiebreakPoints does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TiebreakFormat_mustWinByTwo(ctx context.Context, field graphql.CollectedField, obj *model.TiebreakFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TiebreakFormat_mustWinByTwo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.MustWinByTwo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TiebreakFormat_mustWinByTwo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TiebreakFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2756,71 +3231,172 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context, obj interface{}) (model.MatchUpFormatInput, error) {
+	var it model.MatchUpFormatInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"numberOfSets", "setFormat", "finalSetFormat"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "numberOfSets":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numberOfSets"))
+			data, err := ec.unmarshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NumberOfSets = data
+		case "setFormat":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("setFormat"))
+			data, err := ec.unmarshalNSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SetFormat = data
+		case "finalSetFormat":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("finalSetFormat"))
+			data, err := ec.unmarshalOSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FinalSetFormat = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, obj interface{}) (model.SetFormatInput, error) {
+	var it model.SetFormatInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"numberOfGames", "deuceType", "mustWinByTwo", "tiebreakFormat", "tiebreakAt"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "numberOfGames":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numberOfGames"))
+			data, err := ec.unmarshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NumberOfGames = data
+		case "deuceType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deuceType"))
+			data, err := ec.unmarshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DeuceType = data
+		case "mustWinByTwo":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mustWinByTwo"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MustWinByTwo = data
+		case "tiebreakFormat":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tiebreakFormat"))
+			data, err := ec.unmarshalOTiebreakFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TiebreakFormat = data
+		case "tiebreakAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tiebreakAt"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TiebreakAt = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTiebreakFormatInput(ctx context.Context, obj interface{}) (model.TiebreakFormatInput, error) {
+	var it model.TiebreakFormatInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"points", "mustWinByTwo"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "points":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("points"))
+			data, err := ec.unmarshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Points = data
+		case "mustWinByTwo":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mustWinByTwo"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MustWinByTwo = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
-
-func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, obj fedruntime.Entity) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case model.Health:
-		return ec._Health(ctx, sel, &obj)
-	case *model.Health:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._Health(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
 
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
 
-var entityImplementors = []string{"Entity"}
+var matchUpFormatImplementors = []string{"MatchUpFormat"}
 
-func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, entityImplementors)
-	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
-		Object: "Entity",
-	})
+func (ec *executionContext) _MatchUpFormat(ctx context.Context, sel ast.SelectionSet, obj *model.MatchUpFormat) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, matchUpFormatImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
-		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
-			Object: field.Name,
-			Field:  field,
-		})
-
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Entity")
-		case "findHealthByService":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Entity_findHealthByService(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
+			out.Values[i] = graphql.MarshalString("MatchUpFormat")
+		case "id":
+			out.Values[i] = ec._MatchUpFormat_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "numberOfSets":
+			out.Values[i] = ec._MatchUpFormat_numberOfSets(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
 			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "setFormat":
+			out.Values[i] = ec._MatchUpFormat_setFormat(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "finalSetFormat":
+			out.Values[i] = ec._MatchUpFormat_finalSetFormat(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2844,32 +3420,29 @@ func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) g
 	return out
 }
 
-var healthImplementors = []string{"Health", "_Entity"}
+var mutationImplementors = []string{"Mutation"}
 
-func (ec *executionContext) _Health(ctx context.Context, sel ast.SelectionSet, obj *model.Health) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, healthImplementors)
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
+		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
+			Object: field.Name,
+			Field:  field,
+		})
+
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Health")
-		case "service":
-			out.Values[i] = ec._Health_service(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "status":
-			out.Values[i] = ec._Health_status(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "timestamp":
-			out.Values[i] = ec._Health_timestamp(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "_empty":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation__empty(ctx, field)
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2912,7 +3485,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "healthCheck":
+		case "_empty":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query__empty(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "matchUpFormat":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -2921,7 +3513,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_healthCheck(ctx, field)
+				res = ec._Query_matchUpFormat(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -2934,7 +3526,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "_entities":
+		case "defaultMatchUpFormats":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -2943,7 +3535,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query__entities(ctx, field)
+				res = ec._Query_defaultMatchUpFormats(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -2986,6 +3578,103 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var setFormatImplementors = []string{"SetFormat"}
+
+func (ec *executionContext) _SetFormat(ctx context.Context, sel ast.SelectionSet, obj *model.SetFormat) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, setFormatImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SetFormat")
+		case "numberOfGames":
+			out.Values[i] = ec._SetFormat_numberOfGames(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "deuceType":
+			out.Values[i] = ec._SetFormat_deuceType(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "mustWinByTwo":
+			out.Values[i] = ec._SetFormat_mustWinByTwo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "tiebreakFormat":
+			out.Values[i] = ec._SetFormat_tiebreakFormat(ctx, field, obj)
+		case "tiebreakAt":
+			out.Values[i] = ec._SetFormat_tiebreakAt(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tiebreakFormatImplementors = []string{"TiebreakFormat"}
+
+func (ec *executionContext) _TiebreakFormat(ctx context.Context, sel ast.SelectionSet, obj *model.TiebreakFormat) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tiebreakFormatImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TiebreakFormat")
+		case "points":
+			out.Values[i] = ec._TiebreakFormat_points(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "mustWinByTwo":
+			out.Values[i] = ec._TiebreakFormat_mustWinByTwo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3386,6 +4075,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, v interface{}) (model.DeuceType, error) {
+	var res model.DeuceType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, sel ast.SelectionSet, v model.DeuceType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNFieldSet2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3401,37 +4100,13 @@ func (ec *executionContext) marshalNFieldSet2string(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalNHealth2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealth(ctx context.Context, sel ast.SelectionSet, v model.Health) graphql.Marshaler {
-	return ec._Health(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNHealth2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealth(ctx context.Context, sel ast.SelectionSet, v *model.Health) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Health(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNHealthStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealthStatus(ctx context.Context, v interface{}) (model.HealthStatus, error) {
-	var res model.HealthStatus
-	err := res.UnmarshalGQL(v)
+func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNHealthStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐHealthStatus(ctx context.Context, sel ast.SelectionSet, v model.HealthStatus) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
+func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -3440,60 +4115,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalN_Any2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
-	res, err := graphql.UnmarshalMap(v)
-	return res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) marshalNMatchUpFormat2matchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx context.Context, sel ast.SelectionSet, v model.MatchUpFormat) graphql.Marshaler {
+	return ec._MatchUpFormat(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalN_Any2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	res := graphql.MarshalMap(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalN_Any2ᚕmapᚄ(ctx context.Context, v interface{}) ([]map[string]interface{}, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]map[string]interface{}, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalN_Any2map(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalN_Any2ᚕmapᚄ(ctx context.Context, sel ast.SelectionSet, v []map[string]interface{}) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalN_Any2map(ctx, sel, v[i])
-	}
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v []fedruntime.Entity) graphql.Marshaler {
+func (ec *executionContext) marshalNMatchUpFormat2ᚕᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.MatchUpFormat) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3517,7 +4143,7 @@ func (ec *executionContext) marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, sel, v[i])
+			ret[i] = ec.marshalNMatchUpFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3528,7 +4154,83 @@ func (ec *executionContext) marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgen
 	}
 	wg.Wait()
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
+}
+
+func (ec *executionContext) marshalNMatchUpFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx context.Context, sel ast.SelectionSet, v *model.MatchUpFormat) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MatchUpFormat(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, v interface{}) (model.NumberOfGames, error) {
+	var res model.NumberOfGames
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, sel ast.SelectionSet, v model.NumberOfGames) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, v interface{}) (model.NumberOfSets, error) {
+	var res model.NumberOfSets
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, sel ast.SelectionSet, v model.NumberOfSets) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._SetFormat(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
+	res, err := ec.unmarshalInputSetFormatInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, v interface{}) (model.TiebreakPoints, error) {
+	var res model.TiebreakPoints
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, sel ast.SelectionSet, v model.TiebreakPoints) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx context.Context, sel ast.SelectionSet, v fedruntime.Service) graphql.Marshaler {
@@ -3972,6 +4674,37 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
+	return res
+}
+
+func (ec *executionContext) marshalOSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SetFormat(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSetFormatInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4036,11 +4769,19 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {
+func (ec *executionContext) marshalOTiebreakFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx context.Context, sel ast.SelectionSet, v *model.TiebreakFormat) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec.__Entity(ctx, sel, v)
+	return ec._TiebreakFormat(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTiebreakFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx context.Context, v interface{}) (*model.TiebreakFormatInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTiebreakFormatInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

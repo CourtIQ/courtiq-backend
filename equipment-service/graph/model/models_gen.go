@@ -6,58 +6,178 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
 
-type Health struct {
-	Service   string       `json:"service"`
-	Status    HealthStatus `json:"status"`
-	Timestamp string       `json:"timestamp"`
+type Equipment interface {
+	IsEntity()
+	IsEquipment()
+	GetID() string
+	GetUserID() string
+	GetName() string
+	GetType() EquipmentType
 }
 
-func (Health) IsEntity() {}
+type Mutation struct {
+}
 
 type Query struct {
 }
 
-type HealthStatus string
-
-const (
-	HealthStatusHealthy   HealthStatus = "HEALTHY"
-	HealthStatusUnhealthy HealthStatus = "UNHEALTHY"
-	HealthStatusDegraded  HealthStatus = "DEGRADED"
-)
-
-var AllHealthStatus = []HealthStatus{
-	HealthStatusHealthy,
-	HealthStatusUnhealthy,
-	HealthStatusDegraded,
+type StringTension struct {
+	Mains   *int `json:"mains,omitempty"`
+	Crosses *int `json:"crosses,omitempty"`
 }
 
-func (e HealthStatus) IsValid() bool {
+type StringTensionInput struct {
+	Mains   *int `json:"mains,omitempty"`
+	Crosses *int `json:"crosses,omitempty"`
+}
+
+type TennisRacket struct {
+	ID            string        `json:"id"`
+	UserID        string        `json:"userId"`
+	Name          string        `json:"name"`
+	Type          EquipmentType `json:"type"`
+	HeadSize      *int          `json:"headSize,omitempty"`
+	Balance       *string       `json:"balance,omitempty"`
+	StringPattern *string       `json:"stringPattern,omitempty"`
+	Weight        *int          `json:"weight,omitempty"`
+	Length        *float64      `json:"length,omitempty"`
+}
+
+func (TennisRacket) IsEquipment()                {}
+func (this TennisRacket) GetID() string          { return this.ID }
+func (this TennisRacket) GetUserID() string      { return this.UserID }
+func (this TennisRacket) GetName() string        { return this.Name }
+func (this TennisRacket) GetType() EquipmentType { return this.Type }
+
+func (TennisRacket) IsEntity() {}
+
+type TennisRacketInput struct {
+	Name          string   `json:"name"`
+	HeadSize      *int     `json:"headSize,omitempty"`
+	Balance       *string  `json:"balance,omitempty"`
+	StringPattern *string  `json:"stringPattern,omitempty"`
+	Weight        *int     `json:"weight,omitempty"`
+	Length        *float64 `json:"length,omitempty"`
+}
+
+type TennisString struct {
+	ID            string         `json:"id"`
+	UserID        string         `json:"userId"`
+	Name          string         `json:"name"`
+	Type          EquipmentType  `json:"type"`
+	Gauge         *StringGauge   `json:"gauge,omitempty"`
+	Tension       *StringTension `json:"tension,omitempty"`
+	StringingDate *time.Time     `json:"stringingDate,omitempty"`
+	BurstDate     *time.Time     `json:"burstDate,omitempty"`
+}
+
+func (TennisString) IsEquipment()                {}
+func (this TennisString) GetID() string          { return this.ID }
+func (this TennisString) GetUserID() string      { return this.UserID }
+func (this TennisString) GetName() string        { return this.Name }
+func (this TennisString) GetType() EquipmentType { return this.Type }
+
+func (TennisString) IsEntity() {}
+
+type TennisStringInput struct {
+	Name          string              `json:"name"`
+	Gauge         *StringGauge        `json:"gauge,omitempty"`
+	StringingDate *time.Time          `json:"stringingDate,omitempty"`
+	BurstDate     *time.Time          `json:"burstDate,omitempty"`
+	Tension       *StringTensionInput `json:"tension,omitempty"`
+}
+
+type EquipmentType string
+
+const (
+	EquipmentTypeTennisRacket EquipmentType = "TENNIS_RACKET"
+	EquipmentTypeTennisString EquipmentType = "TENNIS_STRING"
+)
+
+var AllEquipmentType = []EquipmentType{
+	EquipmentTypeTennisRacket,
+	EquipmentTypeTennisString,
+}
+
+func (e EquipmentType) IsValid() bool {
 	switch e {
-	case HealthStatusHealthy, HealthStatusUnhealthy, HealthStatusDegraded:
+	case EquipmentTypeTennisRacket, EquipmentTypeTennisString:
 		return true
 	}
 	return false
 }
 
-func (e HealthStatus) String() string {
+func (e EquipmentType) String() string {
 	return string(e)
 }
 
-func (e *HealthStatus) UnmarshalGQL(v interface{}) error {
+func (e *EquipmentType) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = HealthStatus(str)
+	*e = EquipmentType(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid HealthStatus", str)
+		return fmt.Errorf("%s is not a valid EquipmentType", str)
 	}
 	return nil
 }
 
-func (e HealthStatus) MarshalGQL(w io.Writer) {
+func (e EquipmentType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type StringGauge string
+
+const (
+	StringGaugeGauge15  StringGauge = "GAUGE_15"
+	StringGaugeGauge15l StringGauge = "GAUGE_15L"
+	StringGaugeGauge16  StringGauge = "GAUGE_16"
+	StringGaugeGauge16l StringGauge = "GAUGE_16L"
+	StringGaugeGauge17  StringGauge = "GAUGE_17"
+	StringGaugeGauge18  StringGauge = "GAUGE_18"
+	StringGaugeGauge19  StringGauge = "GAUGE_19"
+)
+
+var AllStringGauge = []StringGauge{
+	StringGaugeGauge15,
+	StringGaugeGauge15l,
+	StringGaugeGauge16,
+	StringGaugeGauge16l,
+	StringGaugeGauge17,
+	StringGaugeGauge18,
+	StringGaugeGauge19,
+}
+
+func (e StringGauge) IsValid() bool {
+	switch e {
+	case StringGaugeGauge15, StringGaugeGauge15l, StringGaugeGauge16, StringGaugeGauge16l, StringGaugeGauge17, StringGaugeGauge18, StringGaugeGauge19:
+		return true
+	}
+	return false
+}
+
+func (e StringGauge) String() string {
+	return string(e)
+}
+
+func (e *StringGauge) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = StringGauge(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid StringGauge", str)
+	}
+	return nil
+}
+
+func (e StringGauge) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

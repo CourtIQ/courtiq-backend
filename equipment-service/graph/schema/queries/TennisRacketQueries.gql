@@ -1,0 +1,4 @@
+extend type Query {
+    myRackets: [TennisRacket!]!
+    getTennisRacketById(id: ID!): TennisRacket
+}

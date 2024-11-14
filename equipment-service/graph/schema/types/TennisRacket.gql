@@ -1,0 +1,15 @@
+# Tennis Racket Type
+type TennisRacket implements Equipment @key(fields: "id") {
+    # Interface fields must come first and match exactly
+    id: ID!
+    userId: ID!
+    name: String!
+    type: EquipmentType!
+
+    # Racket-specific fields
+    headSize: Int
+    balance: String
+    stringPattern: String
+    weight: Int
+    length: Float
+}

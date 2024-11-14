@@ -1,0 +1,8 @@
+
+input SetFormatInput {
+    numberOfGames: NumberOfGames!
+    deuceType: DeuceType!
+    mustWinByTwo: Boolean!
+    tiebreakFormat: TiebreakFormatInput
+    tiebreakAt: Int
+}

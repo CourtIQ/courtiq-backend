@@ -8,56 +8,351 @@ import (
 	"strconv"
 )
 
-type Health struct {
-	Service   string       `json:"service"`
-	Status    HealthStatus `json:"status"`
-	Timestamp string       `json:"timestamp"`
+type MatchUpFormat struct {
+	ID             string       `json:"id"`
+	NumberOfSets   NumberOfSets `json:"numberOfSets"`
+	SetFormat      *SetFormat   `json:"setFormat"`
+	FinalSetFormat *SetFormat   `json:"finalSetFormat,omitempty"`
 }
 
-func (Health) IsEntity() {}
+type MatchUpFormatInput struct {
+	NumberOfSets   NumberOfSets    `json:"numberOfSets"`
+	SetFormat      *SetFormatInput `json:"setFormat"`
+	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty"`
+}
+
+type Mutation struct {
+}
 
 type Query struct {
 }
 
-type HealthStatus string
-
-const (
-	HealthStatusHealthy   HealthStatus = "HEALTHY"
-	HealthStatusUnhealthy HealthStatus = "UNHEALTHY"
-	HealthStatusDegraded  HealthStatus = "DEGRADED"
-)
-
-var AllHealthStatus = []HealthStatus{
-	HealthStatusHealthy,
-	HealthStatusUnhealthy,
-	HealthStatusDegraded,
+type SetFormat struct {
+	NumberOfGames  NumberOfGames   `json:"numberOfGames"`
+	DeuceType      DeuceType       `json:"deuceType"`
+	MustWinByTwo   bool            `json:"mustWinByTwo"`
+	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty"`
+	TiebreakAt     *int            `json:"tiebreakAt,omitempty"`
 }
 
-func (e HealthStatus) IsValid() bool {
+type SetFormatInput struct {
+	NumberOfGames  NumberOfGames        `json:"numberOfGames"`
+	DeuceType      DeuceType            `json:"deuceType"`
+	MustWinByTwo   bool                 `json:"mustWinByTwo"`
+	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty"`
+	TiebreakAt     *int                 `json:"tiebreakAt,omitempty"`
+}
+
+type TiebreakFormat struct {
+	Points       TiebreakPoints `json:"points"`
+	MustWinByTwo bool           `json:"mustWinByTwo"`
+}
+
+type TiebreakFormatInput struct {
+	Points       TiebreakPoints `json:"points"`
+	MustWinByTwo bool           `json:"mustWinByTwo"`
+}
+
+type DeuceType string
+
+const (
+	DeuceTypeSuddenDeath DeuceType = "SUDDEN_DEATH"
+	DeuceTypeNormalDeuce DeuceType = "NORMAL_DEUCE"
+	DeuceTypeOneDeuce    DeuceType = "ONE_DEUCE"
+)
+
+var AllDeuceType = []DeuceType{
+	DeuceTypeSuddenDeath,
+	DeuceTypeNormalDeuce,
+	DeuceTypeOneDeuce,
+}
+
+func (e DeuceType) IsValid() bool {
 	switch e {
-	case HealthStatusHealthy, HealthStatusUnhealthy, HealthStatusDegraded:
+	case DeuceTypeSuddenDeath, DeuceTypeNormalDeuce, DeuceTypeOneDeuce:
 		return true
 	}
 	return false
 }
 
-func (e HealthStatus) String() string {
+func (e DeuceType) String() string {
 	return string(e)
 }
 
-func (e *HealthStatus) UnmarshalGQL(v interface{}) error {
+func (e *DeuceType) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = HealthStatus(str)
+	*e = DeuceType(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid HealthStatus", str)
+		return fmt.Errorf("%s is not a valid DeuceType", str)
 	}
 	return nil
 }
 
-func (e HealthStatus) MarshalGQL(w io.Writer) {
+func (e DeuceType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type MatchStatus string
+
+const (
+	MatchStatusScheduled  MatchStatus = "SCHEDULED"
+	MatchStatusInProgress MatchStatus = "IN_PROGRESS"
+	MatchStatusCompleted  MatchStatus = "COMPLETED"
+	MatchStatusSuspended  MatchStatus = "SUSPENDED"
+	MatchStatusCancelled  MatchStatus = "CANCELLED"
+	MatchStatusAbandoned  MatchStatus = "ABANDONED"
+	MatchStatusRetired    MatchStatus = "RETIRED"
+	MatchStatusWalkover   MatchStatus = "WALKOVER"
+	MatchStatusNotPlayed  MatchStatus = "NOT_PLAYED"
+)
+
+var AllMatchStatus = []MatchStatus{
+	MatchStatusScheduled,
+	MatchStatusInProgress,
+	MatchStatusCompleted,
+	MatchStatusSuspended,
+	MatchStatusCancelled,
+	MatchStatusAbandoned,
+	MatchStatusRetired,
+	MatchStatusWalkover,
+	MatchStatusNotPlayed,
+}
+
+func (e MatchStatus) IsValid() bool {
+	switch e {
+	case MatchStatusScheduled, MatchStatusInProgress, MatchStatusCompleted, MatchStatusSuspended, MatchStatusCancelled, MatchStatusAbandoned, MatchStatusRetired, MatchStatusWalkover, MatchStatusNotPlayed:
+		return true
+	}
+	return false
+}
+
+func (e MatchStatus) String() string {
+	return string(e)
+}
+
+func (e *MatchStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MatchStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MatchStatus", str)
+	}
+	return nil
+}
+
+func (e MatchStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type NumberOfGames string
+
+const (
+	NumberOfGamesOne   NumberOfGames = "ONE"
+	NumberOfGamesTwo   NumberOfGames = "TWO"
+	NumberOfGamesThree NumberOfGames = "THREE"
+	NumberOfGamesFour  NumberOfGames = "FOUR"
+	NumberOfGamesFive  NumberOfGames = "FIVE"
+	NumberOfGamesSix   NumberOfGames = "SIX"
+	NumberOfGamesSeven NumberOfGames = "SEVEN"
+	NumberOfGamesEight NumberOfGames = "EIGHT"
+	NumberOfGamesNine  NumberOfGames = "NINE"
+	NumberOfGamesTen   NumberOfGames = "TEN"
+)
+
+var AllNumberOfGames = []NumberOfGames{
+	NumberOfGamesOne,
+	NumberOfGamesTwo,
+	NumberOfGamesThree,
+	NumberOfGamesFour,
+	NumberOfGamesFive,
+	NumberOfGamesSix,
+	NumberOfGamesSeven,
+	NumberOfGamesEight,
+	NumberOfGamesNine,
+	NumberOfGamesTen,
+}
+
+func (e NumberOfGames) IsValid() bool {
+	switch e {
+	case NumberOfGamesOne, NumberOfGamesTwo, NumberOfGamesThree, NumberOfGamesFour, NumberOfGamesFive, NumberOfGamesSix, NumberOfGamesSeven, NumberOfGamesEight, NumberOfGamesNine, NumberOfGamesTen:
+		return true
+	}
+	return false
+}
+
+func (e NumberOfGames) String() string {
+	return string(e)
+}
+
+func (e *NumberOfGames) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NumberOfGames(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NumberOfGames", str)
+	}
+	return nil
+}
+
+func (e NumberOfGames) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type NumberOfSets string
+
+const (
+	NumberOfSetsOne   NumberOfSets = "ONE"
+	NumberOfSetsThree NumberOfSets = "THREE"
+	NumberOfSetsFive  NumberOfSets = "FIVE"
+)
+
+var AllNumberOfSets = []NumberOfSets{
+	NumberOfSetsOne,
+	NumberOfSetsThree,
+	NumberOfSetsFive,
+}
+
+func (e NumberOfSets) IsValid() bool {
+	switch e {
+	case NumberOfSetsOne, NumberOfSetsThree, NumberOfSetsFive:
+		return true
+	}
+	return false
+}
+
+func (e NumberOfSets) String() string {
+	return string(e)
+}
+
+func (e *NumberOfSets) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NumberOfSets(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NumberOfSets", str)
+	}
+	return nil
+}
+
+func (e NumberOfSets) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type PointWinReason string
+
+const (
+	PointWinReasonAce           PointWinReason = "ACE"
+	PointWinReasonWinner        PointWinReason = "WINNER"
+	PointWinReasonForcedError   PointWinReason = "FORCED_ERROR"
+	PointWinReasonUnforcedError PointWinReason = "UNFORCED_ERROR"
+	PointWinReasonError         PointWinReason = "ERROR"
+	PointWinReasonDoubleFault   PointWinReason = "DOUBLE_FAULT"
+)
+
+var AllPointWinReason = []PointWinReason{
+	PointWinReasonAce,
+	PointWinReasonWinner,
+	PointWinReasonForcedError,
+	PointWinReasonUnforcedError,
+	PointWinReasonError,
+	PointWinReasonDoubleFault,
+}
+
+func (e PointWinReason) IsValid() bool {
+	switch e {
+	case PointWinReasonAce, PointWinReasonWinner, PointWinReasonForcedError, PointWinReasonUnforcedError, PointWinReasonError, PointWinReasonDoubleFault:
+		return true
+	}
+	return false
+}
+
+func (e PointWinReason) String() string {
+	return string(e)
+}
+
+func (e *PointWinReason) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PointWinReason(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PointWinReason", str)
+	}
+	return nil
+}
+
+func (e PointWinReason) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type TiebreakPoints string
+
+const (
+	TiebreakPointsOne   TiebreakPoints = "ONE"
+	TiebreakPointsTwo   TiebreakPoints = "TWO"
+	TiebreakPointsThree TiebreakPoints = "THREE"
+	TiebreakPointsFour  TiebreakPoints = "FOUR"
+	TiebreakPointsFive  TiebreakPoints = "FIVE"
+	TiebreakPointsSix   TiebreakPoints = "SIX"
+	TiebreakPointsSeven TiebreakPoints = "SEVEN"
+	TiebreakPointsEight TiebreakPoints = "EIGHT"
+	TiebreakPointsNine  TiebreakPoints = "NINE"
+	TiebreakPointsTen   TiebreakPoints = "TEN"
+)
+
+var AllTiebreakPoints = []TiebreakPoints{
+	TiebreakPointsOne,
+	TiebreakPointsTwo,
+	TiebreakPointsThree,
+	TiebreakPointsFour,
+	TiebreakPointsFive,
+	TiebreakPointsSix,
+	TiebreakPointsSeven,
+	TiebreakPointsEight,
+	TiebreakPointsNine,
+	TiebreakPointsTen,
+}
+
+func (e TiebreakPoints) IsValid() bool {
+	switch e {
+	case TiebreakPointsOne, TiebreakPointsTwo, TiebreakPointsThree, TiebreakPointsFour, TiebreakPointsFive, TiebreakPointsSix, TiebreakPointsSeven, TiebreakPointsEight, TiebreakPointsNine, TiebreakPointsTen:
+		return true
+	}
+	return false
+}
+
+func (e TiebreakPoints) String() string {
+	return string(e)
+}
+
+func (e *TiebreakPoints) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TiebreakPoints(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TiebreakPoints", str)
+	}
+	return nil
+}
+
+func (e TiebreakPoints) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

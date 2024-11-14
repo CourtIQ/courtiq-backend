@@ -1,0 +1,12 @@
+
+enum MatchStatus {
+    SCHEDULED
+    IN_PROGRESS
+    COMPLETED
+    SUSPENDED
+    CANCELLED
+    ABANDONED
+    RETIRED
+    WALKOVER
+    NOT_PLAYED
+}

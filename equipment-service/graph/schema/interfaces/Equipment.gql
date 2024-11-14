@@ -1,0 +1,7 @@
+# Equipment Interface
+interface Equipment @key(fields: "id") {
+    id: ID!                 # Unique identifier for equipment
+    userId: ID!             # Owner's ID
+    name: String!           # Equipment name (required)
+    type: EquipmentType!    # Equipment type (TENNIS_STRING, TENNIS_RACKET, etc.)
+}

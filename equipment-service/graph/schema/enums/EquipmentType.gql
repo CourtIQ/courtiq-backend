@@ -1,0 +1,4 @@
+enum EquipmentType {
+    TENNIS_RACKET  # Placeholder for future implementation
+    TENNIS_STRING  # Currently implemented type
+}

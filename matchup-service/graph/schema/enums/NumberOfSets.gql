@@ -1,0 +1,6 @@
+# graph/schema/enums/NumberOfSets.gql
+enum NumberOfSets {
+    ONE       # Single Set
+    THREE     # Best of 3
+    FIVE      # Best of 5
+}

@@ -1,0 +1,9 @@
+enum StringGauge {
+    GAUGE_15     # Thick (~1.41-1.49 mm)
+    GAUGE_15L    # Thick (~1.34-1.40 mm)
+    GAUGE_16     # Medium (~1.26-1.33 mm)
+    GAUGE_16L    # Medium (~1.22-1.26 mm)
+    GAUGE_17     # Thin (~1.20-1.25 mm)
+    GAUGE_18     # Very Thin (~1.10-1.20 mm)
+    GAUGE_19     # Ultra Thin (~1.00-1.10 mm)
+}

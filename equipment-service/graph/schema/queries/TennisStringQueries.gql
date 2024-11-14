@@ -1,0 +1,4 @@
+extend type Query {
+    myStrings: [TennisString!]!
+    getTennisStringById(id: ID!): TennisString
+}

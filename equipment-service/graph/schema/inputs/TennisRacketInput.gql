@@ -1,0 +1,8 @@
+input TennisRacketInput {
+    name: String!
+    headSize: Int           # Head size in square inches
+    balance: String         # Balance point description (e.g., "Even", "Head Light")
+    stringPattern: String   # String pattern (e.g., "16x19", "18x20")
+    weight: Int             # Weight of the racket in grams
+    length: Float           # Length of the racket in inches (typically between 27 and 29 inches)
+}
