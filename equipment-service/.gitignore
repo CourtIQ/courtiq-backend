@@ -1,5 +1,5 @@
 # Go Build Files
-/user-service
+/equipment-service
 **/*.test
 *.out
 *.a

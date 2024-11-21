@@ -4,68 +4,21 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/user-service/configs"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
+	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
 	"github.com/gin-gonic/gin"
 )
 
-type Config struct {
-	Port              int
-	Environment       string
-	LogLevel          string
-	GinMode           string
-	PlaygroundEnabled bool
-}
-
-func loadConfig() *Config {
-	// Load port with fallback
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		port = 8080 // Default internal port from config
-	}
-
-	// Parse playground setting
-	playgroundEnabled := false
-	if playground := os.Getenv("GRAPHQL_PLAYGROUND"); playground == "true" {
-		playgroundEnabled = true
-	}
-
-	return &Config{
-		Port:              port,
-		Environment:       os.Getenv("GO_ENV"),
-		LogLevel:          os.Getenv("LOG_LEVEL"),
-		GinMode:           os.Getenv("GIN_MODE"),
-		PlaygroundEnabled: playgroundEnabled,
-	}
-}
-
-func setupLogging(config *Config) {
-	// Configure logging based on environment
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	// You could add more sophisticated logging setup here
-	switch config.LogLevel {
-	case "debug":
-		log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
-	case "info":
-		log.SetFlags(log.LstdFlags)
-	case "warn":
-		log.SetFlags(log.LstdFlags)
-	default:
-		log.SetFlags(log.LstdFlags)
-	}
-}
-
 func main() {
 	// Load configuration from environment
-	config := loadConfig()
+	config := configs.LoadConfig()
 
 	// Setup logging
-	setupLogging(config)
+	configs.SetupLogging(config)
 
 	// Set Gin mode
 	gin.SetMode(config.GinMode)

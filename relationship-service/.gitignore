@@ -1,5 +1,5 @@
 # Go Build Files
-/user-service
+/relationship-service
 **/*.test
 *.out
 *.a
