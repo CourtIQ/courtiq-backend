@@ -1,0 +1,8 @@
+extend type Query {
+    getFriendship(id: ID!): Friendship
+    getFriendships(input: FriendshipsInput!): [Friendship!]!
+    getPendingFriendRequests(userId: ID!): [Friendship!]!
+    getSentFriendRequests(userId: ID!): [Friendship!]!
+    getMutualFriends(user1Id: ID!, user2Id: ID!): [User!]!
+    checkFriendshipStatus(user1Id: ID!, user2Id: ID!): Friendship
+}

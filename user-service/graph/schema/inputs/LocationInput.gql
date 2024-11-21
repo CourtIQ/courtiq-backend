@@ -1,0 +1,13 @@
+
+input LocationInput {
+    """Name of the city."""
+    city: String
+    """Name of the state or province."""
+    state: String
+    """Name of the country."""
+    country: String
+    """Geographical latitude coordinate."""
+    latitude: Float
+    """Geographical longitude coordinate."""
+    longitude: Float
+}

@@ -7,6 +7,8 @@ type TennisString implements Equipment @key(fields: "id") {
     type: EquipmentType!
 
     # String-specific fields
+    brand: String
+    model: String
     gauge: StringGauge
     tension: StringTension
     stringingDate: DateTime

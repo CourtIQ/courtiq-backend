@@ -2,4 +2,5 @@ extend type Mutation {
     addTennisRacket(input: TennisRacketInput!): TennisRacket
     updateTennisRacket(id: ID!, input: TennisRacketInput!): TennisRacket
     deleteTennisRacket(id: ID!): Boolean
+    setCurrentRacket(id: ID!): TennisRacket!
 }

@@ -1,0 +1,4 @@
+extend type Mutation {
+  """Returns the updated `User` object."""
+  updateUser(input: UpdateUserInput!): User
+}

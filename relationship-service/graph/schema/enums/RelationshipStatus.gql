@@ -1,0 +1,6 @@
+enum RelationshipStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  ENDED
+}

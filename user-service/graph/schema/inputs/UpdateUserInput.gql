@@ -1,0 +1,19 @@
+
+input UpdateUserInput {
+    """User's first name."""
+    firstName: String
+    """User's last name."""
+    lastName: String
+    """User's chosen display name or username."""
+    displayName: String
+    """URL to the user's profile picture."""
+    profilePicture: String
+    """User's date of birth."""
+    dateOfBirth: Time
+    """Short biography or description provided by the user."""
+    bio: String
+    """User's rating within the app."""
+    rating: Int
+    """User's geographical location."""
+    location: LocationInput
+}

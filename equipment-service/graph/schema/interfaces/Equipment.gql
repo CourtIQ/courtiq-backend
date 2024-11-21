@@ -4,4 +4,6 @@ interface Equipment @key(fields: "id") {
     userId: ID!             # Owner's ID
     name: String!           # Equipment name (required)
     type: EquipmentType!    # Equipment type (TENNIS_STRING, TENNIS_RACKET, etc.)
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }

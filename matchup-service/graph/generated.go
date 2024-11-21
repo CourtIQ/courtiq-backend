@@ -8,7 +8,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"matchup-service/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -16,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/99designs/gqlgen/plugin/federation/fedruntime"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -60,10 +60,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		DefaultMatchUpFormats func(childComplexity int) int
-		Empty                 func(childComplexity int) int
-		MatchUpFormat         func(childComplexity int, id string) int
-		__resolve__service    func(childComplexity int) int
+		Empty              func(childComplexity int) int
+		__resolve__service func(childComplexity int) int
 	}
 
 	SetFormat struct {
@@ -89,8 +87,6 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Empty(ctx context.Context) (*string, error)
-	MatchUpFormat(ctx context.Context, id string) (*model.MatchUpFormat, error)
-	DefaultMatchUpFormats(ctx context.Context) ([]*model.MatchUpFormat, error)
 }
 
 type executableSchema struct {
@@ -147,31 +143,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Empty(childComplexity), true
 
-	case "Query.defaultMatchUpFormats":
-		if e.complexity.Query.DefaultMatchUpFormats == nil {
-			break
-		}
-
-		return e.complexity.Query.DefaultMatchUpFormats(childComplexity), true
-
 	case "Query._empty":
 		if e.complexity.Query.Empty == nil {
 			break
 		}
 
 		return e.complexity.Query.Empty(childComplexity), true
-
-	case "Query.matchUpFormat":
-		if e.complexity.Query.MatchUpFormat == nil {
-			break
-		}
-
-		args, err := ec.field_Query_matchUpFormat_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.MatchUpFormat(childComplexity, args["id"].(string)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -241,8 +218,8 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 }
 
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
-	opCtx := graphql.GetOperationContext(ctx)
-	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
+	rc := graphql.GetOperationContext(ctx)
+	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputMatchUpFormatInput,
 		ec.unmarshalInputSetFormatInput,
@@ -250,7 +227,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	)
 	first := true
 
-	switch opCtx.Operation.Operation {
+	switch rc.Operation.Operation {
 	case ast.Query:
 		return func(ctx context.Context) *graphql.Response {
 			var response graphql.Response
@@ -258,7 +235,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			if first {
 				first = false
 				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-				data = ec._Query(ctx, opCtx.Operation.SelectionSet)
+				data = ec._Query(ctx, rc.Operation.SelectionSet)
 			} else {
 				if atomic.LoadInt32(&ec.pendingDeferred) > 0 {
 					result := <-ec.deferredResults
@@ -288,7 +265,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 			first = false
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
+			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 
@@ -457,29 +434,6 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_matchUpFormat_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_matchUpFormat_argsID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["id"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Query_matchUpFormat_argsID(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -606,7 +560,7 @@ func (ec *executionContext) _MatchUpFormat_numberOfSets(ctx context.Context, fie
 	}
 	res := resTmp.(model.NumberOfSets)
 	fc.Result = res
-	return ec.marshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, field.Selections, res)
+	return ec.marshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUpFormat_numberOfSets(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -650,7 +604,7 @@ func (ec *executionContext) _MatchUpFormat_setFormat(ctx context.Context, field 
 	}
 	res := resTmp.(*model.SetFormat)
 	fc.Result = res
-	return ec.marshalNSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx, field.Selections, res)
+	return ec.marshalNSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUpFormat_setFormat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -703,7 +657,7 @@ func (ec *executionContext) _MatchUpFormat_finalSetFormat(ctx context.Context, f
 	}
 	res := resTmp.(*model.SetFormat)
 	fc.Result = res
-	return ec.marshalOSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx, field.Selections, res)
+	return ec.marshalOSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUpFormat_finalSetFormat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -808,125 +762,6 @@ func (ec *executionContext) fieldContext_Query__empty(_ context.Context, field g
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_matchUpFormat(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_matchUpFormat(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MatchUpFormat(rctx, fc.Args["id"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.MatchUpFormat)
-	fc.Result = res
-	return ec.marshalNMatchUpFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_matchUpFormat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_MatchUpFormat_id(ctx, field)
-			case "numberOfSets":
-				return ec.fieldContext_MatchUpFormat_numberOfSets(ctx, field)
-			case "setFormat":
-				return ec.fieldContext_MatchUpFormat_setFormat(ctx, field)
-			case "finalSetFormat":
-				return ec.fieldContext_MatchUpFormat_finalSetFormat(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MatchUpFormat", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_matchUpFormat_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_defaultMatchUpFormats(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_defaultMatchUpFormats(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().DefaultMatchUpFormats(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.MatchUpFormat)
-	fc.Result = res
-	return ec.marshalNMatchUpFormat2ᚕᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_defaultMatchUpFormats(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_MatchUpFormat_id(ctx, field)
-			case "numberOfSets":
-				return ec.fieldContext_MatchUpFormat_numberOfSets(ctx, field)
-			case "setFormat":
-				return ec.fieldContext_MatchUpFormat_setFormat(ctx, field)
-			case "finalSetFormat":
-				return ec.fieldContext_MatchUpFormat_finalSetFormat(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type MatchUpFormat", field.Name)
 		},
 	}
 	return fc, nil
@@ -1137,7 +972,7 @@ func (ec *executionContext) _SetFormat_numberOfGames(ctx context.Context, field 
 	}
 	res := resTmp.(model.NumberOfGames)
 	fc.Result = res
-	return ec.marshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx, field.Selections, res)
+	return ec.marshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SetFormat_numberOfGames(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1181,7 +1016,7 @@ func (ec *executionContext) _SetFormat_deuceType(ctx context.Context, field grap
 	}
 	res := resTmp.(model.DeuceType)
 	fc.Result = res
-	return ec.marshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx, field.Selections, res)
+	return ec.marshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SetFormat_deuceType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1266,7 +1101,7 @@ func (ec *executionContext) _SetFormat_tiebreakFormat(ctx context.Context, field
 	}
 	res := resTmp.(*model.TiebreakFormat)
 	fc.Result = res
-	return ec.marshalOTiebreakFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx, field.Selections, res)
+	return ec.marshalOTiebreakFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SetFormat_tiebreakFormat(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1357,7 +1192,7 @@ func (ec *executionContext) _TiebreakFormat_points(ctx context.Context, field gr
 	}
 	res := resTmp.(model.TiebreakPoints)
 	fc.Result = res
-	return ec.marshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx, field.Selections, res)
+	return ec.marshalNTiebreakPoints2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TiebreakFormat_points(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3247,21 +3082,21 @@ func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context
 		switch k {
 		case "numberOfSets":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numberOfSets"))
-			data, err := ec.unmarshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, v)
+			data, err := ec.unmarshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.NumberOfSets = data
 		case "setFormat":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("setFormat"))
-			data, err := ec.unmarshalNSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx, v)
+			data, err := ec.unmarshalNSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.SetFormat = data
 		case "finalSetFormat":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("finalSetFormat"))
-			data, err := ec.unmarshalOSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx, v)
+			data, err := ec.unmarshalOSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3288,14 +3123,14 @@ func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, ob
 		switch k {
 		case "numberOfGames":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numberOfGames"))
-			data, err := ec.unmarshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx, v)
+			data, err := ec.unmarshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.NumberOfGames = data
 		case "deuceType":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deuceType"))
-			data, err := ec.unmarshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx, v)
+			data, err := ec.unmarshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3309,7 +3144,7 @@ func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, ob
 			it.MustWinByTwo = data
 		case "tiebreakFormat":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tiebreakFormat"))
-			data, err := ec.unmarshalOTiebreakFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx, v)
+			data, err := ec.unmarshalOTiebreakFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3343,7 +3178,7 @@ func (ec *executionContext) unmarshalInputTiebreakFormatInput(ctx context.Contex
 		switch k {
 		case "points":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("points"))
-			data, err := ec.unmarshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx, v)
+			data, err := ec.unmarshalNTiebreakPoints2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3495,50 +3330,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query__empty(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "matchUpFormat":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_matchUpFormat(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "defaultMatchUpFormats":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_defaultMatchUpFormats(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -4075,13 +3866,13 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, v interface{}) (model.DeuceType, error) {
+func (ec *executionContext) unmarshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, v interface{}) (model.DeuceType, error) {
 	var res model.DeuceType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDeuceType2matchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, sel ast.SelectionSet, v model.DeuceType) graphql.Marshaler {
+func (ec *executionContext) marshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, sel ast.SelectionSet, v model.DeuceType) graphql.Marshaler {
 	return v
 }
 
@@ -4115,85 +3906,27 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNMatchUpFormat2matchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx context.Context, sel ast.SelectionSet, v model.MatchUpFormat) graphql.Marshaler {
-	return ec._MatchUpFormat(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNMatchUpFormat2ᚕᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.MatchUpFormat) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNMatchUpFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNMatchUpFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormat(ctx context.Context, sel ast.SelectionSet, v *model.MatchUpFormat) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._MatchUpFormat(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, v interface{}) (model.NumberOfGames, error) {
+func (ec *executionContext) unmarshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, v interface{}) (model.NumberOfGames, error) {
 	var res model.NumberOfGames
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNumberOfGames2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, sel ast.SelectionSet, v model.NumberOfGames) graphql.Marshaler {
+func (ec *executionContext) marshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, sel ast.SelectionSet, v model.NumberOfGames) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, v interface{}) (model.NumberOfSets, error) {
+func (ec *executionContext) unmarshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, v interface{}) (model.NumberOfSets, error) {
 	var res model.NumberOfSets
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNNumberOfSets2matchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, sel ast.SelectionSet, v model.NumberOfSets) graphql.Marshaler {
+func (ec *executionContext) marshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, sel ast.SelectionSet, v model.NumberOfSets) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) marshalNSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
+func (ec *executionContext) marshalNSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -4203,7 +3936,7 @@ func (ec *executionContext) marshalNSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmod
 	return ec._SetFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
+func (ec *executionContext) unmarshalNSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
 	res, err := ec.unmarshalInputSetFormatInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4223,13 +3956,13 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, v interface{}) (model.TiebreakPoints, error) {
+func (ec *executionContext) unmarshalNTiebreakPoints2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, v interface{}) (model.TiebreakPoints, error) {
 	var res model.TiebreakPoints
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTiebreakPoints2matchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, sel ast.SelectionSet, v model.TiebreakPoints) graphql.Marshaler {
+func (ec *executionContext) marshalNTiebreakPoints2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, sel ast.SelectionSet, v model.TiebreakPoints) graphql.Marshaler {
 	return v
 }
 
@@ -4690,14 +4423,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOSetFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
+func (ec *executionContext) marshalOSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SetFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOSetFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
+func (ec *executionContext) unmarshalOSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -4769,14 +4502,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTiebreakFormat2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx context.Context, sel ast.SelectionSet, v *model.TiebreakFormat) graphql.Marshaler {
+func (ec *executionContext) marshalOTiebreakFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx context.Context, sel ast.SelectionSet, v *model.TiebreakFormat) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._TiebreakFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOTiebreakFormatInput2ᚖmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx context.Context, v interface{}) (*model.TiebreakFormatInput, error) {
+func (ec *executionContext) unmarshalOTiebreakFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx context.Context, v interface{}) (*model.TiebreakFormatInput, error) {
 	if v == nil {
 		return nil, nil
 	}

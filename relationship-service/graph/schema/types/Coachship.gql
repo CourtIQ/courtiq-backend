@@ -1,0 +1,10 @@
+type Coachship implements Relationship {
+  id: ID!
+  participantIds: [ID!]!
+  type: RelationshipType!
+  status: RelationshipStatus!
+  createdAt: String!
+  updatedAt: String
+  coachId: ID!
+  coacheeId: ID!
+}

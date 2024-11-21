@@ -1,5 +1,0 @@
-# graph/schema/queries/MatchUpFormatQueries.gql
-extend type Query {
-    matchUpFormat(id: ID!): MatchUpFormat!
-    defaultMatchUpFormats: [MatchUpFormat!]!
-}

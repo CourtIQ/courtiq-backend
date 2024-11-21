@@ -1,0 +1,7 @@
+
+input FriendshipsInput {
+    userId: ID!
+    status: RelationshipStatus
+    limit: Int
+    offset: Int
+}

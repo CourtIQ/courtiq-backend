@@ -1,0 +1,10 @@
+extend type Query {
+  me: User
+
+  """
+  Retrieves a user's profile by their unique ID.
+
+  - **id**: The unique identifier of the user to retrieve.
+  """
+  getUser(id: ID!): User
+}

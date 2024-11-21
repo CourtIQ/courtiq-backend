@@ -88,7 +88,7 @@ async function startServer() {
         const token = req.headers.authorization || null;
         return { token };
       },
-      listen: { port: parseInt(process.env.PORT || '80') },
+      listen: { port: parseInt(process.env.PORT || '3000') },
     });
 
     console.log(`

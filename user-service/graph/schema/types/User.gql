@@ -1,0 +1,29 @@
+scalar Time
+
+
+type User @key(fields: "id") {
+    """Unique identifier for the user."""
+    id: ID!
+    """User's email address. Accessible only by the user themselves."""
+    email: String!
+    """User's first name."""
+    firstName: String
+    """User's last name."""
+    lastName: String
+    """User's chosen display name or username."""
+    displayName: String
+    """URL to the user's profile picture."""
+    profilePicture: String
+    """User's date of birth."""
+    dateOfBirth: Time
+    """User's geographical location."""
+    location: Location
+    """Short biography or description provided by the user."""
+    bio: String
+    """User's rating within the app."""
+    rating: Int
+    """Timestamp when the user account was created."""
+    createdAt: Time
+    """Timestamp when the user account was last updated."""
+    updatedAt: Time
+}

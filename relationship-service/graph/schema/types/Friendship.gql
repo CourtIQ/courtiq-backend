@@ -1,0 +1,10 @@
+type Friendship implements Relationship {
+  id: ID!
+  participantIds: [ID!]!
+  type: RelationshipType!
+  status: RelationshipStatus!
+  createdAt: String!
+  updatedAt: String
+  requesterId: ID!
+  receiverId: ID!
+}

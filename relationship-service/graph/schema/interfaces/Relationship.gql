@@ -1,0 +1,9 @@
+interface Relationship {
+  id: ID!
+  participantIds: [ID!]!
+  type: RelationshipType!
+  status: RelationshipStatus!
+  createdAt: String!
+  updatedAt: String
+  metadata: RelationshipMetadata
+}

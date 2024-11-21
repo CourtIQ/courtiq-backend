@@ -8,8 +8,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
-	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
 	"github.com/gin-gonic/gin"
 )
 

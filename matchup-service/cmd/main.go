@@ -3,79 +3,45 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/configs"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/db"
+
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
-type Config struct {
-	Port              int
-	Environment       string
-	LogLevel          string
-	GinMode           string
-	PlaygroundEnabled bool
-}
-
-func loadConfig() *Config {
-	// Load port with fallback
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		port = 8080 // Default internal port from config
-	}
-
-	// Parse playground setting
-	playgroundEnabled := false
-	if playground := os.Getenv("GRAPHQL_PLAYGROUND"); playground == "true" {
-		playgroundEnabled = true
-	}
-
-	return &Config{
-		Port:              port,
-		Environment:       os.Getenv("GO_ENV"),
-		LogLevel:          os.Getenv("LOG_LEVEL"),
-		GinMode:           os.Getenv("GIN_MODE"),
-		PlaygroundEnabled: playgroundEnabled,
-	}
-}
-
-func setupLogging(config *Config) {
-	// Configure logging based on environment
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	// You could add more sophisticated logging setup here
-	switch config.LogLevel {
-	case "debug":
-		log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
-	case "info":
-		log.SetFlags(log.LstdFlags)
-	case "warn":
-		log.SetFlags(log.LstdFlags)
-	default:
-		log.SetFlags(log.LstdFlags)
-	}
-}
-
 func main() {
 	// Load configuration from environment
-	config := loadConfig()
+	config := configs.LoadConfig()
 
 	// Setup logging
-	setupLogging(config)
+	configs.SetupLogging(config)
 
 	// Set Gin mode
 	gin.SetMode(config.GinMode)
 
-	// Initialize GraphQL server
+	// Initialize MongoDB connection using config.MongoDBURL
+	// Use "matchupdb" as the database name
+	mongoDB := db.NewMongoDB(config.MongoDBURL, "courtiq-db")
+
+	// Initialize repositories and services
+	matchupRepository := repository.NewMatchupRepository(mongoDB)
+	matchupService := service.NewMatchupService(matchupRepository)
+
+	// Initialize GraphQL server with the resolved schemas and dependencies
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{},
+		Resolvers: &resolvers.Resolver{
+			MatchupService: matchupService,
+		},
 	}))
 
-	// Create router
+	// Create a Gin router
 	router := gin.New()
 
 	// Add middleware
@@ -87,20 +53,14 @@ func main() {
 	// Setup routes
 	if config.PlaygroundEnabled {
 		log.Printf("GraphQL Playground enabled at /")
-		router.GET("/", gin.WrapH(playground.Handler("GraphQL playground", "/graphql")))
+		router.GET("/", gin.WrapH(playground.Handler("GraphQL Playground", "/graphql")))
 	}
 
 	router.POST("/graphql", gin.WrapH(srv))
 
-	// Get the service name for logging
-	serviceName := os.Getenv("SERVICE_NAME")
-	if serviceName == "" {
-		serviceName = "service"
-	}
-
-	// Start server
+	// Start the server
 	address := fmt.Sprintf(":%d", config.Port)
-	log.Printf("%s running in %s mode on %s", serviceName, config.Environment, address)
+	log.Printf("%s running in %s mode on %s", config.ServiceName, config.Environment, address)
 	if config.PlaygroundEnabled {
 		log.Printf("GraphQL Playground available at http://localhost:%d", config.Port)
 	}
