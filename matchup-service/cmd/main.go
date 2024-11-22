@@ -9,10 +9,10 @@ import (
 	"github.com/CourtIQ/courtiq-backend/matchup-service/configs"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/db"
+	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/db"
 
-	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
+	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
+	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,16 +28,16 @@ func main() {
 
 	// Initialize MongoDB connection using config.MongoDBURL
 	// Use "matchupdb" as the database name
-	mongoDB := db.NewMongoDB(config.MongoDBURL, "courtiq-db")
+	// mongoDB := db.NewMongoDB(config.MongoDBURL, "courtiq-db")
 
 	// Initialize repositories and services
-	matchupRepository := repository.NewMatchupRepository(mongoDB)
-	matchupService := service.NewMatchupService(matchupRepository)
+	// matchupRepository := repository.NewMatchupRepository(mongoDB)
+	// matchupService := service.NewMatchupService(matchupRepository)
 
 	// Initialize GraphQL server with the resolved schemas and dependencies
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
-			MatchupService: matchupService,
+			// MatchupService: matchupService,
 		},
 	}))
 

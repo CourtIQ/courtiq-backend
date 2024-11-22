@@ -5,6 +5,8 @@ type TennisString implements Equipment @key(fields: "id") {
     userId: ID!
     name: String!
     type: EquipmentType!
+    createdAt: DateTime!
+    updatedAt: DateTime!
 
     # String-specific fields
     brand: String

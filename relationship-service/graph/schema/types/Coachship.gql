@@ -5,6 +5,7 @@ type Coachship implements Relationship {
   status: RelationshipStatus!
   createdAt: String!
   updatedAt: String
+  metadata: RelationshipMetadata
   coachId: ID!
   coacheeId: ID!
 }

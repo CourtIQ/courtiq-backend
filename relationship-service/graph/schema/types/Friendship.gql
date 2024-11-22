@@ -5,6 +5,8 @@ type Friendship implements Relationship {
   status: RelationshipStatus!
   createdAt: String!
   updatedAt: String
+  metadata: RelationshipMetadata
+
   requesterId: ID!
   receiverId: ID!
 }

@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/user-service/configs"
+	"github.com/CourtIQ/courtiq-backend/user-service/db"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/user-service/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,9 +25,23 @@ func main() {
 	// Set Gin mode
 	gin.SetMode(config.GinMode)
 
+	// Initialize MongoDB connection
+	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+
+	// Initialize services
+	userService := services.NewUserService(mongodb)
+
+	// Initialize Resolver
+	resolver := &resolvers.Resolver{
+		UserService: userService,
+	}
+
 	// Initialize GraphQL server
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{},
+		Resolvers: resolver,
 	}))
 
 	// Create router
@@ -45,20 +61,9 @@ func main() {
 
 	router.POST("/graphql", gin.WrapH(srv))
 
-	// Get the service name for logging
-	serviceName := os.Getenv("SERVICE_NAME")
-	if serviceName == "" {
-		serviceName = "service"
-	}
-
 	// Start server
 	address := fmt.Sprintf(":%d", config.Port)
-	log.Printf("%s running in %s mode on %s", serviceName, config.Environment, address)
-	if config.PlaygroundEnabled {
-		log.Printf("GraphQL Playground available at http://localhost:%d", config.Port)
-	}
-	log.Printf("GraphQL endpoint available at http://localhost:%d/graphql", config.Port)
-
+	log.Printf("Server running on %s", address)
 	if err := router.Run(address); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

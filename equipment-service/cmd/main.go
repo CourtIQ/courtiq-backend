@@ -10,6 +10,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
+
+	// "github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
 	"github.com/gin-gonic/gin"
 )
 

@@ -10,6 +10,7 @@ import (
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Me is the resolver for the me field.
@@ -19,7 +20,17 @@ func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
 
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: GetUser - getUser"))
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := r.UserService.GetUserByID(ctx, objectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user.ToGraphQL(), nil
 }
 
 // Query returns graph.QueryResolver implementation.
