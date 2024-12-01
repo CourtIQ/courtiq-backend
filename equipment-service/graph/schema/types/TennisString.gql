@@ -16,3 +16,4 @@ type TennisString implements Equipment @key(fields: "id") {
     stringingDate: DateTime
     burstDate: DateTime
 }
+

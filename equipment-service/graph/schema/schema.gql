@@ -1,1 +1,14 @@
 scalar DateTime
+
+type @extend User {
+    equipments: [Equipment]
+}
+
+query getProfilePageInfo {
+    me:
+    firstname
+    lastName
+    equipments {
+        
+    }
+}
