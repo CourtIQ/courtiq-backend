@@ -116,6 +116,6 @@ jobs:
             RELATIONSHIP_SERVICE_URL=https://relationship-service.court-iq.com
             MATCHUP_SERVICE_URL=https://matchup-service.court-iq.com
             EQUIPMENT_SERVICE_URL=https://equipment-service.court-iq.com
-            MONGODB_URL=${{ secrets.MONGODB_URL }}
-            FIREBASE_CONFIG=${{ secrets.FIREBASE_CONFIG }}
-            FIREBASE_SERVICE_ACCOUNT=${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+            MONGODB_URL='${{ secrets.MONGODB_URL }}'
+            FIREBASE_CONFIG='${{ secrets.FIREBASE_CONFIG }}'
+            FIREBASE_SERVICE_ACCOUNT='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
