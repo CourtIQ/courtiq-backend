@@ -5,10 +5,6 @@ on:
     tags:
       - '*'
 jobs:
-  permissions:
-    contents: 'read'
-    id-token: 'write'
-
   build_and_publish:
     runs-on: ubuntu-latest
     permissions:
@@ -32,19 +28,13 @@ jobs:
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
           echo "DEFAULT_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV
-
       - name: Checkout current repo
         uses: actions/checkout@v4
-
-      - name: 'Google auth'
-        id: 'auth'
+      - name: git Auth to Google
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          project_id: 'courtiq-auth'
-
-      - name: 'Set up Cloud SDK'
+          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+      - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
         with:
           project_id: '${{ env.PROJECT_ID }}'
@@ -52,7 +42,7 @@ jobs:
       - name: 'Docker auth'
         run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
 
-      - name: 'Build and push container'
-        run: |
-          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}" ./app
-          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}"
+#      - name: 'Build and push container'
+#        run: |
+#          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}" ./app
+#          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}"
