@@ -101,7 +101,7 @@ jobs:
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: ${{ env.SERVICE }}
+          service: api-gateway
           region: ${{ env.REGION }}
           image: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/api-gateway/api-gateway:${{ env.TAG }}
           env_vars: |
