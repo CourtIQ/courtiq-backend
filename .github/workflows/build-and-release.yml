@@ -13,41 +13,36 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set Environment Variables and tags
+      - name: Set Environment Variables and Tags
         run: |
           TAG="latest"          
-          REPOSITORY=$(echo '${{ github.repository }}' |awk -F '/' '{gsub(/-/, "_", $0) ;print $NF}')          
-          VERSION="0.0.0ci"
           BRANCH=${{ github.head_ref || github.ref_name }}
-          DEFAULT_BRANCH=${{ github.event.repository.default_branch }}
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
-            VERSION=$TAG
             BRANCH=$TAG
           fi
-          echo "REPOSITORY=$REPOSITORY" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "TAG=$TAG" >> $GITHUB_ENV
-          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-          echo "DEFAULT_BRANCH=$DEFAULT_BRANCH" >> $GITHUB_ENV
 
       - name: Checkout current repo
         uses: actions/checkout@v4
 
-      - name: git Auth to Google
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-      - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v2'
+      - name: Configure Docker for GCR
+        run: |
+          echo "Setting up Docker for GCR"
+          gcloud auth configure-docker --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
         with:
-          project_id: '${{ env.PROJECT_ID }}'
-
-      - name: 'Docker auth'
-        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev
-
-#      - name: 'Build and push container'
-#        run: |
-#          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}" ./app
-#          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.APP }}/${{ env.APP }}:${{ github.sha }}"
+          context: ./equipment-service
+          file: ./equipment-service/Dockerfile
+          push: true
+          tags: gcr.io/${{ env.GCP_PROJECT_ID }}/equipment-service:$TAG
