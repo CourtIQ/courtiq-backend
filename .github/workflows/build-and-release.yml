@@ -6,6 +6,11 @@ on:
       - pipeline_build
     tags:
       - '*'
+
+env:
+  GCR_IMAGE_LOCATION: us-central1
+  GCP_PROJECT_ID: courtiq-backend
+
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
