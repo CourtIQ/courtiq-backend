@@ -50,4 +50,4 @@ jobs:
           context: ./equipment-service
           file: ./equipment-service/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev//${{ env.GCP_PROJECT_ID }}/equipment-service/equipment-service:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/equipment-service/equipment-service:${{ env.TAG }}
