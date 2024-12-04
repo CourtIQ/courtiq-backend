@@ -41,15 +41,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and Push api-gateway Docker Image
-        uses: docker/build-push-action@v6
-        env:
-          SVC_NAME: api-gateway
-        with:
-          context: ./${{ env.SVC_NAME }}
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+#      - name: Build and Push api-gateway Docker Image
+#        uses: docker/build-push-action@v6
+#        env:
+#          SVC_NAME: api-gateway
+#        with:
+#          context: ./${{ env.SVC_NAME }}
+#          file: ./${{ env.SVC_NAME }}/Dockerfile
+#          push: true
+#          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
 
 #      - name: Build and Push Docker Image
 #        uses: docker/build-push-action@v6
@@ -61,16 +61,16 @@ jobs:
 #          push: true
 #          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
 #
-#      - name: Build and Push Docker Image
-#        uses: docker/build-push-action@v6
-#        env:
-#          SVC_NAME: matchup-service
-#        with:
-#          context: ./${{ env.SVC_NAME }}
-#          file: ./${{ env.SVC_NAME }}/Dockerfile
-#          push: true
-#          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-#
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        env:
+          SVC_NAME: matchup-service
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: true
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+
 #      - name: Build and Push Docker Image
 #        uses: docker/build-push-action@v6
 #        env:
@@ -97,25 +97,14 @@ jobs:
         with:
           credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-      - name: Deploy api-gateway to Cloud Run
-        id: deploy
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: api-gateway
-          region: ${{ env.REGION }}
-          image: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/api-gateway/api-gateway:${{ env.TAG }}
-          env_vars: |
-            SERVICE_NAME=api-gateway
-            PORT=3000
-            DOCKER_ENV=true
-            NODE_ENV=production
-            GRAPHQL_PLAYGROUND=false
-            LOG_LEVEL=warn
-            API_GATEWAY_URL=https://api-gateway.court-iq.com
-            USER_SERVICE_URL=https://user-service.court-iq.com
-            RELATIONSHIP_SERVICE_URL=https://relationship-service.court-iq.com
-            MATCHUP_SERVICE_URL=https://matchup-service.court-iq.com
-            EQUIPMENT_SERVICE_URL=https://equipment-service.court-iq.com
-            MONGODB_URL='${{ secrets.MONGODB_URL }}'
-            FIREBASE_CONFIG='${{ secrets.FIREBASE_CONFIG }}'
-            FIREBASE_SERVICE_ACCOUNT='${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      - name: Deploy matchup-service to Cloud Run
+        run: |
+          cd matchup-service
+          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          gcloud run services replace service.yaml
