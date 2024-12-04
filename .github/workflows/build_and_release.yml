@@ -11,7 +11,7 @@ env:
   GCP_PROJECT_ID: courtiq-backend
 
 jobs:
-  build_and_publish_api_gateway:
+  api_gateway:
     env:
       SVC_NAME: api-gateway
     runs-on: ubuntu-latest
@@ -73,7 +73,7 @@ jobs:
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
 
-  build_and_publish_equipment_service:
+  equipment_service:
     env:
       SVC_NAME: equipment-service
     runs-on: ubuntu-latest
@@ -135,7 +135,7 @@ jobs:
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
 
-  build_and_publish_matchup_service:
+  matchup_service:
     env:
       SVC_NAME: matchup-service
     runs-on: ubuntu-latest
@@ -197,7 +197,7 @@ jobs:
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
 
-  build_and_publish_relationship_service:
+  relationship_service:
     env:
       SVC_NAME: relationship-service
     runs-on: ubuntu-latest
@@ -259,7 +259,7 @@ jobs:
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
 
-  build_and_publish_user_service:
+  user_service:
     env:
       SVC_NAME: user-service
     runs-on: ubuntu-latest
