@@ -13,6 +13,8 @@ spec:
         autoscaling.knative.dev/maxScale: '100'
         run.googleapis.com/client-name: cloud-console
         run.googleapis.com/startup-cpu-boost: 'true'
+        run.googleapis.com/ingress: internal
+        run.googleapis.com/ingress-status: internal
     spec:
       containerConcurrency: 80
       timeoutSeconds: 300
