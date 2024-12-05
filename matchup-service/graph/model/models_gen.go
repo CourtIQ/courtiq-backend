@@ -203,6 +203,106 @@ func (e GameScore) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Represents the style of a ground stroke shot in tennis.
+type GroundStrokeStyle string
+
+const (
+	// A slice ground stroke.
+	GroundStrokeStyleSlice GroundStrokeStyle = "SLICE"
+	// A topspin ground stroke.
+	GroundStrokeStyleTopspin GroundStrokeStyle = "TOPSPIN"
+	// A flat ground stroke.
+	GroundStrokeStyleFlat GroundStrokeStyle = "FLAT"
+	// A lob ground stroke.
+	GroundStrokeStyleLob GroundStrokeStyle = "LOB"
+	// A drop shot ground stroke.
+	GroundStrokeStyleDropShot GroundStrokeStyle = "DROP_SHOT"
+	// A passing shot ground stroke.
+	GroundStrokeStylePassingShot GroundStrokeStyle = "PASSING_SHOT"
+)
+
+var AllGroundStrokeStyle = []GroundStrokeStyle{
+	GroundStrokeStyleSlice,
+	GroundStrokeStyleTopspin,
+	GroundStrokeStyleFlat,
+	GroundStrokeStyleLob,
+	GroundStrokeStyleDropShot,
+	GroundStrokeStylePassingShot,
+}
+
+func (e GroundStrokeStyle) IsValid() bool {
+	switch e {
+	case GroundStrokeStyleSlice, GroundStrokeStyleTopspin, GroundStrokeStyleFlat, GroundStrokeStyleLob, GroundStrokeStyleDropShot, GroundStrokeStylePassingShot:
+		return true
+	}
+	return false
+}
+
+func (e GroundStrokeStyle) String() string {
+	return string(e)
+}
+
+func (e *GroundStrokeStyle) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GroundStrokeStyle(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GroundStrokeStyle", str)
+	}
+	return nil
+}
+
+func (e GroundStrokeStyle) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Represents the base type of a ground stroke shot in tennis.
+type GroundStrokeType string
+
+const (
+	// A forehand ground stroke.
+	GroundStrokeTypeForehand GroundStrokeType = "FOREHAND"
+	// A backhand ground stroke.
+	GroundStrokeTypeBackhand GroundStrokeType = "BACKHAND"
+)
+
+var AllGroundStrokeType = []GroundStrokeType{
+	GroundStrokeTypeForehand,
+	GroundStrokeTypeBackhand,
+}
+
+func (e GroundStrokeType) IsValid() bool {
+	switch e {
+	case GroundStrokeTypeForehand, GroundStrokeTypeBackhand:
+		return true
+	}
+	return false
+}
+
+func (e GroundStrokeType) String() string {
+	return string(e)
+}
+
+func (e *GroundStrokeType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = GroundStrokeType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid GroundStrokeType", str)
+	}
+	return nil
+}
+
+func (e GroundStrokeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type MatchUpStatus string
 
 const (
@@ -442,15 +542,24 @@ func (e PlayingSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Represents the reason for winning a point in tennis.
+//
+// The reasons can include ace, winner, forced error, unforced error, error, and double fault.
 type PointWinReason string
 
 const (
-	PointWinReasonAce           PointWinReason = "ACE"
-	PointWinReasonWinner        PointWinReason = "WINNER"
-	PointWinReasonForcedError   PointWinReason = "FORCED_ERROR"
+	// An ace.
+	PointWinReasonAce PointWinReason = "ACE"
+	// A winner.
+	PointWinReasonWinner PointWinReason = "WINNER"
+	// A forced error.
+	PointWinReasonForcedError PointWinReason = "FORCED_ERROR"
+	// An unforced error.
 	PointWinReasonUnforcedError PointWinReason = "UNFORCED_ERROR"
-	PointWinReasonError         PointWinReason = "ERROR"
-	PointWinReasonDoubleFault   PointWinReason = "DOUBLE_FAULT"
+	// An error.
+	PointWinReasonError PointWinReason = "ERROR"
+	// A double fault.
+	PointWinReasonDoubleFault PointWinReason = "DOUBLE_FAULT"
 )
 
 var AllPointWinReason = []PointWinReason{
@@ -488,6 +597,105 @@ func (e *PointWinReason) UnmarshalGQL(v interface{}) error {
 }
 
 func (e PointWinReason) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Represents the style of a tennis serve.
+//
+// The style can be flat, kick, slice, or other.
+type ServeStyle string
+
+const (
+	// A flat serve.
+	ServeStyleFlat ServeStyle = "FLAT"
+	// A kick serve.
+	ServeStyleKick ServeStyle = "KICK"
+	// A slice serve.
+	ServeStyleSlice ServeStyle = "SLICE"
+	// Any other type of serve.
+	ServeStyleOther ServeStyle = "OTHER"
+)
+
+var AllServeStyle = []ServeStyle{
+	ServeStyleFlat,
+	ServeStyleKick,
+	ServeStyleSlice,
+	ServeStyleOther,
+}
+
+func (e ServeStyle) IsValid() bool {
+	switch e {
+	case ServeStyleFlat, ServeStyleKick, ServeStyleSlice, ServeStyleOther:
+		return true
+	}
+	return false
+}
+
+func (e ServeStyle) String() string {
+	return string(e)
+}
+
+func (e *ServeStyle) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ServeStyle(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ServeStyle", str)
+	}
+	return nil
+}
+
+func (e ServeStyle) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Represents the base type of a shot in tennis.
+type ShotType string
+
+const (
+	// A serve shot.
+	ShotTypeServe ShotType = "SERVE"
+	// A ground stroke shot.
+	ShotTypeGroundStroke ShotType = "GROUND_STROKE"
+	// A volley shot.
+	ShotTypeVolley ShotType = "VOLLEY"
+)
+
+var AllShotType = []ShotType{
+	ShotTypeServe,
+	ShotTypeGroundStroke,
+	ShotTypeVolley,
+}
+
+func (e ShotType) IsValid() bool {
+	switch e {
+	case ShotTypeServe, ShotTypeGroundStroke, ShotTypeVolley:
+		return true
+	}
+	return false
+}
+
+func (e ShotType) String() string {
+	return string(e)
+}
+
+func (e *ShotType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ShotType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ShotType", str)
+	}
+	return nil
+}
+
+func (e ShotType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

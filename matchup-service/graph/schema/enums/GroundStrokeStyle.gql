@@ -1,0 +1,34 @@
+"""
+Represents the style of a ground stroke shot in tennis.
+"""
+enum GroundStrokeStyle {
+  """
+  A slice ground stroke.
+  """
+  SLICE
+
+  """
+  A topspin ground stroke.
+  """
+  TOPSPIN
+
+  """
+  A flat ground stroke.
+  """
+  FLAT
+
+  """
+  A lob ground stroke.
+  """
+  LOB
+
+  """
+  A drop shot ground stroke.
+  """
+  DROP_SHOT
+
+  """
+  A passing shot ground stroke.
+  """
+  PASSING_SHOT
+}

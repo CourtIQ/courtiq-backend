@@ -1,0 +1,26 @@
+"""
+Represents the style of a tennis serve.
+
+The style can be flat, kick, slice, or other.
+"""
+enum ServeStyle {
+  """
+  A flat serve.
+  """
+  FLAT
+
+  """
+  A kick serve.
+  """
+  KICK
+
+  """
+  A slice serve.
+  """
+  SLICE
+
+  """
+  Any other type of serve.
+  """
+  OTHER
+}

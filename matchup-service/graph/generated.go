@@ -667,7 +667,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/DeuceType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/schema.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql"
+//go:embed "schema/enums/DeuceType.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/schema.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -680,12 +680,16 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/enums/DeuceType.gql", Input: sourceData("schema/enums/DeuceType.gql"), BuiltIn: false},
+	{Name: "schema/enums/GroundStrokeStyle.gql", Input: sourceData("schema/enums/GroundStrokeStyle.gql"), BuiltIn: false},
+	{Name: "schema/enums/GroundStrokeType.gql", Input: sourceData("schema/enums/GroundStrokeType.gql"), BuiltIn: false},
 	{Name: "schema/enums/MatchUpStatus.gql", Input: sourceData("schema/enums/MatchUpStatus.gql"), BuiltIn: false},
 	{Name: "schema/enums/MatchUpType.gql", Input: sourceData("schema/enums/MatchUpType.gql"), BuiltIn: false},
 	{Name: "schema/enums/NumberOfGames.gql", Input: sourceData("schema/enums/NumberOfGames.gql"), BuiltIn: false},
 	{Name: "schema/enums/NumberOfSets.gql", Input: sourceData("schema/enums/NumberOfSets.gql"), BuiltIn: false},
 	{Name: "schema/enums/PlayingSide.gql", Input: sourceData("schema/enums/PlayingSide.gql"), BuiltIn: false},
 	{Name: "schema/enums/PointWinReason.gql", Input: sourceData("schema/enums/PointWinReason.gql"), BuiltIn: false},
+	{Name: "schema/enums/ServeStyle.gql", Input: sourceData("schema/enums/ServeStyle.gql"), BuiltIn: false},
+	{Name: "schema/enums/ShotType.gql", Input: sourceData("schema/enums/ShotType.gql"), BuiltIn: false},
 	{Name: "schema/enums/TiebreakPoints.gql", Input: sourceData("schema/enums/TiebreakPoints.gql"), BuiltIn: false},
 	{Name: "schema/inputs/MatchUpFormatInput.gql", Input: sourceData("schema/inputs/MatchUpFormatInput.gql"), BuiltIn: false},
 	{Name: "schema/queries/MatchUpFormatQueries.gql", Input: sourceData("schema/queries/MatchUpFormatQueries.gql"), BuiltIn: false},
