@@ -25,9 +25,6 @@ WORKDIR /app
 # Copy binary from builder
 COPY --from=builder /app/main .
 
-# Copy .env file if needed
-COPY --from=builder /app/.env .
-
 # Use non-root user for security
 USER nonroot:nonroot
 

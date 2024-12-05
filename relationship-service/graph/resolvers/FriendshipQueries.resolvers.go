@@ -13,7 +13,7 @@ import (
 
 // Friendship is the resolver for the friendship field.
 func (r *queryResolver) Friendship(ctx context.Context, id string) (*model.Friendship, error) {
-	panic(fmt.Errorf("not implemented: Friendship - friendship"))
+	return nil, fmt.Errorf("Not implemented: Friendship - friendship")
 }
 
 // Friends is the resolver for the friends field.
