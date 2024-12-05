@@ -14,7 +14,7 @@ import (
 
 // GetFriendship is the resolver for the getFriendship field.
 func (r *queryResolver) GetFriendship(ctx context.Context, id string) (*model.Friendship, error) {
-	panic(fmt.Errorf("not implemented: GetFriendship - getFriendship"))
+	return nil, fmt.Errorf("Not implemented: Friendship - friendship")
 }
 
 // GetFriendships is the resolver for the getFriendships field.
