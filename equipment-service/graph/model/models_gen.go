@@ -102,6 +102,13 @@ type TennisStringInput struct {
 	Tension       *StringTensionInput `json:"tension,omitempty"`
 }
 
+type User struct {
+	ID         string      `json:"id"`
+	Equipments []Equipment `json:"equipments,omitempty"`
+}
+
+func (User) IsEntity() {}
+
 type EquipmentType string
 
 const (

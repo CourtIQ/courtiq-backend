@@ -1,14 +1,6 @@
 scalar DateTime
 
-type @extend User {
-    equipments: [Equipment]
-}
-
-query getProfilePageInfo {
-    me:
-    firstname
-    lastName
-    equipments {
-        
-    }
+extend type User @key(fields: "id") {
+  id: ID! @external
+  equipments: [Equipment]
 }

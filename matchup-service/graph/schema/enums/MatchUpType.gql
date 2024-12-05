@@ -1,0 +1,5 @@
+# Define the type of matchup (Singles vs Doubles)
+enum MatchUpType {
+  SINGLES
+  DOUBLES
+}

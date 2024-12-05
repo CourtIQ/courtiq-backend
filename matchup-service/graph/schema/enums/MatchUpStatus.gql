@@ -1,5 +1,5 @@
 
-enum MatchStatus {
+enum MatchUpStatus {
     SCHEDULED
     IN_PROGRESS
     COMPLETED
@@ -9,4 +9,5 @@ enum MatchStatus {
     RETIRED
     WALKOVER
     NOT_PLAYED
+    REQUESTED
 }

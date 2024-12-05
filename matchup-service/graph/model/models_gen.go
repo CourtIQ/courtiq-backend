@@ -6,13 +6,32 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
+
+type MatchUp struct {
+	ID                  string         `json:"id"`
+	MatchUpFormat       *MatchUpFormat `json:"matchUpFormat"`
+	MatchUpStatus       MatchUpStatus  `json:"matchUpStatus"`
+	MatchUpType         MatchUpType    `json:"matchUpType"`
+	Participants        []*Participant `json:"participants"`
+	CurrentSetIndex     *int           `json:"currentSetIndex,omitempty"`
+	CurrentSetGameIndex *int           `json:"currentSetGameIndex,omitempty"`
+	CurrentScore        *Score         `json:"currentScore,omitempty"`
+	CurrentServer       PlayingSide    `json:"currentServer"`
+	Points              []*Point       `json:"points"`
+	PointsSequence      [][][]*Point   `json:"pointsSequence"`
+	StartTime           time.Time      `json:"startTime"`
+	EndTime             *time.Time     `json:"endTime,omitempty"`
+	LastUpdated         time.Time      `json:"lastUpdated"`
+}
 
 type MatchUpFormat struct {
 	ID             string       `json:"id"`
 	NumberOfSets   NumberOfSets `json:"numberOfSets"`
 	SetFormat      *SetFormat   `json:"setFormat"`
 	FinalSetFormat *SetFormat   `json:"finalSetFormat,omitempty"`
+	InitialServer  PlayingSide  `json:"initialServer"`
 }
 
 type MatchUpFormatInput struct {
@@ -24,7 +43,42 @@ type MatchUpFormatInput struct {
 type Mutation struct {
 }
 
+type Participant struct {
+	ID          string      `json:"id"`
+	PlayingSide PlayingSide `json:"playingSide"`
+}
+
+type Point struct {
+	ID          string         `json:"id"`
+	MatchUpID   string         `json:"matchUpId"`
+	SetIndex    int            `json:"setIndex"`
+	GameIndex   int            `json:"gameIndex"`
+	PointIndex  int            `json:"pointIndex"`
+	ServingSide PlayingSide    `json:"servingSide"`
+	WinningSide PlayingSide    `json:"winningSide"`
+	Timestamp   time.Time      `json:"timestamp"`
+	Metadata    *PointMetadata `json:"metadata"`
+}
+
+type PointMetadata struct {
+	IsBreakPoint    bool `json:"isBreakPoint"`
+	IsGamePoint     bool `json:"isGamePoint"`
+	IsSetPoint      bool `json:"isSetPoint"`
+	IsMatchPoint    bool `json:"isMatchPoint"`
+	IsTiebreak      bool `json:"isTiebreak"`
+	TiebreakPoint   *int `json:"tiebreakPoint,omitempty"`
+	IsDecidingPoint bool `json:"isDecidingPoint"`
+	Duration        *int `json:"duration,omitempty"`
+	RallyLength     int  `json:"rallyLength"`
+}
+
 type Query struct {
+}
+
+type Score struct {
+	SideA       *SideScore `json:"sideA"`
+	SideB       *SideScore `json:"sideB"`
+	LastUpdated time.Time  `json:"lastUpdated"`
 }
 
 type SetFormat struct {
@@ -41,6 +95,12 @@ type SetFormatInput struct {
 	MustWinByTwo   bool                 `json:"mustWinByTwo"`
 	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty"`
 	TiebreakAt     *int                 `json:"tiebreakAt,omitempty"`
+}
+
+type SideScore struct {
+	CurrentGameScore     GameScore `json:"currentGameScore"`
+	CurrentSetScore      int       `json:"currentSetScore"`
+	CurrentTiebreakScore *int      `json:"currentTiebreakScore,omitempty"`
 }
 
 type TiebreakFormat struct {
@@ -96,58 +156,148 @@ func (e DeuceType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-type MatchStatus string
+type GameScore string
 
 const (
-	MatchStatusScheduled  MatchStatus = "SCHEDULED"
-	MatchStatusInProgress MatchStatus = "IN_PROGRESS"
-	MatchStatusCompleted  MatchStatus = "COMPLETED"
-	MatchStatusSuspended  MatchStatus = "SUSPENDED"
-	MatchStatusCancelled  MatchStatus = "CANCELLED"
-	MatchStatusAbandoned  MatchStatus = "ABANDONED"
-	MatchStatusRetired    MatchStatus = "RETIRED"
-	MatchStatusWalkover   MatchStatus = "WALKOVER"
-	MatchStatusNotPlayed  MatchStatus = "NOT_PLAYED"
+	GameScoreLove      GameScore = "LOVE"
+	GameScoreFifteen   GameScore = "FIFTEEN"
+	GameScoreThirty    GameScore = "THIRTY"
+	GameScoreForty     GameScore = "FORTY"
+	GameScoreAdvantage GameScore = "ADVANTAGE"
 )
 
-var AllMatchStatus = []MatchStatus{
-	MatchStatusScheduled,
-	MatchStatusInProgress,
-	MatchStatusCompleted,
-	MatchStatusSuspended,
-	MatchStatusCancelled,
-	MatchStatusAbandoned,
-	MatchStatusRetired,
-	MatchStatusWalkover,
-	MatchStatusNotPlayed,
+var AllGameScore = []GameScore{
+	GameScoreLove,
+	GameScoreFifteen,
+	GameScoreThirty,
+	GameScoreForty,
+	GameScoreAdvantage,
 }
 
-func (e MatchStatus) IsValid() bool {
+func (e GameScore) IsValid() bool {
 	switch e {
-	case MatchStatusScheduled, MatchStatusInProgress, MatchStatusCompleted, MatchStatusSuspended, MatchStatusCancelled, MatchStatusAbandoned, MatchStatusRetired, MatchStatusWalkover, MatchStatusNotPlayed:
+	case GameScoreLove, GameScoreFifteen, GameScoreThirty, GameScoreForty, GameScoreAdvantage:
 		return true
 	}
 	return false
 }
 
-func (e MatchStatus) String() string {
+func (e GameScore) String() string {
 	return string(e)
 }
 
-func (e *MatchStatus) UnmarshalGQL(v interface{}) error {
+func (e *GameScore) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = MatchStatus(str)
+	*e = GameScore(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid MatchStatus", str)
+		return fmt.Errorf("%s is not a valid GameScore", str)
 	}
 	return nil
 }
 
-func (e MatchStatus) MarshalGQL(w io.Writer) {
+func (e GameScore) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type MatchUpStatus string
+
+const (
+	MatchUpStatusScheduled  MatchUpStatus = "SCHEDULED"
+	MatchUpStatusInProgress MatchUpStatus = "IN_PROGRESS"
+	MatchUpStatusCompleted  MatchUpStatus = "COMPLETED"
+	MatchUpStatusSuspended  MatchUpStatus = "SUSPENDED"
+	MatchUpStatusCancelled  MatchUpStatus = "CANCELLED"
+	MatchUpStatusAbandoned  MatchUpStatus = "ABANDONED"
+	MatchUpStatusRetired    MatchUpStatus = "RETIRED"
+	MatchUpStatusWalkover   MatchUpStatus = "WALKOVER"
+	MatchUpStatusNotPlayed  MatchUpStatus = "NOT_PLAYED"
+	MatchUpStatusRequested  MatchUpStatus = "REQUESTED"
+)
+
+var AllMatchUpStatus = []MatchUpStatus{
+	MatchUpStatusScheduled,
+	MatchUpStatusInProgress,
+	MatchUpStatusCompleted,
+	MatchUpStatusSuspended,
+	MatchUpStatusCancelled,
+	MatchUpStatusAbandoned,
+	MatchUpStatusRetired,
+	MatchUpStatusWalkover,
+	MatchUpStatusNotPlayed,
+	MatchUpStatusRequested,
+}
+
+func (e MatchUpStatus) IsValid() bool {
+	switch e {
+	case MatchUpStatusScheduled, MatchUpStatusInProgress, MatchUpStatusCompleted, MatchUpStatusSuspended, MatchUpStatusCancelled, MatchUpStatusAbandoned, MatchUpStatusRetired, MatchUpStatusWalkover, MatchUpStatusNotPlayed, MatchUpStatusRequested:
+		return true
+	}
+	return false
+}
+
+func (e MatchUpStatus) String() string {
+	return string(e)
+}
+
+func (e *MatchUpStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MatchUpStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MatchUpStatus", str)
+	}
+	return nil
+}
+
+func (e MatchUpStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type MatchUpType string
+
+const (
+	MatchUpTypeSingles MatchUpType = "SINGLES"
+	MatchUpTypeDoubles MatchUpType = "DOUBLES"
+)
+
+var AllMatchUpType = []MatchUpType{
+	MatchUpTypeSingles,
+	MatchUpTypeDoubles,
+}
+
+func (e MatchUpType) IsValid() bool {
+	switch e {
+	case MatchUpTypeSingles, MatchUpTypeDoubles:
+		return true
+	}
+	return false
+}
+
+func (e MatchUpType) String() string {
+	return string(e)
+}
+
+func (e *MatchUpType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MatchUpType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MatchUpType", str)
+	}
+	return nil
+}
+
+func (e MatchUpType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -251,6 +401,47 @@ func (e NumberOfSets) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type PlayingSide string
+
+const (
+	PlayingSideA PlayingSide = "A"
+	PlayingSideB PlayingSide = "B"
+)
+
+var AllPlayingSide = []PlayingSide{
+	PlayingSideA,
+	PlayingSideB,
+}
+
+func (e PlayingSide) IsValid() bool {
+	switch e {
+	case PlayingSideA, PlayingSideB:
+		return true
+	}
+	return false
+}
+
+func (e PlayingSide) String() string {
+	return string(e)
+}
+
+func (e *PlayingSide) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PlayingSide(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PlayingSide", str)
+	}
+	return nil
+}
+
+func (e PlayingSide) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type PointWinReason string
 
 const (
@@ -303,10 +494,6 @@ func (e PointWinReason) MarshalGQL(w io.Writer) {
 type TiebreakPoints string
 
 const (
-	TiebreakPointsOne   TiebreakPoints = "ONE"
-	TiebreakPointsTwo   TiebreakPoints = "TWO"
-	TiebreakPointsThree TiebreakPoints = "THREE"
-	TiebreakPointsFour  TiebreakPoints = "FOUR"
 	TiebreakPointsFive  TiebreakPoints = "FIVE"
 	TiebreakPointsSix   TiebreakPoints = "SIX"
 	TiebreakPointsSeven TiebreakPoints = "SEVEN"
@@ -316,10 +503,6 @@ const (
 )
 
 var AllTiebreakPoints = []TiebreakPoints{
-	TiebreakPointsOne,
-	TiebreakPointsTwo,
-	TiebreakPointsThree,
-	TiebreakPointsFour,
 	TiebreakPointsFive,
 	TiebreakPointsSix,
 	TiebreakPointsSeven,
@@ -330,7 +513,7 @@ var AllTiebreakPoints = []TiebreakPoints{
 
 func (e TiebreakPoints) IsValid() bool {
 	switch e {
-	case TiebreakPointsOne, TiebreakPointsTwo, TiebreakPointsThree, TiebreakPointsFour, TiebreakPointsFive, TiebreakPointsSix, TiebreakPointsSeven, TiebreakPointsEight, TiebreakPointsNine, TiebreakPointsTen:
+	case TiebreakPointsFive, TiebreakPointsSix, TiebreakPointsSeven, TiebreakPointsEight, TiebreakPointsNine, TiebreakPointsTen:
 		return true
 	}
 	return false

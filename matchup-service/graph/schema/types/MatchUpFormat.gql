@@ -4,6 +4,7 @@ type MatchUpFormat {
     numberOfSets: NumberOfSets!
     setFormat: SetFormat!
     finalSetFormat: SetFormat
+    initialServer: PlayingSide!
 }
 
 type SetFormat {

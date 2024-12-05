@@ -3,3 +3,16 @@ input MatchUpFormatInput {
     setFormat: SetFormatInput!
     finalSetFormat: SetFormatInput
 }
+
+input SetFormatInput {
+    numberOfGames: NumberOfGames!
+    deuceType: DeuceType!
+    mustWinByTwo: Boolean!
+    tiebreakFormat: TiebreakFormatInput
+    tiebreakAt: Int
+}
+
+input TiebreakFormatInput {
+    points: TiebreakPoints!
+    mustWinByTwo: Boolean!
+}

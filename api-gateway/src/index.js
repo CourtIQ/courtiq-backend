@@ -1,12 +1,11 @@
+// index.js
 require('dotenv').config();
-const { admin } = require('./middleware/auth'); // Ensure Firebase is initialized
 const { ApolloServer } = require('@apollo/server');
 const { startStandaloneServer } = require('@apollo/server/standalone');
+const { admin } = require('./middleware/auth');
 const config = require('./config');
 const gateway = require('./gateway');
-const { generateIdToken } = require('./utils/firebaseUtils');
 
-// Main function to start the server
 async function startServer() {
   try {
     const server = new ApolloServer({
@@ -14,15 +13,10 @@ async function startServer() {
       introspection: config.GRAPHQL_PLAYGROUND,
     });
 
-    // Example: Generate an ID token for a test user (for debugging)
-    const uid = 'test-uid'; // Replace with a valid UID from your Firebase Auth
-    const idToken = await generateIdToken(uid);
-    console.log(`Generated ID Token for testing: ${idToken}`);
-
     const { url } = await startStandaloneServer(server, {
       context: async ({ req }) => {
-        const token = req.headers.authorization || null;
-        return { token }; // Pass token to resolvers
+        const token = req.headers.authorization?.split(' ')[1] || null;
+        return { token };
       },
       listen: { port: config.PORT },
     });

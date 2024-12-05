@@ -1,4 +1,0 @@
-input TiebreakFormatInput {
-    points: TiebreakPoints!
-    mustWinByTwo: Boolean!
-}

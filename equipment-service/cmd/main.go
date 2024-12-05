@@ -11,7 +11,6 @@ import (
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
 
-	// "github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
 	"github.com/gin-gonic/gin"
 )
 

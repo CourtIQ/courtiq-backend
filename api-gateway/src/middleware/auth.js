@@ -1,7 +1,8 @@
+// middleware/auth.js
 const admin = require('firebase-admin');
 const config = require('../config');
 
-// Ensure Firebase Admin is initialized only once
+// Initialize Firebase Admin
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
@@ -14,7 +15,7 @@ if (!admin.apps.length) {
   }
 }
 
-// Function to authenticate the ID token
+// Authentication middleware
 async function authenticateToken(token) {
   if (!token) {
     throw new Error('Unauthorized: No token provided');
@@ -29,30 +30,7 @@ async function authenticateToken(token) {
   }
 }
 
-// GraphQL middleware to inject user into context
-const authMiddleware = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    req.user = null; // No auth header provided
-    return next();
-  }
-
-  const token = authHeader.split(' ')[1]; // Assumes "Bearer <token>"
-
-  try {
-    const decodedToken = await authenticateToken(token);
-    req.user = {
-      uid: decodedToken.uid,
-      email: decodedToken.email,
-      roles: decodedToken.roles || [], // If you have custom claims
-    };
-  } catch (error) {
-    console.error('Error in authentication middleware:', error.message);
-    req.user = null; // Optional: continue without user info
-  }
-
-  next();
+module.exports = {
+  admin,
+  authenticateToken,
 };
-
-module.exports = { authMiddleware };
