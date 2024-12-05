@@ -1,4 +1,14 @@
+"""
+Represents the different types of relationships that can exist between users.
+"""
 enum RelationshipType {
+  """
+  A friendship relationship between two users.
+  """
   FRIENDSHIP
-  COACHING
+
+  """
+  A coaching relationship between a coach and a coachee.
+  """
+  COACHSHIP
 }

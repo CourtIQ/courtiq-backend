@@ -1,7 +1,28 @@
 extend type Query {
-    getFriendship(id: ID!): Friendship
-    getFriendships(input: FriendshipsInput!): [Friendship!]!
-    getPendingFriendRequests(userId: ID!): [Friendship!]!
-    getSentFriendRequests(userId: ID!): [Friendship!]!
-    checkFriendshipStatus(user1Id: ID!, user2Id: ID!): Friendship
+  """
+  Retrieve a specific friendship by ID
+  """
+  friendship(id: ID!): Friendship
+
+  """
+  List friends for the authenticated user.
+  Returns paginated results of accepted friendships.
+  """
+  friends(limit: Int, offset: Int): [Friendship!]!
+
+  """
+  List pending friend requests for the authenticated user
+  """
+  pendingFriendRequests: [Friendship!]!
+
+  """
+  List friend requests sent by the authenticated user
+  """
+  sentFriendRequests: [Friendship!]!
+
+  """
+  Check friendship status with another user.
+  Returns the current relationship status between the authenticated user and the specified user.
+  """
+  friendshipStatus(otherUserId: ID!): RelationshipStatus
 }

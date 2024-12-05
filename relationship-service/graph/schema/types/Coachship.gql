@@ -1,11 +1,29 @@
-type Coachship implements Relationship {
+"""
+Represents a coaching relationship between a coach and a coachee.
+Implements the Relationship interface.
+"""
+type Coachship implements Relationship @key(fields: "id") {
+  """Unique identifier for the coaching relationship"""
   id: ID!
+
+  """List of IDs for all participants in this relationship (coach and coachee)"""
   participantIds: [ID!]!
+
+  """Type of relationship (always COACHING for Coachship)"""
   type: RelationshipType!
+
+  """Current status of the coaching relationship"""
   status: RelationshipStatus!
+
+  """ISO-8601 formatted timestamp when the coaching relationship was created"""
   createdAt: String!
+
+  """ISO-8601 formatted timestamp when the coaching relationship was last updated"""
   updatedAt: String
-  metadata: RelationshipMetadata
+  
+  """ID of the user who is the coach in this relationship"""
   coachId: ID!
+
+  """ID of the user who is being coached in this relationship"""
   coacheeId: ID!
 }
