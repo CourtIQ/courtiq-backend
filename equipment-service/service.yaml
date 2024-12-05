@@ -39,13 +39,13 @@ spec:
         - name: API_GATEWAY_URL
           value: https://api-gateway.court-iq.com
         - name: USER_SERVICE_URL
-          value: https://user-service.court-iq.com
+          value: https://user-service-1080781728713.us-central1.run.app
         - name: RELATIONSHIP_SERVICE_URL
-          value: https://relationship-service.court-iq.com
+          value: https://relationship-service-1080781728713.us-central1.run.app
         - name: MATCHUP_SERVICE_URL
-          value: https://matchup-service.court-iq.com
+          value: https://matchup-service-1080781728713.us-central1.run.app
         - name: EQUIPMENT_SERVICE_URL
-          value: https://equipment-service.court-iq.com
+          value: https://equipment-service-1080781728713.us-central1.run.app
         - name: MONGODB_URL
           valueFrom:
             secretKeyRef:
