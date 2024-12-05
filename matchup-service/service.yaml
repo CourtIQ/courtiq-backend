@@ -24,7 +24,7 @@ spec:
         image: us-central1-docker.pkg.dev/courtiq-backend/matchup-service/matchup-service:IMAGE_TAG
         ports:
         - name: http1
-          containerPort: 8081
+          containerPort: 8080
         env:
         - name: SERVICE_NAME
           value: matchup-service
