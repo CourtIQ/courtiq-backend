@@ -10,7 +10,7 @@ async function startServer() {
   try {
     const server = new ApolloServer({
       gateway,
-      introspection: true,
+      introspection: config.GRAPHQL_PLAYGROUND,
     });
 
     const { url } = await startStandaloneServer(server, {
