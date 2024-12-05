@@ -22,7 +22,8 @@ type Score {
 }
 
 type SideScore {
-    currentGameScore: GameScore!
+    currentPointScore: GameScore!
+    currentGameScore: Int!
     currentSetScore: Int!
     currentTiebreakScore: Int
 }

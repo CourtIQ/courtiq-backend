@@ -128,6 +128,7 @@ type ComplexityRoot struct {
 
 	SideScore struct {
 		CurrentGameScore     func(childComplexity int) int
+		CurrentPointScore    func(childComplexity int) int
 		CurrentSetScore      func(childComplexity int) int
 		CurrentTiebreakScore func(childComplexity int) int
 	}
@@ -524,6 +525,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.SideScore.CurrentGameScore(childComplexity), true
+
+	case "SideScore.currentPointScore":
+		if e.complexity.SideScore.CurrentPointScore == nil {
+			break
+		}
+
+		return e.complexity.SideScore.CurrentPointScore(childComplexity), true
 
 	case "SideScore.currentSetScore":
 		if e.complexity.SideScore.CurrentSetScore == nil {
@@ -2943,6 +2951,8 @@ func (ec *executionContext) fieldContext_Score_sideA(_ context.Context, field gr
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "currentPointScore":
+				return ec.fieldContext_SideScore_currentPointScore(ctx, field)
 			case "currentGameScore":
 				return ec.fieldContext_SideScore_currentGameScore(ctx, field)
 			case "currentSetScore":
@@ -2995,6 +3005,8 @@ func (ec *executionContext) fieldContext_Score_sideB(_ context.Context, field gr
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "currentPointScore":
+				return ec.fieldContext_SideScore_currentPointScore(ctx, field)
 			case "currentGameScore":
 				return ec.fieldContext_SideScore_currentGameScore(ctx, field)
 			case "currentSetScore":
@@ -3272,6 +3284,50 @@ func (ec *executionContext) fieldContext_SetFormat_tiebreakAt(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _SideScore_currentPointScore(ctx context.Context, field graphql.CollectedField, obj *model.SideScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SideScore_currentPointScore(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentPointScore, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.GameScore)
+	fc.Result = res
+	return ec.marshalNGameScore2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGameScore(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SideScore_currentPointScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SideScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type GameScore does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SideScore_currentGameScore(ctx context.Context, field graphql.CollectedField, obj *model.SideScore) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SideScore_currentGameScore(ctx, field)
 	if err != nil {
@@ -3298,9 +3354,9 @@ func (ec *executionContext) _SideScore_currentGameScore(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.GameScore)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNGameScore2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGameScore(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SideScore_currentGameScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3310,7 +3366,7 @@ func (ec *executionContext) fieldContext_SideScore_currentGameScore(_ context.Co
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type GameScore does not have child fields")
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6035,6 +6091,11 @@ func (ec *executionContext) _SideScore(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("SideScore")
+		case "currentPointScore":
+			out.Values[i] = ec._SideScore_currentPointScore(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "currentGameScore":
 			out.Values[i] = ec._SideScore_currentGameScore(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

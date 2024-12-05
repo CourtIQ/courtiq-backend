@@ -98,7 +98,8 @@ type SetFormatInput struct {
 }
 
 type SideScore struct {
-	CurrentGameScore     GameScore `json:"currentGameScore"`
+	CurrentPointScore    GameScore `json:"currentPointScore"`
+	CurrentGameScore     int       `json:"currentGameScore"`
 	CurrentSetScore      int       `json:"currentSetScore"`
 	CurrentTiebreakScore *int      `json:"currentTiebreakScore,omitempty"`
 }
