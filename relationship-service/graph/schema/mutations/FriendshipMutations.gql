@@ -1,0 +1,36 @@
+extend type Mutation {
+  """
+  Send a friend request to another user.
+  The userId parameter is the ID of the user to send the friend request to.
+  Returns the created Friendship object.
+  """
+  sendFriendRequest(userId: ID!): Friendship
+
+  """
+  Accept a pending friend request.
+  The friendshipId parameter is the ID of the Friendship object to accept.
+  Returns the updated Friendship object.
+  """
+  acceptFriendRequest(friendshipId: ID!): Friendship
+
+  """
+  Reject a pending friend request.
+  The friendshipId parameter is the ID of the Friendship object to reject.
+  Returns a success indicator.
+  """
+  rejectFriendRequest(friendshipId: ID!): Boolean
+
+  """
+  Cancel a sent friend request.
+  The friendshipId parameter is the ID of the Friendship object to cancel.
+  Returns a success indicator.
+  """
+  cancelFriendRequest(friendshipId: ID!): Boolean
+
+  """
+  Remove a user from your friends list.
+  The friendshipId parameter is the ID of the Friendship object to unfriend.
+  Returns a success indicator.
+  """
+  endFriendship(friendshipId: ID!): Boolean
+}

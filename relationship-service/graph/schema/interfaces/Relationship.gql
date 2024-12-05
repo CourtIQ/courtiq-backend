@@ -1,9 +1,36 @@
-interface Relationship {
+"""
+Represents a relationship between two users in the system.
+This interface is implemented by specific relationship types like Friendship and Coachship.
+"""
+interface Relationship @key(fields: "id") {
+  """
+  Unique identifier for the relationship
+  """
   id: ID!
+
+  """
+  Array of user IDs who are part of this relationship
+  """
   participantIds: [ID!]!
+
+  """
+  The type of relationship (e.g., FRIENDSHIP, COACHING)
+  """
   type: RelationshipType!
+
+  """
+  Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
+  """
   status: RelationshipStatus!
+
+  """
+  ISO-8601 formatted timestamp when the relationship was created
+  """
   createdAt: String!
+
+  """
+  ISO-8601 formatted timestamp when the relationship was last updated
+  """
   updatedAt: String
-  metadata: RelationshipMetadata
 }
+

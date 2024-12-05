@@ -40,6 +40,8 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Entity() EntityResolver
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -52,17 +54,21 @@ type ComplexityRoot struct {
 		CoacheeID      func(childComplexity int) int
 		CreatedAt      func(childComplexity int) int
 		ID             func(childComplexity int) int
-		Metadata       func(childComplexity int) int
 		ParticipantIds func(childComplexity int) int
 		Status         func(childComplexity int) int
 		Type           func(childComplexity int) int
 		UpdatedAt      func(childComplexity int) int
 	}
 
+	Entity struct {
+		FindCoachshipByID    func(childComplexity int, id string) int
+		FindFriendshipByID   func(childComplexity int, id string) int
+		FindRelationshipByID func(childComplexity int, id string) int
+	}
+
 	Friendship struct {
 		CreatedAt      func(childComplexity int) int
 		ID             func(childComplexity int) int
-		Metadata       func(childComplexity int) int
 		ParticipantIds func(childComplexity int) int
 		ReceiverID     func(childComplexity int) int
 		RequesterID    func(childComplexity int) int
@@ -71,20 +77,39 @@ type ComplexityRoot struct {
 		UpdatedAt      func(childComplexity int) int
 	}
 
-	Query struct {
-		CheckFriendshipStatus    func(childComplexity int, user1Id string, user2Id string) int
-		GetFriendship            func(childComplexity int, id string) int
-		GetFriendships           func(childComplexity int, input model.FriendshipsInput) int
-		GetPendingFriendRequests func(childComplexity int, userID string) int
-		GetSentFriendRequests    func(childComplexity int, userID string) int
-		__resolve__service       func(childComplexity int) int
+	Mutation struct {
+		AcceptCoachRequest    func(childComplexity int, coachshipID string) int
+		AcceptCoacheeRequest  func(childComplexity int, coachshipID string) int
+		AcceptFriendRequest   func(childComplexity int, friendshipID string) int
+		CancelCoachRequest    func(childComplexity int, coachshipID string) int
+		CancelCoacheeRequest  func(childComplexity int, coachshipID string) int
+		CancelFriendRequest   func(childComplexity int, friendshipID string) int
+		DeclineCoachRequest   func(childComplexity int, coachshipID string) int
+		DeclineCoacheeRequest func(childComplexity int, coachshipID string) int
+		EndCoachship          func(childComplexity int, coachshipID string) int
+		EndFriendship         func(childComplexity int, friendshipID string) int
+		RejectFriendRequest   func(childComplexity int, friendshipID string) int
+		SendCoachRequest      func(childComplexity int, userID string) int
+		SendCoacheeRequest    func(childComplexity int, userID string) int
+		SendFriendRequest     func(childComplexity int, userID string) int
 	}
 
-	RelationshipMetadata struct {
-		EndDate   func(childComplexity int) int
-		Notes     func(childComplexity int) int
-		StartDate func(childComplexity int) int
-		Tags      func(childComplexity int) int
+	Query struct {
+		Coaches                 func(childComplexity int, limit *int, offset *int) int
+		Coachship               func(childComplexity int, id string) int
+		CoachshipStatus         func(childComplexity int, otherUserID string) int
+		Friends                 func(childComplexity int, limit *int, offset *int) int
+		Friendship              func(childComplexity int, id string) int
+		FriendshipStatus        func(childComplexity int, otherUserID string) int
+		PendingFriendRequests   func(childComplexity int) int
+		ReceivedCoachRequests   func(childComplexity int) int
+		ReceivedCoacheeRequests func(childComplexity int) int
+		SentCoachRequests       func(childComplexity int) int
+		SentCoacheeRequests     func(childComplexity int) int
+		SentFriendRequests      func(childComplexity int) int
+		Students                func(childComplexity int, limit *int, offset *int) int
+		__resolve__service      func(childComplexity int) int
+		__resolve_entities      func(childComplexity int, representations []map[string]interface{}) int
 	}
 
 	_Service struct {
@@ -92,12 +117,41 @@ type ComplexityRoot struct {
 	}
 }
 
+type EntityResolver interface {
+	FindCoachshipByID(ctx context.Context, id string) (*model.Coachship, error)
+	FindFriendshipByID(ctx context.Context, id string) (*model.Friendship, error)
+	FindRelationshipByID(ctx context.Context, id string) (model.Relationship, error)
+}
+type MutationResolver interface {
+	SendCoachRequest(ctx context.Context, userID string) (*model.Coachship, error)
+	SendCoacheeRequest(ctx context.Context, userID string) (*model.Coachship, error)
+	AcceptCoachRequest(ctx context.Context, coachshipID string) (*model.Coachship, error)
+	AcceptCoacheeRequest(ctx context.Context, coachshipID string) (*model.Coachship, error)
+	DeclineCoachRequest(ctx context.Context, coachshipID string) (*bool, error)
+	DeclineCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error)
+	CancelCoachRequest(ctx context.Context, coachshipID string) (*bool, error)
+	CancelCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error)
+	EndCoachship(ctx context.Context, coachshipID string) (*bool, error)
+	SendFriendRequest(ctx context.Context, userID string) (*model.Friendship, error)
+	AcceptFriendRequest(ctx context.Context, friendshipID string) (*model.Friendship, error)
+	RejectFriendRequest(ctx context.Context, friendshipID string) (*bool, error)
+	CancelFriendRequest(ctx context.Context, friendshipID string) (*bool, error)
+	EndFriendship(ctx context.Context, friendshipID string) (*bool, error)
+}
 type QueryResolver interface {
-	GetFriendship(ctx context.Context, id string) (*model.Friendship, error)
-	GetFriendships(ctx context.Context, input model.FriendshipsInput) ([]*model.Friendship, error)
-	GetPendingFriendRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
-	GetSentFriendRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
-	CheckFriendshipStatus(ctx context.Context, user1Id string, user2Id string) (*model.Friendship, error)
+	Coachship(ctx context.Context, id string) (*model.Coachship, error)
+	Coaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
+	Students(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
+	SentCoacheeRequests(ctx context.Context) ([]*model.Coachship, error)
+	ReceivedCoachRequests(ctx context.Context) ([]*model.Coachship, error)
+	SentCoachRequests(ctx context.Context) ([]*model.Coachship, error)
+	ReceivedCoacheeRequests(ctx context.Context) ([]*model.Coachship, error)
+	CoachshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error)
+	Friendship(ctx context.Context, id string) (*model.Friendship, error)
+	Friends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error)
+	PendingFriendRequests(ctx context.Context) ([]*model.Friendship, error)
+	SentFriendRequests(ctx context.Context) ([]*model.Friendship, error)
+	FriendshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error)
 }
 
 type executableSchema struct {
@@ -147,13 +201,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Coachship.ID(childComplexity), true
 
-	case "Coachship.metadata":
-		if e.complexity.Coachship.Metadata == nil {
-			break
-		}
-
-		return e.complexity.Coachship.Metadata(childComplexity), true
-
 	case "Coachship.participantIds":
 		if e.complexity.Coachship.ParticipantIds == nil {
 			break
@@ -182,6 +229,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Coachship.UpdatedAt(childComplexity), true
 
+	case "Entity.findCoachshipByID":
+		if e.complexity.Entity.FindCoachshipByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findCoachshipByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindCoachshipByID(childComplexity, args["id"].(string)), true
+
+	case "Entity.findFriendshipByID":
+		if e.complexity.Entity.FindFriendshipByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findFriendshipByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindFriendshipByID(childComplexity, args["id"].(string)), true
+
+	case "Entity.findRelationshipByID":
+		if e.complexity.Entity.FindRelationshipByID == nil {
+			break
+		}
+
+		args, err := ec.field_Entity_findRelationshipByID_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Entity.FindRelationshipByID(childComplexity, args["id"].(string)), true
+
 	case "Friendship.createdAt":
 		if e.complexity.Friendship.CreatedAt == nil {
 			break
@@ -195,13 +278,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Friendship.ID(childComplexity), true
-
-	case "Friendship.metadata":
-		if e.complexity.Friendship.Metadata == nil {
-			break
-		}
-
-		return e.complexity.Friendship.Metadata(childComplexity), true
 
 	case "Friendship.participantIds":
 		if e.complexity.Friendship.ParticipantIds == nil {
@@ -245,65 +321,299 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Friendship.UpdatedAt(childComplexity), true
 
-	case "Query.checkFriendshipStatus":
-		if e.complexity.Query.CheckFriendshipStatus == nil {
+	case "Mutation.acceptCoachRequest":
+		if e.complexity.Mutation.AcceptCoachRequest == nil {
 			break
 		}
 
-		args, err := ec.field_Query_checkFriendshipStatus_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_acceptCoachRequest_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.CheckFriendshipStatus(childComplexity, args["user1Id"].(string), args["user2Id"].(string)), true
+		return e.complexity.Mutation.AcceptCoachRequest(childComplexity, args["coachshipId"].(string)), true
 
-	case "Query.getFriendship":
-		if e.complexity.Query.GetFriendship == nil {
+	case "Mutation.acceptCoacheeRequest":
+		if e.complexity.Mutation.AcceptCoacheeRequest == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getFriendship_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_acceptCoacheeRequest_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFriendship(childComplexity, args["id"].(string)), true
+		return e.complexity.Mutation.AcceptCoacheeRequest(childComplexity, args["coachshipId"].(string)), true
 
-	case "Query.getFriendships":
-		if e.complexity.Query.GetFriendships == nil {
+	case "Mutation.acceptFriendRequest":
+		if e.complexity.Mutation.AcceptFriendRequest == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getFriendships_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_acceptFriendRequest_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetFriendships(childComplexity, args["input"].(model.FriendshipsInput)), true
+		return e.complexity.Mutation.AcceptFriendRequest(childComplexity, args["friendshipId"].(string)), true
 
-	case "Query.getPendingFriendRequests":
-		if e.complexity.Query.GetPendingFriendRequests == nil {
+	case "Mutation.cancelCoachRequest":
+		if e.complexity.Mutation.CancelCoachRequest == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getPendingFriendRequests_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_cancelCoachRequest_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetPendingFriendRequests(childComplexity, args["userId"].(string)), true
+		return e.complexity.Mutation.CancelCoachRequest(childComplexity, args["coachshipId"].(string)), true
 
-	case "Query.getSentFriendRequests":
-		if e.complexity.Query.GetSentFriendRequests == nil {
+	case "Mutation.cancelCoacheeRequest":
+		if e.complexity.Mutation.CancelCoacheeRequest == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getSentFriendRequests_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_cancelCoacheeRequest_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetSentFriendRequests(childComplexity, args["userId"].(string)), true
+		return e.complexity.Mutation.CancelCoacheeRequest(childComplexity, args["coachshipId"].(string)), true
+
+	case "Mutation.cancelFriendRequest":
+		if e.complexity.Mutation.CancelFriendRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_cancelFriendRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CancelFriendRequest(childComplexity, args["friendshipId"].(string)), true
+
+	case "Mutation.declineCoachRequest":
+		if e.complexity.Mutation.DeclineCoachRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_declineCoachRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeclineCoachRequest(childComplexity, args["coachshipId"].(string)), true
+
+	case "Mutation.declineCoacheeRequest":
+		if e.complexity.Mutation.DeclineCoacheeRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_declineCoacheeRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeclineCoacheeRequest(childComplexity, args["coachshipId"].(string)), true
+
+	case "Mutation.endCoachship":
+		if e.complexity.Mutation.EndCoachship == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_endCoachship_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.EndCoachship(childComplexity, args["coachshipId"].(string)), true
+
+	case "Mutation.endFriendship":
+		if e.complexity.Mutation.EndFriendship == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_endFriendship_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.EndFriendship(childComplexity, args["friendshipId"].(string)), true
+
+	case "Mutation.rejectFriendRequest":
+		if e.complexity.Mutation.RejectFriendRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_rejectFriendRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RejectFriendRequest(childComplexity, args["friendshipId"].(string)), true
+
+	case "Mutation.sendCoachRequest":
+		if e.complexity.Mutation.SendCoachRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendCoachRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendCoachRequest(childComplexity, args["userId"].(string)), true
+
+	case "Mutation.sendCoacheeRequest":
+		if e.complexity.Mutation.SendCoacheeRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendCoacheeRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendCoacheeRequest(childComplexity, args["userId"].(string)), true
+
+	case "Mutation.sendFriendRequest":
+		if e.complexity.Mutation.SendFriendRequest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendFriendRequest_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendFriendRequest(childComplexity, args["userId"].(string)), true
+
+	case "Query.coaches":
+		if e.complexity.Query.Coaches == nil {
+			break
+		}
+
+		args, err := ec.field_Query_coaches_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Coaches(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
+
+	case "Query.coachship":
+		if e.complexity.Query.Coachship == nil {
+			break
+		}
+
+		args, err := ec.field_Query_coachship_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Coachship(childComplexity, args["id"].(string)), true
+
+	case "Query.coachshipStatus":
+		if e.complexity.Query.CoachshipStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Query_coachshipStatus_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.CoachshipStatus(childComplexity, args["otherUserId"].(string)), true
+
+	case "Query.friends":
+		if e.complexity.Query.Friends == nil {
+			break
+		}
+
+		args, err := ec.field_Query_friends_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Friends(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
+
+	case "Query.friendship":
+		if e.complexity.Query.Friendship == nil {
+			break
+		}
+
+		args, err := ec.field_Query_friendship_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Friendship(childComplexity, args["id"].(string)), true
+
+	case "Query.friendshipStatus":
+		if e.complexity.Query.FriendshipStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Query_friendshipStatus_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FriendshipStatus(childComplexity, args["otherUserId"].(string)), true
+
+	case "Query.pendingFriendRequests":
+		if e.complexity.Query.PendingFriendRequests == nil {
+			break
+		}
+
+		return e.complexity.Query.PendingFriendRequests(childComplexity), true
+
+	case "Query.receivedCoachRequests":
+		if e.complexity.Query.ReceivedCoachRequests == nil {
+			break
+		}
+
+		return e.complexity.Query.ReceivedCoachRequests(childComplexity), true
+
+	case "Query.receivedCoacheeRequests":
+		if e.complexity.Query.ReceivedCoacheeRequests == nil {
+			break
+		}
+
+		return e.complexity.Query.ReceivedCoacheeRequests(childComplexity), true
+
+	case "Query.sentCoachRequests":
+		if e.complexity.Query.SentCoachRequests == nil {
+			break
+		}
+
+		return e.complexity.Query.SentCoachRequests(childComplexity), true
+
+	case "Query.sentCoacheeRequests":
+		if e.complexity.Query.SentCoacheeRequests == nil {
+			break
+		}
+
+		return e.complexity.Query.SentCoacheeRequests(childComplexity), true
+
+	case "Query.sentFriendRequests":
+		if e.complexity.Query.SentFriendRequests == nil {
+			break
+		}
+
+		return e.complexity.Query.SentFriendRequests(childComplexity), true
+
+	case "Query.students":
+		if e.complexity.Query.Students == nil {
+			break
+		}
+
+		args, err := ec.field_Query_students_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Students(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -312,33 +622,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.__resolve__service(childComplexity), true
 
-	case "RelationshipMetadata.endDate":
-		if e.complexity.RelationshipMetadata.EndDate == nil {
+	case "Query._entities":
+		if e.complexity.Query.__resolve_entities == nil {
 			break
 		}
 
-		return e.complexity.RelationshipMetadata.EndDate(childComplexity), true
-
-	case "RelationshipMetadata.notes":
-		if e.complexity.RelationshipMetadata.Notes == nil {
-			break
+		args, err := ec.field_Query__entities_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
 		}
 
-		return e.complexity.RelationshipMetadata.Notes(childComplexity), true
-
-	case "RelationshipMetadata.startDate":
-		if e.complexity.RelationshipMetadata.StartDate == nil {
-			break
-		}
-
-		return e.complexity.RelationshipMetadata.StartDate(childComplexity), true
-
-	case "RelationshipMetadata.tags":
-		if e.complexity.RelationshipMetadata.Tags == nil {
-			break
-		}
-
-		return e.complexity.RelationshipMetadata.Tags(childComplexity), true
+		return e.complexity.Query.__resolve_entities(childComplexity, args["representations"].([]map[string]interface{})), true
 
 	case "_Service.sdl":
 		if e.complexity._Service.SDL == nil {
@@ -354,9 +648,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputFriendshipsInput,
-	)
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -389,6 +681,21 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 
 			return &response
+		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
+			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
 		}
 
 	default:
@@ -437,7 +744,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/RelationshipStatus.gql" "schema/enums/RelationshipType.gql" "schema/inputs/FriendshipsInput.gql" "schema/interfaces/Relationship.gql" "schema/queries/FriendshipQueries.gql" "schema/types/Coachship.gql" "schema/types/Friendship.gql" "schema/types/RelationshipMetadata.gql"
+//go:embed "schema/enums/RelationshipStatus.gql" "schema/enums/RelationshipType.gql" "schema/interfaces/Relationship.gql" "schema/mutations/CoachshipMutations.gql" "schema/mutations/FriendshipMutations.gql" "schema/queries/CoachshipQueries.gql" "schema/queries/FriendshipQueries.gql" "schema/types/Coachship.gql" "schema/types/Friendship.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -451,12 +758,13 @@ func sourceData(filename string) string {
 var sources = []*ast.Source{
 	{Name: "schema/enums/RelationshipStatus.gql", Input: sourceData("schema/enums/RelationshipStatus.gql"), BuiltIn: false},
 	{Name: "schema/enums/RelationshipType.gql", Input: sourceData("schema/enums/RelationshipType.gql"), BuiltIn: false},
-	{Name: "schema/inputs/FriendshipsInput.gql", Input: sourceData("schema/inputs/FriendshipsInput.gql"), BuiltIn: false},
 	{Name: "schema/interfaces/Relationship.gql", Input: sourceData("schema/interfaces/Relationship.gql"), BuiltIn: false},
+	{Name: "schema/mutations/CoachshipMutations.gql", Input: sourceData("schema/mutations/CoachshipMutations.gql"), BuiltIn: false},
+	{Name: "schema/mutations/FriendshipMutations.gql", Input: sourceData("schema/mutations/FriendshipMutations.gql"), BuiltIn: false},
+	{Name: "schema/queries/CoachshipQueries.gql", Input: sourceData("schema/queries/CoachshipQueries.gql"), BuiltIn: false},
 	{Name: "schema/queries/FriendshipQueries.gql", Input: sourceData("schema/queries/FriendshipQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/Coachship.gql", Input: sourceData("schema/types/Coachship.gql"), BuiltIn: false},
 	{Name: "schema/types/Friendship.gql", Input: sourceData("schema/types/Friendship.gql"), BuiltIn: false},
-	{Name: "schema/types/RelationshipMetadata.gql", Input: sourceData("schema/types/RelationshipMetadata.gql"), BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA
@@ -509,11 +817,22 @@ var sources = []*ast.Source{
 	scalar federation__Scope
 `, BuiltIn: true},
 	{Name: "../federation/entity.graphql", Input: `
+# a union of all types that use the @key directive
+union _Entity = Coachship | Friendship
+
+# fake type to build resolver interfaces for users to implement
+type Entity {
+	findCoachshipByID(id: ID!,): Coachship!
+	findFriendshipByID(id: ID!,): Friendship!
+	findRelationshipByID(id: ID!,): Relationship!
+}
+
 type _Service {
   sdl: String
 }
 
 extend type Query {
+  _entities(representations: [_Any!]!): [_Entity]!
   _service: _Service!
 }
 `, BuiltIn: true},
@@ -523,6 +842,397 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Entity_findCoachshipByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Entity_findCoachshipByID_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Entity_findCoachshipByID_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Entity_findFriendshipByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Entity_findFriendshipByID_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Entity_findFriendshipByID_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Entity_findRelationshipByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Entity_findRelationshipByID_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Entity_findRelationshipByID_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_acceptCoachRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_acceptCoachRequest_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_acceptCoachRequest_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_acceptCoacheeRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_acceptCoacheeRequest_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_acceptCoacheeRequest_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_acceptFriendRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_acceptFriendRequest_argsFriendshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["friendshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_acceptFriendRequest_argsFriendshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("friendshipId"))
+	if tmp, ok := rawArgs["friendshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelCoachRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_cancelCoachRequest_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_cancelCoachRequest_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelCoacheeRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_cancelCoacheeRequest_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_cancelCoacheeRequest_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_cancelFriendRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_cancelFriendRequest_argsFriendshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["friendshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_cancelFriendRequest_argsFriendshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("friendshipId"))
+	if tmp, ok := rawArgs["friendshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_declineCoachRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_declineCoachRequest_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_declineCoachRequest_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_declineCoacheeRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_declineCoacheeRequest_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_declineCoacheeRequest_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_endCoachship_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_endCoachship_argsCoachshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["coachshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_endCoachship_argsCoachshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("coachshipId"))
+	if tmp, ok := rawArgs["coachshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_endFriendship_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_endFriendship_argsFriendshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["friendshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_endFriendship_argsFriendshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("friendshipId"))
+	if tmp, ok := rawArgs["friendshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_rejectFriendRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_rejectFriendRequest_argsFriendshipID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["friendshipId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_rejectFriendRequest_argsFriendshipID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("friendshipId"))
+	if tmp, ok := rawArgs["friendshipId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_sendCoachRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_sendCoachRequest_argsUserID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_sendCoachRequest_argsUserID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+	if tmp, ok := rawArgs["userId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_sendCoacheeRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_sendCoacheeRequest_argsUserID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_sendCoacheeRequest_argsUserID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+	if tmp, ok := rawArgs["userId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_sendFriendRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_sendFriendRequest_argsUserID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["userId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_sendFriendRequest_argsUserID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
+	if tmp, ok := rawArgs["userId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -547,58 +1257,104 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_checkFriendshipStatus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query__entities_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_checkFriendshipStatus_argsUser1Id(ctx, rawArgs)
+	arg0, err := ec.field_Query__entities_argsRepresentations(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["user1Id"] = arg0
-	arg1, err := ec.field_Query_checkFriendshipStatus_argsUser2Id(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["user2Id"] = arg1
+	args["representations"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_checkFriendshipStatus_argsUser1Id(
+func (ec *executionContext) field_Query__entities_argsRepresentations(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("user1Id"))
-	if tmp, ok := rawArgs["user1Id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+) ([]map[string]interface{}, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("representations"))
+	if tmp, ok := rawArgs["representations"]; ok {
+		return ec.unmarshalN_Any2ᚕmapᚄ(ctx, tmp)
 	}
 
-	var zeroVal string
+	var zeroVal []map[string]interface{}
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_checkFriendshipStatus_argsUser2Id(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("user2Id"))
-	if tmp, ok := rawArgs["user2Id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
-	}
-
-	var zeroVal string
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_getFriendship_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_coaches_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_getFriendship_argsID(ctx, rawArgs)
+	arg0, err := ec.field_Query_coaches_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg0
+	arg1, err := ec.field_Query_coaches_argsOffset(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Query_coaches_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_coaches_argsOffset(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+	if tmp, ok := rawArgs["offset"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_coachshipStatus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_coachshipStatus_argsOtherUserID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["otherUserId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Query_coachshipStatus_argsOtherUserID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("otherUserId"))
+	if tmp, ok := rawArgs["otherUserId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_coachship_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_coachship_argsID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
 	args["id"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_getFriendship_argsID(
+func (ec *executionContext) field_Query_coachship_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (string, error) {
@@ -611,45 +1367,63 @@ func (ec *executionContext) field_Query_getFriendship_argsID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_getFriendships_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_friends_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_getFriendships_argsInput(ctx, rawArgs)
+	arg0, err := ec.field_Query_friends_argsLimit(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["input"] = arg0
+	args["limit"] = arg0
+	arg1, err := ec.field_Query_friends_argsOffset(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg1
 	return args, nil
 }
-func (ec *executionContext) field_Query_getFriendships_argsInput(
+func (ec *executionContext) field_Query_friends_argsLimit(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (model.FriendshipsInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-	if tmp, ok := rawArgs["input"]; ok {
-		return ec.unmarshalNFriendshipsInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipsInput(ctx, tmp)
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
 	}
 
-	var zeroVal model.FriendshipsInput
+	var zeroVal *int
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_getPendingFriendRequests_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_friends_argsOffset(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+	if tmp, ok := rawArgs["offset"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_friendshipStatus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_getPendingFriendRequests_argsUserID(ctx, rawArgs)
+	arg0, err := ec.field_Query_friendshipStatus_argsOtherUserID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg0
+	args["otherUserId"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_getPendingFriendRequests_argsUserID(
+func (ec *executionContext) field_Query_friendshipStatus_argsOtherUserID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-	if tmp, ok := rawArgs["userId"]; ok {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("otherUserId"))
+	if tmp, ok := rawArgs["otherUserId"]; ok {
 		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
@@ -657,26 +1431,67 @@ func (ec *executionContext) field_Query_getPendingFriendRequests_argsUserID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_getSentFriendRequests_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_friendship_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_getSentFriendRequests_argsUserID(ctx, rawArgs)
+	arg0, err := ec.field_Query_friendship_argsID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg0
+	args["id"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Query_getSentFriendRequests_argsUserID(
+func (ec *executionContext) field_Query_friendship_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-	if tmp, ok := rawArgs["userId"]; ok {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
 		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
 	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_students_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Query_students_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg0
+	arg1, err := ec.field_Query_students_argsOffset(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Query_students_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_students_argsOffset(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+	if tmp, ok := rawArgs["offset"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
 	return zeroVal, nil
 }
 
@@ -995,57 +1810,6 @@ func (ec *executionContext) fieldContext_Coachship_updatedAt(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Coachship_metadata(ctx context.Context, field graphql.CollectedField, obj *model.Coachship) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Coachship_metadata(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Metadata, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.RelationshipMetadata)
-	fc.Result = res
-	return ec.marshalORelationshipMetadata2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipMetadata(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Coachship_metadata(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Coachship",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "notes":
-				return ec.fieldContext_RelationshipMetadata_notes(ctx, field)
-			case "tags":
-				return ec.fieldContext_RelationshipMetadata_tags(ctx, field)
-			case "startDate":
-				return ec.fieldContext_RelationshipMetadata_startDate(ctx, field)
-			case "endDate":
-				return ec.fieldContext_RelationshipMetadata_endDate(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type RelationshipMetadata", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Coachship_coachId(ctx context.Context, field graphql.CollectedField, obj *model.Coachship) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Coachship_coachId(ctx, field)
 	if err != nil {
@@ -1130,6 +1894,207 @@ func (ec *executionContext) fieldContext_Coachship_coacheeId(_ context.Context, 
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findCoachshipByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findCoachshipByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindCoachshipByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findCoachshipByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findCoachshipByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findFriendshipByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findFriendshipByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindFriendshipByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Friendship)
+	fc.Result = res
+	return ec.marshalNFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findFriendshipByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Friendship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Friendship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Friendship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Friendship_updatedAt(ctx, field)
+			case "requesterId":
+				return ec.fieldContext_Friendship_requesterId(ctx, field)
+			case "receiverId":
+				return ec.fieldContext_Friendship_receiverId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findFriendshipByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Entity_findRelationshipByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Entity_findRelationshipByID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Entity().FindRelationshipByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.Relationship)
+	fc.Result = res
+	return ec.marshalNRelationship2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Entity_findRelationshipByID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Entity",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("FieldContext.Child cannot be called on type INTERFACE")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Entity_findRelationshipByID_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -1395,57 +2360,6 @@ func (ec *executionContext) fieldContext_Friendship_updatedAt(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Friendship_metadata(ctx context.Context, field graphql.CollectedField, obj *model.Friendship) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Friendship_metadata(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Metadata, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.RelationshipMetadata)
-	fc.Result = res
-	return ec.marshalORelationshipMetadata2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipMetadata(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Friendship_metadata(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Friendship",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "notes":
-				return ec.fieldContext_RelationshipMetadata_notes(ctx, field)
-			case "tags":
-				return ec.fieldContext_RelationshipMetadata_tags(ctx, field)
-			case "startDate":
-				return ec.fieldContext_RelationshipMetadata_startDate(ctx, field)
-			case "endDate":
-				return ec.fieldContext_RelationshipMetadata_endDate(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type RelationshipMetadata", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Friendship_requesterId(ctx context.Context, field graphql.CollectedField, obj *model.Friendship) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Friendship_requesterId(ctx, field)
 	if err != nil {
@@ -1534,8 +2448,8 @@ func (ec *executionContext) fieldContext_Friendship_receiverId(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getFriendship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getFriendship(ctx, field)
+func (ec *executionContext) _Mutation_sendCoachRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendCoachRequest(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1548,7 +2462,547 @@ func (ec *executionContext) _Query_getFriendship(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFriendship(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Mutation().SendCoachRequest(rctx, fc.Args["userId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Coachship)
+	fc.Result = res
+	return ec.marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendCoachRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendCoachRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendCoacheeRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendCoacheeRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendCoacheeRequest(rctx, fc.Args["userId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Coachship)
+	fc.Result = res
+	return ec.marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendCoacheeRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendCoacheeRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_acceptCoachRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_acceptCoachRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AcceptCoachRequest(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Coachship)
+	fc.Result = res
+	return ec.marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_acceptCoachRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_acceptCoachRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_acceptCoacheeRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_acceptCoacheeRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AcceptCoacheeRequest(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Coachship)
+	fc.Result = res
+	return ec.marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_acceptCoacheeRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_acceptCoacheeRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_declineCoachRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_declineCoachRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeclineCoachRequest(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_declineCoachRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_declineCoachRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_declineCoacheeRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_declineCoacheeRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeclineCoacheeRequest(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_declineCoacheeRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_declineCoacheeRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_cancelCoachRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_cancelCoachRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelCoachRequest(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_cancelCoachRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_cancelCoachRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_cancelCoacheeRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_cancelCoacheeRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelCoacheeRequest(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_cancelCoacheeRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_cancelCoacheeRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_endCoachship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_endCoachship(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().EndCoachship(rctx, fc.Args["coachshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_endCoachship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_endCoachship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendFriendRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendFriendRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SendFriendRequest(rctx, fc.Args["userId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1562,9 +3016,9 @@ func (ec *executionContext) _Query_getFriendship(ctx context.Context, field grap
 	return ec.marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getFriendship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_sendFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "Query",
+		Object:     "Mutation",
 		Field:      field,
 		IsMethod:   true,
 		IsResolver: true,
@@ -1582,8 +3036,6 @@ func (ec *executionContext) fieldContext_Query_getFriendship(ctx context.Context
 				return ec.fieldContext_Friendship_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Friendship_metadata(ctx, field)
 			case "requesterId":
 				return ec.fieldContext_Friendship_requesterId(ctx, field)
 			case "receiverId":
@@ -1599,15 +3051,15 @@ func (ec *executionContext) fieldContext_Query_getFriendship(ctx context.Context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getFriendship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_sendFriendRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getFriendships(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getFriendships(ctx, field)
+func (ec *executionContext) _Mutation_acceptFriendRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_acceptFriendRequest(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1620,232 +3072,7 @@ func (ec *executionContext) _Query_getFriendships(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFriendships(rctx, fc.Args["input"].(model.FriendshipsInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Friendship)
-	fc.Result = res
-	return ec.marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getFriendships(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Friendship_id(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_Friendship_participantIds(ctx, field)
-			case "type":
-				return ec.fieldContext_Friendship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Friendship_status(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Friendship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Friendship_metadata(ctx, field)
-			case "requesterId":
-				return ec.fieldContext_Friendship_requesterId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Friendship_receiverId(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getFriendships_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getPendingFriendRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getPendingFriendRequests(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPendingFriendRequests(rctx, fc.Args["userId"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Friendship)
-	fc.Result = res
-	return ec.marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getPendingFriendRequests(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Friendship_id(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_Friendship_participantIds(ctx, field)
-			case "type":
-				return ec.fieldContext_Friendship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Friendship_status(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Friendship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Friendship_metadata(ctx, field)
-			case "requesterId":
-				return ec.fieldContext_Friendship_requesterId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Friendship_receiverId(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getPendingFriendRequests_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getSentFriendRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getSentFriendRequests(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetSentFriendRequests(rctx, fc.Args["userId"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Friendship)
-	fc.Result = res
-	return ec.marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getSentFriendRequests(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Friendship_id(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_Friendship_participantIds(ctx, field)
-			case "type":
-				return ec.fieldContext_Friendship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Friendship_status(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Friendship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Friendship_metadata(ctx, field)
-			case "requesterId":
-				return ec.fieldContext_Friendship_requesterId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Friendship_receiverId(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getSentFriendRequests_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_checkFriendshipStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_checkFriendshipStatus(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().CheckFriendshipStatus(rctx, fc.Args["user1Id"].(string), fc.Args["user2Id"].(string))
+		return ec.resolvers.Mutation().AcceptFriendRequest(rctx, fc.Args["friendshipId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1859,7 +3086,749 @@ func (ec *executionContext) _Query_checkFriendshipStatus(ctx context.Context, fi
 	return ec.marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_checkFriendshipStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_acceptFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Friendship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Friendship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Friendship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Friendship_updatedAt(ctx, field)
+			case "requesterId":
+				return ec.fieldContext_Friendship_requesterId(ctx, field)
+			case "receiverId":
+				return ec.fieldContext_Friendship_receiverId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_acceptFriendRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_rejectFriendRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_rejectFriendRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RejectFriendRequest(rctx, fc.Args["friendshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_rejectFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_rejectFriendRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_cancelFriendRequest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_cancelFriendRequest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelFriendRequest(rctx, fc.Args["friendshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_cancelFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_cancelFriendRequest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_endFriendship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_endFriendship(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().EndFriendship(rctx, fc.Args["friendshipId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_endFriendship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_endFriendship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_coachship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_coachship(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Coachship(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Coachship)
+	fc.Result = res
+	return ec.marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_coachship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_coachship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_coaches(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_coaches(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Coaches(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_coaches(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_coaches_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_students(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_students(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Students(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_students(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_students_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_sentCoacheeRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_sentCoacheeRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SentCoacheeRequests(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_sentCoacheeRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_receivedCoachRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_receivedCoachRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ReceivedCoachRequests(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_receivedCoachRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_sentCoachRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_sentCoachRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SentCoachRequests(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_sentCoachRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_receivedCoacheeRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_receivedCoacheeRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ReceivedCoacheeRequests(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coachship)
+	fc.Result = res
+	return ec.marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_receivedCoacheeRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Coachship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Coachship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Coachship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Coachship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Coachship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Coachship_updatedAt(ctx, field)
+			case "coachId":
+				return ec.fieldContext_Coachship_coachId(ctx, field)
+			case "coacheeId":
+				return ec.fieldContext_Coachship_coacheeId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_coachshipStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_coachshipStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().CoachshipStatus(rctx, fc.Args["otherUserId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.RelationshipStatus)
+	fc.Result = res
+	return ec.marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_coachshipStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type RelationshipStatus does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_coachshipStatus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_friendship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_friendship(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Friendship(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Friendship)
+	fc.Result = res
+	return ec.marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_friendship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -1879,8 +3848,6 @@ func (ec *executionContext) fieldContext_Query_checkFriendshipStatus(ctx context
 				return ec.fieldContext_Friendship_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "metadata":
-				return ec.fieldContext_Friendship_metadata(ctx, field)
 			case "requesterId":
 				return ec.fieldContext_Friendship_requesterId(ctx, field)
 			case "receiverId":
@@ -1896,7 +3863,311 @@ func (ec *executionContext) fieldContext_Query_checkFriendshipStatus(ctx context
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_checkFriendshipStatus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_friendship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_friends(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_friends(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Friends(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Friendship)
+	fc.Result = res
+	return ec.marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_friends(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Friendship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Friendship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Friendship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Friendship_updatedAt(ctx, field)
+			case "requesterId":
+				return ec.fieldContext_Friendship_requesterId(ctx, field)
+			case "receiverId":
+				return ec.fieldContext_Friendship_receiverId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_friends_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_pendingFriendRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_pendingFriendRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().PendingFriendRequests(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Friendship)
+	fc.Result = res
+	return ec.marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_pendingFriendRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Friendship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Friendship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Friendship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Friendship_updatedAt(ctx, field)
+			case "requesterId":
+				return ec.fieldContext_Friendship_requesterId(ctx, field)
+			case "receiverId":
+				return ec.fieldContext_Friendship_receiverId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_sentFriendRequests(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_sentFriendRequests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SentFriendRequests(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Friendship)
+	fc.Result = res
+	return ec.marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_sentFriendRequests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Friendship_id(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_Friendship_participantIds(ctx, field)
+			case "type":
+				return ec.fieldContext_Friendship_type(ctx, field)
+			case "status":
+				return ec.fieldContext_Friendship_status(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Friendship_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Friendship_updatedAt(ctx, field)
+			case "requesterId":
+				return ec.fieldContext_Friendship_requesterId(ctx, field)
+			case "receiverId":
+				return ec.fieldContext_Friendship_receiverId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_friendshipStatus(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_friendshipStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FriendshipStatus(rctx, fc.Args["otherUserId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.RelationshipStatus)
+	fc.Result = res
+	return ec.marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_friendshipStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type RelationshipStatus does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_friendshipStatus_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query__entities(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query__entities(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.__resolve_entities(ctx, fc.Args["representations"].([]map[string]interface{})), nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]fedruntime.Entity)
+	fc.Result = res
+	return ec.marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query__entities(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type _Entity does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query__entities_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2075,170 +4346,6 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RelationshipMetadata_notes(ctx context.Context, field graphql.CollectedField, obj *model.RelationshipMetadata) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RelationshipMetadata_notes(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Notes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RelationshipMetadata_notes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RelationshipMetadata",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RelationshipMetadata_tags(ctx context.Context, field graphql.CollectedField, obj *model.RelationshipMetadata) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RelationshipMetadata_tags(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Tags, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]string)
-	fc.Result = res
-	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RelationshipMetadata_tags(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RelationshipMetadata",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RelationshipMetadata_startDate(ctx context.Context, field graphql.CollectedField, obj *model.RelationshipMetadata) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RelationshipMetadata_startDate(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.StartDate, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RelationshipMetadata_startDate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RelationshipMetadata",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _RelationshipMetadata_endDate(ctx context.Context, field graphql.CollectedField, obj *model.RelationshipMetadata) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RelationshipMetadata_endDate(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.EndDate, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_RelationshipMetadata_endDate(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "RelationshipMetadata",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4058,54 +6165,6 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputFriendshipsInput(ctx context.Context, obj interface{}) (model.FriendshipsInput, error) {
-	var it model.FriendshipsInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"userId", "status", "limit", "offset"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "userId":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-			data, err := ec.unmarshalNID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.UserID = data
-		case "status":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Status = data
-		case "limit":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Limit = data
-		case "offset":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Offset = data
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -4133,11 +6192,34 @@ func (ec *executionContext) _Relationship(ctx context.Context, sel ast.Selection
 	}
 }
 
+func (ec *executionContext) __Entity(ctx context.Context, sel ast.SelectionSet, obj fedruntime.Entity) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.Coachship:
+		return ec._Coachship(ctx, sel, &obj)
+	case *model.Coachship:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Coachship(ctx, sel, obj)
+	case model.Friendship:
+		return ec._Friendship(ctx, sel, &obj)
+	case *model.Friendship:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Friendship(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
 
-var coachshipImplementors = []string{"Coachship", "Relationship"}
+var coachshipImplementors = []string{"Coachship", "Relationship", "_Entity"}
 
 func (ec *executionContext) _Coachship(ctx context.Context, sel ast.SelectionSet, obj *model.Coachship) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, coachshipImplementors)
@@ -4175,8 +6257,6 @@ func (ec *executionContext) _Coachship(ctx context.Context, sel ast.SelectionSet
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Coachship_updatedAt(ctx, field, obj)
-		case "metadata":
-			out.Values[i] = ec._Coachship_metadata(ctx, field, obj)
 		case "coachId":
 			out.Values[i] = ec._Coachship_coachId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4210,7 +6290,115 @@ func (ec *executionContext) _Coachship(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
-var friendshipImplementors = []string{"Friendship", "Relationship"}
+var entityImplementors = []string{"Entity"}
+
+func (ec *executionContext) _Entity(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, entityImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Entity",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
+			Object: field.Name,
+			Field:  field,
+		})
+
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Entity")
+		case "findCoachshipByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findCoachshipByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findFriendshipByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findFriendshipByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "findRelationshipByID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Entity_findRelationshipByID(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var friendshipImplementors = []string{"Friendship", "Relationship", "_Entity"}
 
 func (ec *executionContext) _Friendship(ctx context.Context, sel ast.SelectionSet, obj *model.Friendship) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, friendshipImplementors)
@@ -4248,8 +6436,6 @@ func (ec *executionContext) _Friendship(ctx context.Context, sel ast.SelectionSe
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Friendship_updatedAt(ctx, field, obj)
-		case "metadata":
-			out.Values[i] = ec._Friendship_metadata(ctx, field, obj)
 		case "requesterId":
 			out.Values[i] = ec._Friendship_requesterId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4260,6 +6446,104 @@ func (ec *executionContext) _Friendship(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
+			Object: field.Name,
+			Field:  field,
+		})
+
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "sendCoachRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendCoachRequest(ctx, field)
+			})
+		case "sendCoacheeRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendCoacheeRequest(ctx, field)
+			})
+		case "acceptCoachRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_acceptCoachRequest(ctx, field)
+			})
+		case "acceptCoacheeRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_acceptCoacheeRequest(ctx, field)
+			})
+		case "declineCoachRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_declineCoachRequest(ctx, field)
+			})
+		case "declineCoacheeRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_declineCoacheeRequest(ctx, field)
+			})
+		case "cancelCoachRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_cancelCoachRequest(ctx, field)
+			})
+		case "cancelCoacheeRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_cancelCoacheeRequest(ctx, field)
+			})
+		case "endCoachship":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_endCoachship(ctx, field)
+			})
+		case "sendFriendRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendFriendRequest(ctx, field)
+			})
+		case "acceptFriendRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_acceptFriendRequest(ctx, field)
+			})
+		case "rejectFriendRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_rejectFriendRequest(ctx, field)
+			})
+		case "cancelFriendRequest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_cancelFriendRequest(ctx, field)
+			})
+		case "endFriendship":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_endFriendship(ctx, field)
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4302,7 +6586,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getFriendship":
+		case "coachship":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4311,7 +6595,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getFriendship(ctx, field)
+				res = ec._Query_coachship(ctx, field)
 				return res
 			}
 
@@ -4321,7 +6605,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getFriendships":
+		case "coaches":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4330,7 +6614,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getFriendships(ctx, field)
+				res = ec._Query_coaches(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4343,7 +6627,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getPendingFriendRequests":
+		case "students":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4352,7 +6636,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getPendingFriendRequests(ctx, field)
+				res = ec._Query_students(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4365,7 +6649,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getSentFriendRequests":
+		case "sentCoacheeRequests":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4374,7 +6658,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getSentFriendRequests(ctx, field)
+				res = ec._Query_sentCoacheeRequests(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -4387,7 +6671,73 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "checkFriendshipStatus":
+		case "receivedCoachRequests":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_receivedCoachRequests(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "sentCoachRequests":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sentCoachRequests(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "receivedCoacheeRequests":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_receivedCoacheeRequests(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "coachshipStatus":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -4396,7 +6746,133 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_checkFriendshipStatus(ctx, field)
+				res = ec._Query_coachshipStatus(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "friendship":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_friendship(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "friends":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_friends(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "pendingFriendRequests":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_pendingFriendRequests(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "sentFriendRequests":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sentFriendRequests(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "friendshipStatus":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_friendshipStatus(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "_entities":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query__entities(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -4436,48 +6912,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var relationshipMetadataImplementors = []string{"RelationshipMetadata"}
-
-func (ec *executionContext) _RelationshipMetadata(ctx context.Context, sel ast.SelectionSet, obj *model.RelationshipMetadata) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, relationshipMetadataImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("RelationshipMetadata")
-		case "notes":
-			out.Values[i] = ec._RelationshipMetadata_notes(ctx, field, obj)
-		case "tags":
-			out.Values[i] = ec._RelationshipMetadata_tags(ctx, field, obj)
-		case "startDate":
-			out.Values[i] = ec._RelationshipMetadata_startDate(ctx, field, obj)
-		case "endDate":
-			out.Values[i] = ec._RelationshipMetadata_endDate(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4878,6 +7312,64 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCoachship2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx context.Context, sel ast.SelectionSet, v model.Coachship) graphql.Marshaler {
+	return ec._Coachship(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCoachship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachshipᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Coachship) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx context.Context, sel ast.SelectionSet, v *model.Coachship) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Coachship(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNFieldSet2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4891,6 +7383,10 @@ func (ec *executionContext) marshalNFieldSet2string(ctx context.Context, sel ast
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNFriendship2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx context.Context, sel ast.SelectionSet, v model.Friendship) graphql.Marshaler {
+	return ec._Friendship(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNFriendship2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Friendship) graphql.Marshaler {
@@ -4947,11 +7443,6 @@ func (ec *executionContext) marshalNFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourt
 	return ec._Friendship(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNFriendshipsInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendshipsInput(ctx context.Context, v interface{}) (model.FriendshipsInput, error) {
-	res, err := ec.unmarshalInputFriendshipsInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4999,6 +7490,16 @@ func (ec *executionContext) marshalNID2ᚕstringᚄ(ctx context.Context, sel ast
 	return ret
 }
 
+func (ec *executionContext) marshalNRelationship2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationship(ctx context.Context, sel ast.SelectionSet, v model.Relationship) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Relationship(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNRelationshipStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx context.Context, v interface{}) (model.RelationshipStatus, error) {
 	var res model.RelationshipStatus
 	err := res.UnmarshalGQL(v)
@@ -5032,6 +7533,97 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalN_Any2map(ctx context.Context, v interface{}) (map[string]interface{}, error) {
+	res, err := graphql.UnmarshalMap(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalN_Any2map(ctx context.Context, sel ast.SelectionSet, v map[string]interface{}) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalMap(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalN_Any2ᚕmapᚄ(ctx context.Context, v interface{}) ([]map[string]interface{}, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]map[string]interface{}, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalN_Any2map(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalN_Any2ᚕmapᚄ(ctx context.Context, sel ast.SelectionSet, v []map[string]interface{}) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalN_Any2map(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalN_Entity2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v []fedruntime.Entity) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
 }
 
 func (ec *executionContext) marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx context.Context, sel ast.SelectionSet, v fedruntime.Service) graphql.Marshaler {
@@ -5475,6 +8067,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx context.Context, sel ast.SelectionSet, v *model.Coachship) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Coachship(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx context.Context, sel ast.SelectionSet, v *model.Friendship) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -5496,13 +8095,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
-}
-
-func (ec *executionContext) marshalORelationshipMetadata2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipMetadata(ctx context.Context, sel ast.SelectionSet, v *model.RelationshipMetadata) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._RelationshipMetadata(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx context.Context, v interface{}) (*model.RelationshipStatus, error) {
@@ -5583,6 +8175,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec.__Entity(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

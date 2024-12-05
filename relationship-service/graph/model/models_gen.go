@@ -8,31 +8,52 @@ import (
 	"strconv"
 )
 
+// Represents a relationship between two users in the system.
+// This interface is implemented by specific relationship types like Friendship and Coachship.
 type Relationship interface {
+	IsEntity()
 	IsRelationship()
+	// Unique identifier for the relationship
 	GetID() string
+	// Array of user IDs who are part of this relationship
 	GetParticipantIds() []string
+	// The type of relationship (e.g., FRIENDSHIP, COACHING)
 	GetType() RelationshipType
+	// Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
 	GetStatus() RelationshipStatus
+	// ISO-8601 formatted timestamp when the relationship was created
 	GetCreatedAt() string
+	// ISO-8601 formatted timestamp when the relationship was last updated
 	GetUpdatedAt() *string
-	GetMetadata() *RelationshipMetadata
 }
 
+// Represents a coaching relationship between a coach and a coachee.
+// Implements the Relationship interface.
 type Coachship struct {
-	ID             string                `json:"id"`
-	ParticipantIds []string              `json:"participantIds"`
-	Type           RelationshipType      `json:"type"`
-	Status         RelationshipStatus    `json:"status"`
-	CreatedAt      string                `json:"createdAt"`
-	UpdatedAt      *string               `json:"updatedAt,omitempty"`
-	Metadata       *RelationshipMetadata `json:"metadata,omitempty"`
-	CoachID        string                `json:"coachId"`
-	CoacheeID      string                `json:"coacheeId"`
+	// Unique identifier for the coaching relationship
+	ID string `json:"id"`
+	// List of IDs for all participants in this relationship (coach and coachee)
+	ParticipantIds []string `json:"participantIds"`
+	// Type of relationship (always COACHING for Coachship)
+	Type RelationshipType `json:"type"`
+	// Current status of the coaching relationship
+	Status RelationshipStatus `json:"status"`
+	// ISO-8601 formatted timestamp when the coaching relationship was created
+	CreatedAt string `json:"createdAt"`
+	// ISO-8601 formatted timestamp when the coaching relationship was last updated
+	UpdatedAt *string `json:"updatedAt,omitempty"`
+	// ID of the user who is the coach in this relationship
+	CoachID string `json:"coachId"`
+	// ID of the user who is being coached in this relationship
+	CoacheeID string `json:"coacheeId"`
 }
 
-func (Coachship) IsRelationship()    {}
+func (Coachship) IsRelationship() {}
+
+// Unique identifier for the relationship
 func (this Coachship) GetID() string { return this.ID }
+
+// Array of user IDs who are part of this relationship
 func (this Coachship) GetParticipantIds() []string {
 	if this.ParticipantIds == nil {
 		return nil
@@ -43,26 +64,48 @@ func (this Coachship) GetParticipantIds() []string {
 	}
 	return interfaceSlice
 }
-func (this Coachship) GetType() RelationshipType          { return this.Type }
-func (this Coachship) GetStatus() RelationshipStatus      { return this.Status }
-func (this Coachship) GetCreatedAt() string               { return this.CreatedAt }
-func (this Coachship) GetUpdatedAt() *string              { return this.UpdatedAt }
-func (this Coachship) GetMetadata() *RelationshipMetadata { return this.Metadata }
 
+// The type of relationship (e.g., FRIENDSHIP, COACHING)
+func (this Coachship) GetType() RelationshipType { return this.Type }
+
+// Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
+func (this Coachship) GetStatus() RelationshipStatus { return this.Status }
+
+// ISO-8601 formatted timestamp when the relationship was created
+func (this Coachship) GetCreatedAt() string { return this.CreatedAt }
+
+// ISO-8601 formatted timestamp when the relationship was last updated
+func (this Coachship) GetUpdatedAt() *string { return this.UpdatedAt }
+
+func (Coachship) IsEntity() {}
+
+// Represents a friendship between two users.
+// Implements the Relationship interface and can be referenced across services using its ID.
 type Friendship struct {
-	ID             string                `json:"id"`
-	ParticipantIds []string              `json:"participantIds"`
-	Type           RelationshipType      `json:"type"`
-	Status         RelationshipStatus    `json:"status"`
-	CreatedAt      string                `json:"createdAt"`
-	UpdatedAt      *string               `json:"updatedAt,omitempty"`
-	Metadata       *RelationshipMetadata `json:"metadata,omitempty"`
-	RequesterID    string                `json:"requesterId"`
-	ReceiverID     string                `json:"receiverId"`
+	// Unique identifier for the friendship
+	ID string `json:"id"`
+	// List of IDs for both users in the friendship
+	ParticipantIds []string `json:"participantIds"`
+	// Type of relationship (always FRIENDSHIP for Friendship)
+	Type RelationshipType `json:"type"`
+	// Current status of the friendship
+	Status RelationshipStatus `json:"status"`
+	// ISO-8601 formatted timestamp when the friendship was created
+	CreatedAt string `json:"createdAt"`
+	// ISO-8601 formatted timestamp when the friendship was last updated
+	UpdatedAt *string `json:"updatedAt,omitempty"`
+	// ID of the user who initiated the friendship request
+	RequesterID string `json:"requesterId"`
+	// ID of the user who received the friendship request
+	ReceiverID string `json:"receiverId"`
 }
 
-func (Friendship) IsRelationship()    {}
+func (Friendship) IsRelationship() {}
+
+// Unique identifier for the relationship
 func (this Friendship) GetID() string { return this.ID }
+
+// Array of user IDs who are part of this relationship
 func (this Friendship) GetParticipantIds() []string {
 	if this.ParticipantIds == nil {
 		return nil
@@ -73,48 +116,45 @@ func (this Friendship) GetParticipantIds() []string {
 	}
 	return interfaceSlice
 }
-func (this Friendship) GetType() RelationshipType          { return this.Type }
-func (this Friendship) GetStatus() RelationshipStatus      { return this.Status }
-func (this Friendship) GetCreatedAt() string               { return this.CreatedAt }
-func (this Friendship) GetUpdatedAt() *string              { return this.UpdatedAt }
-func (this Friendship) GetMetadata() *RelationshipMetadata { return this.Metadata }
 
-type FriendshipsInput struct {
-	UserID string              `json:"userId"`
-	Status *RelationshipStatus `json:"status,omitempty"`
-	Limit  *int                `json:"limit,omitempty"`
-	Offset *int                `json:"offset,omitempty"`
+// The type of relationship (e.g., FRIENDSHIP, COACHING)
+func (this Friendship) GetType() RelationshipType { return this.Type }
+
+// Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
+func (this Friendship) GetStatus() RelationshipStatus { return this.Status }
+
+// ISO-8601 formatted timestamp when the relationship was created
+func (this Friendship) GetCreatedAt() string { return this.CreatedAt }
+
+// ISO-8601 formatted timestamp when the relationship was last updated
+func (this Friendship) GetUpdatedAt() *string { return this.UpdatedAt }
+
+func (Friendship) IsEntity() {}
+
+type Mutation struct {
 }
 
 type Query struct {
 }
 
-type RelationshipMetadata struct {
-	Notes     *string  `json:"notes,omitempty"`
-	Tags      []string `json:"tags,omitempty"`
-	StartDate *string  `json:"startDate,omitempty"`
-	EndDate   *string  `json:"endDate,omitempty"`
-}
-
+// Represents the possible status of a relationship between users.
 type RelationshipStatus string
 
 const (
-	RelationshipStatusPending  RelationshipStatus = "PENDING"
-	RelationshipStatusActive   RelationshipStatus = "ACTIVE"
-	RelationshipStatusRejected RelationshipStatus = "REJECTED"
-	RelationshipStatusEnded    RelationshipStatus = "ENDED"
+	// The relationship is in a pending state, meaning a request has been sent but not yet accepted.
+	RelationshipStatusPending RelationshipStatus = "PENDING"
+	// The relationship is active, meaning the request has been accepted and the relationship is established.
+	RelationshipStatusActive RelationshipStatus = "ACTIVE"
 )
 
 var AllRelationshipStatus = []RelationshipStatus{
 	RelationshipStatusPending,
 	RelationshipStatusActive,
-	RelationshipStatusRejected,
-	RelationshipStatusEnded,
 }
 
 func (e RelationshipStatus) IsValid() bool {
 	switch e {
-	case RelationshipStatusPending, RelationshipStatusActive, RelationshipStatusRejected, RelationshipStatusEnded:
+	case RelationshipStatusPending, RelationshipStatusActive:
 		return true
 	}
 	return false
@@ -141,21 +181,24 @@ func (e RelationshipStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Represents the different types of relationships that can exist between users.
 type RelationshipType string
 
 const (
+	// A friendship relationship between two users.
 	RelationshipTypeFriendship RelationshipType = "FRIENDSHIP"
-	RelationshipTypeCoaching   RelationshipType = "COACHING"
+	// A coaching relationship between a coach and a coachee.
+	RelationshipTypeCoachship RelationshipType = "COACHSHIP"
 )
 
 var AllRelationshipType = []RelationshipType{
 	RelationshipTypeFriendship,
-	RelationshipTypeCoaching,
+	RelationshipTypeCoachship,
 }
 
 func (e RelationshipType) IsValid() bool {
 	switch e {
-	case RelationshipTypeFriendship, RelationshipTypeCoaching:
+	case RelationshipTypeFriendship, RelationshipTypeCoachship:
 		return true
 	}
 	return false

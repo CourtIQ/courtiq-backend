@@ -1,12 +1,29 @@
-type Friendship implements Relationship {
+"""
+Represents a friendship between two users.
+Implements the Relationship interface and can be referenced across services using its ID.
+"""
+type Friendship implements Relationship @key(fields: "id") {
+  """Unique identifier for the friendship"""
   id: ID!
-  participantIds: [ID!]!
-  type: RelationshipType!
-  status: RelationshipStatus!
-  createdAt: String!
-  updatedAt: String
-  metadata: RelationshipMetadata
 
+  """List of IDs for both users in the friendship"""
+  participantIds: [ID!]!
+
+  """Type of relationship (always FRIENDSHIP for Friendship)"""
+  type: RelationshipType!
+
+  """Current status of the friendship"""
+  status: RelationshipStatus!
+
+  """ISO-8601 formatted timestamp when the friendship was created"""
+  createdAt: String!
+
+  """ISO-8601 formatted timestamp when the friendship was last updated"""
+  updatedAt: String
+
+  """ID of the user who initiated the friendship request"""
   requesterId: ID!
+
+  """ID of the user who received the friendship request"""
   receiverId: ID!
 }

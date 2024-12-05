@@ -1,6 +1,0 @@
-type RelationshipMetadata {
-  notes: String
-  tags: [String!]
-  startDate: String
-  endDate: String
-}
