@@ -37,7 +37,7 @@ spec:
         - name: LOG_LEVEL
           value: warn
         - name: API_GATEWAY_URL
-          value: https://api-gateway.court-iq.com
+          value: https://api-gateway-zgctp7qz3q-uc.a.run.app
         - name: USER_SERVICE_URL
           value: https://user-service-zgctp7qz3q-uc.a.run.app
         - name: RELATIONSHIP_SERVICE_URL
