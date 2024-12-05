@@ -21,7 +21,7 @@ spec:
       serviceAccountName: 1080781728713-compute@developer.gserviceaccount.com
       containers:
       - name: api-gateway
-        image: us-central1-docker.pkg.dev/courtiq-backend/api-gateway/api-gateway@sha256:fe563f0937c37569643bb2c01237eb24ffc52a0fd12a4b36df365e433a0028cb
+        image: us-central1-docker.pkg.dev/courtiq-backend/api-gateway/api-gateway:IMAGE_TAG
         ports:
         - name: http1
           containerPort: 3000
