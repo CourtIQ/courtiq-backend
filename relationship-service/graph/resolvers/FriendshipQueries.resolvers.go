@@ -32,11 +32,7 @@ func (r *queryResolver) SentFriendRequests(ctx context.Context) ([]*model.Friend
 
 // FriendshipStatus is the resolver for the friendshipStatus field.
 func (r *queryResolver) FriendshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
-	status, err := r.RelationshipService.GetFriendshipStatus(ctx, otherUserID)
-	if err != nil {
-		return nil, err
-	}
-	return &status, nil
+	return r.RelationshipService.CheckFriendshipStatus(ctx, otherUserID)
 }
 
 // Helper functions for pagination defaults

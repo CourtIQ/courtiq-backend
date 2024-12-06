@@ -18,12 +18,16 @@ func (r *queryResolver) Coachship(ctx context.Context, id string) (*model.Coachs
 
 // Coaches is the resolver for the coaches field.
 func (r *queryResolver) Coaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
-	return r.RelationshipService.ListCoaches(ctx, resolveLimit(limit), resolveOffset(offset))
+	limitVal := resolveLimit(limit)
+	offsetVal := resolveOffset(offset)
+	return r.RelationshipService.ListCoaches(ctx, &limitVal, &offsetVal)
 }
 
 // Students is the resolver for the students field.
 func (r *queryResolver) Students(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
-	return r.RelationshipService.ListStudents(ctx, resolveLimit(limit), resolveOffset(offset))
+	limitVal := resolveLimit(limit)
+	offsetVal := resolveOffset(offset)
+	return r.RelationshipService.ListStudents(ctx, &limitVal, &offsetVal)
 }
 
 // SentCoacheeRequests is the resolver for the sentCoacheeRequests field.
@@ -48,11 +52,7 @@ func (r *queryResolver) ReceivedCoacheeRequests(ctx context.Context) ([]*model.C
 
 // CoachshipStatus is the resolver for the coachshipStatus field.
 func (r *queryResolver) CoachshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
-	status, err := r.RelationshipService.GetCoachshipStatus(ctx, otherUserID)
-	if err != nil {
-		return nil, err
-	}
-	return &status, nil
+	return r.RelationshipService.CheckCoachshipStatus(ctx, otherUserID)
 }
 
 // Query returns graph.QueryResolver implementation.

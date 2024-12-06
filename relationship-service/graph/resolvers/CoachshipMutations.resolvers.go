@@ -33,51 +33,46 @@ func (r *mutationResolver) AcceptCoacheeRequest(ctx context.Context, coachshipID
 
 // DeclineCoachRequest is the resolver for the declineCoachRequest field.
 func (r *mutationResolver) DeclineCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	err := r.RelationshipService.DeclineCoachRequest(ctx, coachshipID)
+	success, err := r.RelationshipService.DeclineCoachRequest(ctx, coachshipID)
 	if err != nil {
 		return nil, err
 	}
-	success := true
 	return &success, nil
 }
 
 // DeclineCoacheeRequest is the resolver for the declineCoacheeRequest field.
 func (r *mutationResolver) DeclineCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	err := r.RelationshipService.DeclineCoacheeRequest(ctx, coachshipID)
+	success, err := r.RelationshipService.DeclineCoacheeRequest(ctx, coachshipID)
 	if err != nil {
 		return nil, err
 	}
-	success := true
 	return &success, nil
 }
 
 // CancelCoachRequest is the resolver for the cancelCoachRequest field.
 func (r *mutationResolver) CancelCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	err := r.RelationshipService.CancelCoachRequest(ctx, coachshipID)
+	success, err := r.RelationshipService.CancelCoachRequest(ctx, coachshipID)
 	if err != nil {
 		return nil, err
 	}
-	success := true
 	return &success, nil
 }
 
 // CancelCoacheeRequest is the resolver for the cancelCoacheeRequest field.
 func (r *mutationResolver) CancelCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	err := r.RelationshipService.CancelCoacheeRequest(ctx, coachshipID)
+	success, err := r.RelationshipService.CancelCoacheeRequest(ctx, coachshipID)
 	if err != nil {
 		return nil, err
 	}
-	success := true
 	return &success, nil
 }
 
 // EndCoachship is the resolver for the endCoachship field.
 func (r *mutationResolver) EndCoachship(ctx context.Context, coachshipID string) (*bool, error) {
-	err := r.RelationshipService.EndCoachship(ctx, coachshipID)
+	success, err := r.RelationshipService.EndCoachship(ctx, coachshipID)
 	if err != nil {
 		return nil, err
 	}
-	success := true
 	return &success, nil
 }
 
