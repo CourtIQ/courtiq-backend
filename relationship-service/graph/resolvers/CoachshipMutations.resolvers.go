@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
@@ -14,47 +13,72 @@ import (
 
 // SendCoachRequest is the resolver for the sendCoachRequest field.
 func (r *mutationResolver) SendCoachRequest(ctx context.Context, userID string) (*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: SendCoachRequest - sendCoachRequest"))
+	return r.RelationshipService.SendCoachRequest(ctx, userID)
 }
 
 // SendCoacheeRequest is the resolver for the sendCoacheeRequest field.
 func (r *mutationResolver) SendCoacheeRequest(ctx context.Context, userID string) (*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: SendCoacheeRequest - sendCoacheeRequest"))
+	return r.RelationshipService.SendCoacheeRequest(ctx, userID)
 }
 
 // AcceptCoachRequest is the resolver for the acceptCoachRequest field.
 func (r *mutationResolver) AcceptCoachRequest(ctx context.Context, coachshipID string) (*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: AcceptCoachRequest - acceptCoachRequest"))
+	return r.RelationshipService.AcceptCoachRequest(ctx, coachshipID)
 }
 
 // AcceptCoacheeRequest is the resolver for the acceptCoacheeRequest field.
 func (r *mutationResolver) AcceptCoacheeRequest(ctx context.Context, coachshipID string) (*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: AcceptCoacheeRequest - acceptCoacheeRequest"))
+	return r.RelationshipService.AcceptCoacheeRequest(ctx, coachshipID)
 }
 
 // DeclineCoachRequest is the resolver for the declineCoachRequest field.
 func (r *mutationResolver) DeclineCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: DeclineCoachRequest - declineCoachRequest"))
+	err := r.RelationshipService.DeclineCoachRequest(ctx, coachshipID)
+	if err != nil {
+		return nil, err
+	}
+	success := true
+	return &success, nil
 }
 
 // DeclineCoacheeRequest is the resolver for the declineCoacheeRequest field.
 func (r *mutationResolver) DeclineCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: DeclineCoacheeRequest - declineCoacheeRequest"))
+	err := r.RelationshipService.DeclineCoacheeRequest(ctx, coachshipID)
+	if err != nil {
+		return nil, err
+	}
+	success := true
+	return &success, nil
 }
 
 // CancelCoachRequest is the resolver for the cancelCoachRequest field.
 func (r *mutationResolver) CancelCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: CancelCoachRequest - cancelCoachRequest"))
+	err := r.RelationshipService.CancelCoachRequest(ctx, coachshipID)
+	if err != nil {
+		return nil, err
+	}
+	success := true
+	return &success, nil
 }
 
 // CancelCoacheeRequest is the resolver for the cancelCoacheeRequest field.
 func (r *mutationResolver) CancelCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: CancelCoacheeRequest - cancelCoacheeRequest"))
+	err := r.RelationshipService.CancelCoacheeRequest(ctx, coachshipID)
+	if err != nil {
+		return nil, err
+	}
+	success := true
+	return &success, nil
 }
 
 // EndCoachship is the resolver for the endCoachship field.
 func (r *mutationResolver) EndCoachship(ctx context.Context, coachshipID string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: EndCoachship - endCoachship"))
+	err := r.RelationshipService.EndCoachship(ctx, coachshipID)
+	if err != nil {
+		return nil, err
+	}
+	success := true
+	return &success, nil
 }
 
 // Mutation returns graph.MutationResolver implementation.

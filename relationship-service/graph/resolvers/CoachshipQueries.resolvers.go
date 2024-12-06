@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
@@ -14,45 +13,64 @@ import (
 
 // Coachship is the resolver for the coachship field.
 func (r *queryResolver) Coachship(ctx context.Context, id string) (*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: Coachship - coachship"))
+	return r.RelationshipService.GetCoachship(ctx, id)
 }
 
 // Coaches is the resolver for the coaches field.
 func (r *queryResolver) Coaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: Coaches - coaches"))
+	return r.RelationshipService.ListCoaches(ctx, resolveLimit(limit), resolveOffset(offset))
 }
 
 // Students is the resolver for the students field.
 func (r *queryResolver) Students(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: Students - students"))
+	return r.RelationshipService.ListStudents(ctx, resolveLimit(limit), resolveOffset(offset))
 }
 
 // SentCoacheeRequests is the resolver for the sentCoacheeRequests field.
 func (r *queryResolver) SentCoacheeRequests(ctx context.Context) ([]*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: SentCoacheeRequests - sentCoacheeRequests"))
+	return r.RelationshipService.ListSentCoacheeRequests(ctx)
 }
 
 // ReceivedCoachRequests is the resolver for the receivedCoachRequests field.
 func (r *queryResolver) ReceivedCoachRequests(ctx context.Context) ([]*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: ReceivedCoachRequests - receivedCoachRequests"))
+	return r.RelationshipService.ListReceivedCoachRequests(ctx)
 }
 
 // SentCoachRequests is the resolver for the sentCoachRequests field.
 func (r *queryResolver) SentCoachRequests(ctx context.Context) ([]*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: SentCoachRequests - sentCoachRequests"))
+	return r.RelationshipService.ListSentCoachRequests(ctx)
 }
 
 // ReceivedCoacheeRequests is the resolver for the receivedCoacheeRequests field.
 func (r *queryResolver) ReceivedCoacheeRequests(ctx context.Context) ([]*model.Coachship, error) {
-	panic(fmt.Errorf("not implemented: ReceivedCoacheeRequests - receivedCoacheeRequests"))
+	return r.RelationshipService.ListReceivedCoacheeRequests(ctx)
 }
 
 // CoachshipStatus is the resolver for the coachshipStatus field.
 func (r *queryResolver) CoachshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
-	panic(fmt.Errorf("not implemented: CoachshipStatus - coachshipStatus"))
+	status, err := r.RelationshipService.GetCoachshipStatus(ctx, otherUserID)
+	if err != nil {
+		return nil, err
+	}
+	return &status, nil
 }
 
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
+
+// Helper functions for pagination defaults
+func resolveLimit(limit *int) int {
+	if limit != nil {
+		return *limit
+	}
+	return 10 // Default limit
+}
+
+func resolveOffset(offset *int) int {
+	if offset != nil {
+		return *offset
+	}
+	return 0 // Default offset
+}

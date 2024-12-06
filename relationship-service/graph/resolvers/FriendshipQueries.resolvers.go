@@ -6,32 +6,50 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
 )
 
 // Friendship is the resolver for the friendship field.
 func (r *queryResolver) Friendship(ctx context.Context, id string) (*model.Friendship, error) {
-	return nil, fmt.Errorf("Not implemented: Friendship - friendship")
+	return r.RelationshipService.GetFriendship(ctx, id)
 }
 
 // Friends is the resolver for the friends field.
 func (r *queryResolver) Friends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error) {
-	panic(fmt.Errorf("not implemented: Friends - friends"))
+	return r.RelationshipService.ListFriends(ctx, getLimit(limit), getOffset(offset))
 }
 
 // PendingFriendRequests is the resolver for the pendingFriendRequests field.
 func (r *queryResolver) PendingFriendRequests(ctx context.Context) ([]*model.Friendship, error) {
-	panic(fmt.Errorf("not implemented: PendingFriendRequests - pendingFriendRequests"))
+	return r.RelationshipService.ListPendingFriendRequests(ctx)
 }
 
 // SentFriendRequests is the resolver for the sentFriendRequests field.
 func (r *queryResolver) SentFriendRequests(ctx context.Context) ([]*model.Friendship, error) {
-	panic(fmt.Errorf("not implemented: SentFriendRequests - sentFriendRequests"))
+	return r.RelationshipService.ListSentFriendRequests(ctx)
 }
 
 // FriendshipStatus is the resolver for the friendshipStatus field.
 func (r *queryResolver) FriendshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
-	panic(fmt.Errorf("not implemented: FriendshipStatus - friendshipStatus"))
+	status, err := r.RelationshipService.GetFriendshipStatus(ctx, otherUserID)
+	if err != nil {
+		return nil, err
+	}
+	return &status, nil
+}
+
+// Helper functions for pagination defaults
+func getLimit(limit *int) int {
+	if limit != nil {
+		return *limit
+	}
+	return 10 // Default limit
+}
+
+func getOffset(offset *int) int {
+	if offset != nil {
+		return *offset
+	}
+	return 0 // Default offset
 }
