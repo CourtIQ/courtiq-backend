@@ -4,8 +4,10 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/domain"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 )
 
@@ -31,12 +33,24 @@ func notImplemented(funcName string) error {
 }
 
 // Friendships
-func (s *relationshipService) SendFriendRequest(ctx context.Context, userID string) (*model.Friendship, error) {
-	return nil, notImplemented("SendFriendRequest")
+func (s *relationshipService) SendFriendRequest(ctx context.Context, receiverID string) (bool, error) {
+	// requesterID, err := s.getUserIDFromContext(ctx)
+	// if err != nil {
+	// 	return false, fmt.Errorf("failed to get requester user ID: %w", err)
+	// }
+	requesterID := "tester"
+
+	friendship := domain.NewFriendship(requesterID, receiverID)
+
+	if err := s.repo.Create(friendship); err != nil {
+		return false, fmt.Errorf("failed to create friendship: %w", err)
+	}
+
+	return true, nil
 }
 
-func (s *relationshipService) AcceptFriendRequest(ctx context.Context, friendshipID string) (*model.Friendship, error) {
-	return nil, notImplemented("AcceptFriendRequest")
+func (s *relationshipService) AcceptFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
+	return false, notImplemented("AcceptFriendRequest")
 }
 
 func (s *relationshipService) RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error) {

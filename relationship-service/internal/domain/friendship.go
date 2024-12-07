@@ -29,3 +29,16 @@ func (f *Friendship) GetUpdatedAt() *time.Time {
 func (f *Friendship) GetParticipantIDs() []string {
 	return f.ParticipantIDs
 }
+
+func NewFriendship(requesterID, receiverID string) *Friendship {
+	now := time.Now().UTC()
+	return &Friendship{
+		ParticipantIDs: []string{requesterID, receiverID},
+		Type:           RelationshipTypeFriendship,
+		Status:         RelationshipStatusPending,
+		CreatedAt:      now,
+		UpdatedAt:      &now,
+		RequesterID:    requesterID,
+		ReceiverID:     receiverID,
+	}
+}

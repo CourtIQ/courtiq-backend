@@ -21,5 +21,7 @@ WORKDIR /app
 # Copy binary
 COPY --from=builder /app/main .
 
+COPY .env .
+
 # Default command
 CMD ["./main"]

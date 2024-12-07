@@ -8,8 +8,8 @@ import (
 
 type RelationshipService interface {
 	// Friendships
-	SendFriendRequest(ctx context.Context, userID string) (*model.Friendship, error)
-	AcceptFriendRequest(ctx context.Context, friendshipID string) (*model.Friendship, error)
+	SendFriendRequest(ctx context.Context, receiverID string) (bool, error)
+	AcceptFriendRequest(ctx context.Context, friendshipID string) (bool, error)
 	RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error)
 	CancelFriendRequest(ctx context.Context, friendshipID string) (bool, error)
 	EndFriendship(ctx context.Context, friendshipID string) (bool, error)

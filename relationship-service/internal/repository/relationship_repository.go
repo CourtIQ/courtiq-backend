@@ -2,22 +2,30 @@
 package repository
 
 import (
+	"context"
 	"errors"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/domain"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type relationshipRepository struct {
-	// You might store a *mongo.Collection or other DB client here in the future
+	coll *mongo.Collection
 }
 
-// NewRelationshipRepository creates a new instance of the repository.
-func NewRelationshipRepository() RelationshipRepository {
-	return &relationshipRepository{}
+func NewRelationshipRepository(coll *mongo.Collection) RelationshipRepository {
+	return &relationshipRepository{coll: coll}
 }
 
 func (r *relationshipRepository) Create(rel domain.Relationship) error {
-	return errors.New("Create not implemented")
+	ctx := context.TODO() // In real code, pass context down from callers instead of using TODO()
+
+	_, err := r.coll.InsertOne(ctx, rel)
+	if err != nil {
+		return fmt.Errorf("failed to insert relationship: %w", err)
+	}
+	return nil
 }
 
 func (r *relationshipRepository) GetByID(id string) (domain.Relationship, error) {

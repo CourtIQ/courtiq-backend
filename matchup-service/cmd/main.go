@@ -3,63 +3,58 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/configs"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
-
-	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/db"
-
+	configs "github.com/CourtIQ/courtiq-backend/matchup-service/internal/config"
 	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
 	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// Load configuration from environment
+	// Load configuration
 	config := configs.LoadConfig()
 
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Set Gin mode
-	gin.SetMode(config.GinMode)
+	// Initialize MongoDB client
+	// mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	// if err != nil {
+	// 	log.Fatalf("Failed to connect to MongoDB: %v", err)
+	// }
 
-	// Initialize MongoDB connection using config.MongoDBURL
-	// Use "matchupdb" as the database name
-	// mongoDB := db.NewMongoDB(config.MongoDBURL, "courtiq-db")
+	// Get the matchups collection
+	// coll := mongodb.GetCollection(db.MatchUpsCollection)
 
-	// Initialize repositories and services
-	// matchupRepository := repository.NewMatchupRepository(mongoDB)
-	// matchupService := service.NewMatchupService(matchupRepository)
+	// Create the repository using the collection
+	// matchupsRepo := repository.NewMatchupsRepository(coll)
 
-	// Initialize GraphQL server with the resolved schemas and dependencies
+	// Create the service with the repository
+	// matchupsService := services.NewMatchupsService(matchupsRepo)
+
+	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
-			// MatchupService: matchupService,
+			// RelationshipService: relationshipService,
 		},
 	}))
 
-	// Create a Gin router
-	router := gin.New()
-
-	// Add middleware
-	router.Use(gin.Recovery())
-	if config.LogLevel == "debug" {
-		router.Use(gin.Logger())
-	}
+	// Create router mux
+	mux := http.NewServeMux()
 
 	// Setup routes
 	if config.PlaygroundEnabled {
+		mux.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("GraphQL Playground enabled at /")
-		router.GET("/", gin.WrapH(playground.Handler("GraphQL Playground", "/graphql")))
 	}
 
-	router.POST("/graphql", gin.WrapH(srv))
+	mux.Handle("/graphql", srv)
 
-	// Start the server
+	// Start server
 	address := fmt.Sprintf(":%d", config.Port)
 	log.Printf("%s running in %s mode on %s", config.ServiceName, config.Environment, address)
 	if config.PlaygroundEnabled {
@@ -67,7 +62,7 @@ func main() {
 	}
 	log.Printf("GraphQL endpoint available at http://localhost:%d/graphql", config.Port)
 
-	if err := router.Run(address); err != nil {
+	if err := http.ListenAndServe(address, mux); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

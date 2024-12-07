@@ -91,7 +91,7 @@ type ComplexityRoot struct {
 		RejectFriendRequest   func(childComplexity int, friendshipID string) int
 		SendCoachRequest      func(childComplexity int, userID string) int
 		SendCoacheeRequest    func(childComplexity int, userID string) int
-		SendFriendRequest     func(childComplexity int, userID string) int
+		SendFriendRequest     func(childComplexity int, receiverID string) int
 	}
 
 	Query struct {
@@ -132,11 +132,11 @@ type MutationResolver interface {
 	CancelCoachRequest(ctx context.Context, coachshipID string) (*bool, error)
 	CancelCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error)
 	EndCoachship(ctx context.Context, coachshipID string) (*bool, error)
-	SendFriendRequest(ctx context.Context, userID string) (*model.Friendship, error)
-	AcceptFriendRequest(ctx context.Context, friendshipID string) (*model.Friendship, error)
-	RejectFriendRequest(ctx context.Context, friendshipID string) (*bool, error)
-	CancelFriendRequest(ctx context.Context, friendshipID string) (*bool, error)
-	EndFriendship(ctx context.Context, friendshipID string) (*bool, error)
+	SendFriendRequest(ctx context.Context, receiverID string) (bool, error)
+	AcceptFriendRequest(ctx context.Context, friendshipID string) (bool, error)
+	RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error)
+	CancelFriendRequest(ctx context.Context, friendshipID string) (bool, error)
+	EndFriendship(ctx context.Context, friendshipID string) (bool, error)
 }
 type QueryResolver interface {
 	Coachship(ctx context.Context, id string) (*model.Coachship, error)
@@ -487,7 +487,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SendFriendRequest(childComplexity, args["userId"].(string)), true
+		return e.complexity.Mutation.SendFriendRequest(childComplexity, args["receiverId"].(string)), true
 
 	case "Query.coaches":
 		if e.complexity.Query.Coaches == nil {
@@ -1214,19 +1214,19 @@ func (ec *executionContext) field_Mutation_sendCoacheeRequest_argsUserID(
 func (ec *executionContext) field_Mutation_sendFriendRequest_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_sendFriendRequest_argsUserID(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_sendFriendRequest_argsReceiverID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["userId"] = arg0
+	args["receiverId"] = arg0
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_sendFriendRequest_argsUserID(
+func (ec *executionContext) field_Mutation_sendFriendRequest_argsReceiverID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (string, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-	if tmp, ok := rawArgs["userId"]; ok {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("receiverId"))
+	if tmp, ok := rawArgs["receiverId"]; ok {
 		return ec.unmarshalNID2string(ctx, tmp)
 	}
 
@@ -3002,18 +3002,21 @@ func (ec *executionContext) _Mutation_sendFriendRequest(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SendFriendRequest(rctx, fc.Args["userId"].(string))
+		return ec.resolvers.Mutation().SendFriendRequest(rctx, fc.Args["receiverId"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Friendship)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_sendFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3023,25 +3026,7 @@ func (ec *executionContext) fieldContext_Mutation_sendFriendRequest(ctx context.
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Friendship_id(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_Friendship_participantIds(ctx, field)
-			case "type":
-				return ec.fieldContext_Friendship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Friendship_status(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Friendship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "requesterId":
-				return ec.fieldContext_Friendship_requesterId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Friendship_receiverId(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	defer func() {
@@ -3079,11 +3064,14 @@ func (ec *executionContext) _Mutation_acceptFriendRequest(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Friendship)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_acceptFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3093,25 +3081,7 @@ func (ec *executionContext) fieldContext_Mutation_acceptFriendRequest(ctx contex
 		IsMethod:   true,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Friendship_id(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_Friendship_participantIds(ctx, field)
-			case "type":
-				return ec.fieldContext_Friendship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Friendship_status(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Friendship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			case "requesterId":
-				return ec.fieldContext_Friendship_requesterId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Friendship_receiverId(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	defer func() {
@@ -3149,11 +3119,14 @@ func (ec *executionContext) _Mutation_rejectFriendRequest(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_rejectFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3201,11 +3174,14 @@ func (ec *executionContext) _Mutation_cancelFriendRequest(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_cancelFriendRequest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3253,11 +3229,14 @@ func (ec *executionContext) _Mutation_endFriendship(ctx context.Context, field g
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_endFriendship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6528,22 +6507,37 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_sendFriendRequest(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "acceptFriendRequest":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_acceptFriendRequest(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "rejectFriendRequest":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_rejectFriendRequest(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "cancelFriendRequest":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_cancelFriendRequest(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "endFriendship":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_endFriendship(ctx, field)
 			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

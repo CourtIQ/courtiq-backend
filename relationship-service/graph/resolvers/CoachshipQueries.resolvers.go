@@ -18,16 +18,12 @@ func (r *queryResolver) Coachship(ctx context.Context, id string) (*model.Coachs
 
 // Coaches is the resolver for the coaches field.
 func (r *queryResolver) Coaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
-	limitVal := resolveLimit(limit)
-	offsetVal := resolveOffset(offset)
-	return r.RelationshipService.ListCoaches(ctx, &limitVal, &offsetVal)
+	return r.RelationshipService.ListCoaches(ctx, limit, offset)
 }
 
 // Students is the resolver for the students field.
 func (r *queryResolver) Students(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
-	limitVal := resolveLimit(limit)
-	offsetVal := resolveOffset(offset)
-	return r.RelationshipService.ListStudents(ctx, &limitVal, &offsetVal)
+	return r.RelationshipService.ListStudents(ctx, limit, offset)
 }
 
 // SentCoacheeRequests is the resolver for the sentCoacheeRequests field.
@@ -59,18 +55,3 @@ func (r *queryResolver) CoachshipStatus(ctx context.Context, otherUserID string)
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
-
-// Helper functions for pagination defaults
-func resolveLimit(limit *int) int {
-	if limit != nil {
-		return *limit
-	}
-	return 10 // Default limit
-}
-
-func resolveOffset(offset *int) int {
-	if offset != nil {
-		return *offset
-	}
-	return 0 // Default offset
-}

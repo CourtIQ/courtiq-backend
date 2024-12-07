@@ -17,7 +17,7 @@ func (r *queryResolver) Friendship(ctx context.Context, id string) (*model.Frien
 
 // Friends is the resolver for the friends field.
 func (r *queryResolver) Friends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error) {
-	return r.RelationshipService.ListFriends(ctx, getLimit(limit), getOffset(offset))
+	return r.RelationshipService.ListFriends(ctx, *limit, *offset)
 }
 
 // PendingFriendRequests is the resolver for the pendingFriendRequests field.
@@ -35,17 +35,23 @@ func (r *queryResolver) FriendshipStatus(ctx context.Context, otherUserID string
 	return r.RelationshipService.CheckFriendshipStatus(ctx, otherUserID)
 }
 
-// Helper functions for pagination defaults
-func getLimit(limit *int) int {
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func getLimit(limit *int) int {
 	if limit != nil {
 		return *limit
 	}
 	return 10 // Default limit
 }
-
 func getOffset(offset *int) int {
 	if offset != nil {
 		return *offset
 	}
 	return 0 // Default offset
 }
+*/
