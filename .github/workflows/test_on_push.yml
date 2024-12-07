@@ -7,8 +7,6 @@ on:
 
 jobs:
   api_gateway:
-    env:
-      SVC_NAME: api-gateway
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -16,6 +14,18 @@ jobs:
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.3.x'
+
+      - name: Install dependencies, build and test
+        run: |
+          cd api-gateway
+          npm ci
+          npm run build --if-present
+          npm test
 
   equipment_service:
     env:
@@ -31,13 +41,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.23'
 
-      - name: Install dependencies
-        run: go get .
-
-      - name: Build
-        run: go build -v ./...
-
-      - name: Test with the Go CLI
-        run: go test
+      - name: Install dependencies, build and test
+        run: |
+          cd ${{ env.SVC_NAME }}
+          go get .
+          go build -v ./...
+          go test
