@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies and test
         run: |
           cd ${{ env.SVC_NAME }}
-          go get .
+          go mod download
           go test ./...
 
   matchup-service:
@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies and test
         run: |
           cd ${{ env.SVC_NAME }}
-          go get .
+          go mod download
           go test ./...
 
   relationship-service:
@@ -90,9 +90,8 @@ jobs:
       - name: Install dependencies and test
         run: |
           cd ${{ env.SVC_NAME }}
-          go get .
+          go mod download
           go test ./...
-
 
   user-service:
     env:
@@ -113,5 +112,5 @@ jobs:
       - name: Install dependencies and test
         run: |
           cd ${{ env.SVC_NAME }}
-          go get .
+          go mod download
           go test ./...
