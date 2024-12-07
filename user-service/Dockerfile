@@ -1,35 +1,25 @@
-FROM golang:1.23-alpine AS builder
-
-# Add git for private dependencies if needed
-RUN apk add --no-cache git
+# relationship-service/Dockerfile (same for other Go services)
+FROM golang:1.23-alpine as builder
 
 WORKDIR /app
 
-# Install dependencies first (better layer caching)
+# Install dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
+# Copy source
 COPY . .
 
-# Build with security flags
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -ldflags="-w -s" \
-    -o main ./cmd/main.go
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
 
-# Use distroless as minimal base image 
-FROM gcr.io/distroless/static-debian11
+# Production image
+FROM alpine:latest
 
 WORKDIR /app
 
-# Copy binary from builder
+# Copy binary
 COPY --from=builder /app/main .
-
-# Use non-root user for security
-USER nonroot:nonroot
-
-# Expose port if needed
-EXPOSE 8080
 
 # Default command
 CMD ["./main"]
