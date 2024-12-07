@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,7 +11,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
-	configs "github.com/CourtIQ/courtiq-backend/relationship-service/internal/config"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/configs"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
 )
@@ -22,13 +24,22 @@ func main() {
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Create the repository. For now, assuming you have a NewRelationshipRepository function:
-	relationshipRepo := repository.NewRelationshipRepository()
+	// Initialize MongoDB client
+	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+
+	// Get the relationships collection
+	coll := mongodb.GetCollection(db.RelationshipsCollection)
+
+	// Create the repository using the collection
+	relationshipRepo := repository.NewRelationshipRepository(coll)
 
 	// Create the service with the repository
 	relationshipService := services.NewRelationshipService(relationshipRepo)
 
-	// Now we have relationshipService, we can pass it into the resolver
+	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
 			RelationshipService: relationshipService,

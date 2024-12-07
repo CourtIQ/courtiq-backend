@@ -1,5 +1,5 @@
 // internal/db/mongodb/indexes.go
-package mongodb
+package db
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
