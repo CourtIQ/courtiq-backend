@@ -1,44 +1,143 @@
+// internal/services/relationship_service.go
 package services
 
 import (
 	"context"
+	"errors"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 )
 
-type RelationshipService interface {
-	// Friendships
-	SendFriendRequest(ctx context.Context, userID string) (*model.Friendship, error)
-	AcceptFriendRequest(ctx context.Context, friendshipID string) (*model.Friendship, error)
-	RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error)
-	CancelFriendRequest(ctx context.Context, friendshipID string) (bool, error)
-	EndFriendship(ctx context.Context, friendshipID string) (bool, error)
+type relationshipService struct {
+	repo repository.RelationshipRepository
+}
 
-	// Coachships
-	SendCoachRequest(ctx context.Context, userID string) (*model.Coachship, error)
-	SendCoacheeRequest(ctx context.Context, userID string) (*model.Coachship, error)
-	AcceptCoachRequest(ctx context.Context, coachshipID string) (*model.Coachship, error)
-	AcceptCoacheeRequest(ctx context.Context, coachshipID string) (*model.Coachship, error)
-	DeclineCoachRequest(ctx context.Context, coachshipID string) (bool, error)
-	DeclineCoacheeRequest(ctx context.Context, coachshipID string) (bool, error)
-	CancelCoachRequest(ctx context.Context, coachshipID string) (bool, error)
-	CancelCoacheeRequest(ctx context.Context, coachshipID string) (bool, error)
-	EndCoachship(ctx context.Context, coachshipID string) (bool, error)
+func NewRelationshipService(repo repository.RelationshipRepository) RelationshipService {
+	return &relationshipService{repo: repo}
+}
 
-	// Queries - Coachships
-	GetCoachship(ctx context.Context, id string) (*model.Coachship, error)
-	ListCoaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
-	ListStudents(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
-	ListSentCoacheeRequests(ctx context.Context) ([]*model.Coachship, error)
-	ListReceivedCoachRequests(ctx context.Context) ([]*model.Coachship, error)
-	ListSentCoachRequests(ctx context.Context) ([]*model.Coachship, error)
-	ListReceivedCoacheeRequests(ctx context.Context) ([]*model.Coachship, error)
-	CheckCoachshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error)
+func (s *relationshipService) getUserIDFromContext(ctx context.Context) (string, error) {
+	userID, ok := ctx.Value("userID").(string)
+	if !ok || userID == "" {
+		return "", errors.New("no userID in context")
+	}
+	return userID, nil
+}
 
-	// Queries - Friendships
-	GetFriendship(ctx context.Context, id string) (*model.Friendship, error)
-	ListFriends(ctx context.Context, limit int, offset int) ([]*model.Friendship, error)
-	ListPendingFriendRequests(ctx context.Context) ([]*model.Friendship, error)
-	ListSentFriendRequests(ctx context.Context) ([]*model.Friendship, error)
-	CheckFriendshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error)
+// Helper to create a "not implemented" error with function name
+func notImplemented(funcName string) error {
+	return errors.New(funcName + " not implemented")
+}
+
+// Friendships
+func (s *relationshipService) SendFriendRequest(ctx context.Context, userID string) (*model.Friendship, error) {
+	return nil, notImplemented("SendFriendRequest")
+}
+
+func (s *relationshipService) AcceptFriendRequest(ctx context.Context, friendshipID string) (*model.Friendship, error) {
+	return nil, notImplemented("AcceptFriendRequest")
+}
+
+func (s *relationshipService) RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
+	return false, notImplemented("RejectFriendRequest")
+}
+
+func (s *relationshipService) CancelFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
+	return false, notImplemented("CancelFriendRequest")
+}
+
+func (s *relationshipService) EndFriendship(ctx context.Context, friendshipID string) (bool, error) {
+	return false, notImplemented("EndFriendship")
+}
+
+// Coachships
+func (s *relationshipService) SendCoachRequest(ctx context.Context, userID string) (*model.Coachship, error) {
+	return nil, notImplemented("SendCoachRequest")
+}
+
+func (s *relationshipService) SendCoacheeRequest(ctx context.Context, userID string) (*model.Coachship, error) {
+	return nil, notImplemented("SendCoacheeRequest")
+}
+
+func (s *relationshipService) AcceptCoachRequest(ctx context.Context, coachshipID string) (*model.Coachship, error) {
+	return nil, notImplemented("AcceptCoachRequest")
+}
+
+func (s *relationshipService) AcceptCoacheeRequest(ctx context.Context, coachshipID string) (*model.Coachship, error) {
+	return nil, notImplemented("AcceptCoacheeRequest")
+}
+
+func (s *relationshipService) DeclineCoachRequest(ctx context.Context, coachshipID string) (bool, error) {
+	return false, notImplemented("DeclineCoachRequest")
+}
+
+func (s *relationshipService) DeclineCoacheeRequest(ctx context.Context, coachshipID string) (bool, error) {
+	return false, notImplemented("DeclineCoacheeRequest")
+}
+
+func (s *relationshipService) CancelCoachRequest(ctx context.Context, coachshipID string) (bool, error) {
+	return false, notImplemented("CancelCoachRequest")
+}
+
+func (s *relationshipService) CancelCoacheeRequest(ctx context.Context, coachshipID string) (bool, error) {
+	return false, notImplemented("CancelCoacheeRequest")
+}
+
+func (s *relationshipService) EndCoachship(ctx context.Context, coachshipID string) (bool, error) {
+	return false, notImplemented("EndCoachship")
+}
+
+// Queries - Coachships
+func (s *relationshipService) GetCoachship(ctx context.Context, id string) (*model.Coachship, error) {
+	return nil, notImplemented("GetCoachship")
+}
+
+func (s *relationshipService) ListCoaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
+	return nil, notImplemented("ListCoaches")
+}
+
+func (s *relationshipService) ListStudents(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
+	return nil, notImplemented("ListStudents")
+}
+
+func (s *relationshipService) ListSentCoacheeRequests(ctx context.Context) ([]*model.Coachship, error) {
+	return nil, notImplemented("ListSentCoacheeRequests")
+}
+
+func (s *relationshipService) ListReceivedCoachRequests(ctx context.Context) ([]*model.Coachship, error) {
+	return nil, notImplemented("ListReceivedCoachRequests")
+}
+
+func (s *relationshipService) ListSentCoachRequests(ctx context.Context) ([]*model.Coachship, error) {
+	return nil, notImplemented("ListSentCoachRequests")
+}
+
+func (s *relationshipService) ListReceivedCoacheeRequests(ctx context.Context) ([]*model.Coachship, error) {
+	return nil, notImplemented("ListReceivedCoacheeRequests")
+}
+
+func (s *relationshipService) CheckCoachshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
+	return nil, notImplemented("CheckCoachshipStatus")
+}
+
+// Queries - Friendships
+func (s *relationshipService) GetFriendship(ctx context.Context, id string) (*model.Friendship, error) {
+	return nil, notImplemented("GetFriendship")
+}
+
+func (s *relationshipService) ListFriends(ctx context.Context, limit int, offset int) ([]*model.Friendship, error) {
+	return nil, notImplemented("ListFriends")
+}
+
+func (s *relationshipService) ListPendingFriendRequests(ctx context.Context) ([]*model.Friendship, error) {
+	return nil, notImplemented("ListPendingFriendRequests")
+}
+
+func (s *relationshipService) ListSentFriendRequests(ctx context.Context) ([]*model.Friendship, error) {
+	return nil, notImplemented("ListSentFriendRequests")
+}
+
+func (s *relationshipService) CheckFriendshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
+	return nil, notImplemented("CheckFriendshipStatus")
 }

@@ -11,18 +11,28 @@ import (
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
 	configs "github.com/CourtIQ/courtiq-backend/relationship-service/internal/config"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
 )
 
 func main() {
-	// Load configuration from configs package
+	// Load configuration
 	config := configs.LoadConfig()
 
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Initialize GraphQL server
+	// Create the repository. For now, assuming you have a NewRelationshipRepository function:
+	relationshipRepo := repository.NewRelationshipRepository()
+
+	// Create the service with the repository
+	relationshipService := services.NewRelationshipService(relationshipRepo)
+
+	// Now we have relationshipService, we can pass it into the resolver
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{},
+		Resolvers: &resolvers.Resolver{
+			RelationshipService: relationshipService,
+		},
 	}))
 
 	// Create router mux
@@ -44,7 +54,6 @@ func main() {
 	}
 	log.Printf("GraphQL endpoint available at http://localhost:%d/graphql", config.Port)
 
-	// Start the server
 	if err := http.ListenAndServe(address, mux); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
