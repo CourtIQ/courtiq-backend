@@ -2,9 +2,9 @@
 require('dotenv').config();
 const { ApolloServer } = require('@apollo/server');
 const { startStandaloneServer } = require('@apollo/server/standalone');
-const { admin } = require('./middleware/auth');
 const config = require('./config');
 const gateway = require('./gateway');
+const authMiddleware = require('./middleware/auth'); // Ensure this file exports a function like the one above
 
 async function startServer() {
   try {
@@ -14,10 +14,8 @@ async function startServer() {
     });
 
     const { url } = await startStandaloneServer(server, {
-      context: async ({ req }) => {
-        const token = req.headers.authorization?.split(' ')[1] || null;
-        return { token };
-      },
+      // Use the authMiddleware as your context function:
+      context: authMiddleware,
       listen: { port: config.PORT },
     });
 

@@ -1,28 +1,14 @@
-const { admin } = require('../middleware/auth'); // Import the initialized admin instance
-const axios = require('axios');
-const config = require('../config');
+const admin = require('firebase-admin');
+const { FIREBASE_SERVICE_ACCOUNT } = require('../config');
 
-async function exchangeCustomTokenForIdToken(customToken) {
-  try {
-    const response = await axios.post(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${config.FIREBASE_CONFIG.apiKey}`,
-      { token: customToken, returnSecureToken: true }
-    );
-    return response.data.idToken;
-  } catch (error) {
-    console.error('Error exchanging custom token for ID token:', error.message);
-    throw error;
-  }
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(FIREBASE_SERVICE_ACCOUNT),
+  });
 }
 
-async function generateIdToken(uid) {
-  try {
-    const customToken = await admin.auth().createCustomToken(uid); // Use the same initialized admin
-    return exchangeCustomTokenForIdToken(customToken);
-  } catch (error) {
-    console.error('Error generating ID token:', error.message);
-    throw error;
-  }
+async function verifyToken(idToken) {
+  return admin.auth().verifyIdToken(idToken);
 }
 
-module.exports = { exchangeCustomTokenForIdToken, generateIdToken };
+module.exports = { verifyToken };

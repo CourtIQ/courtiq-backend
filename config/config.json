@@ -22,7 +22,7 @@
         },
         "production": {
           "NODE_ENV": "production",
-          "GRAPHQL_PLAYGROUND": false,
+          "GRAPHQL_PLAYGROUND": true,
           "LOG_LEVEL": "warn"
         }
       }
@@ -47,7 +47,7 @@
         },
         "production": {
           "GO_ENV": "production",
-          "GRAPHQL_PLAYGROUND": false,
+          "GRAPHQL_PLAYGROUND": true,
           "LOG_LEVEL": "warn",
           "GIN_MODE": "release"
         }
@@ -73,7 +73,7 @@
         },
         "production": {
           "GO_ENV": "production",
-          "GRAPHQL_PLAYGROUND": false,
+          "GRAPHQL_PLAYGROUND": true,
           "LOG_LEVEL": "warn",
           "GIN_MODE": "release"
         }
@@ -99,7 +99,7 @@
         },
         "production": {
           "GO_ENV": "production",
-          "GRAPHQL_PLAYGROUND": false,
+          "GRAPHQL_PLAYGROUND": true,
           "LOG_LEVEL": "warn",
           "GIN_MODE": "release"
         }
@@ -125,7 +125,7 @@
         },
         "production": {
           "GO_ENV": "production",
-          "GRAPHQL_PLAYGROUND": false,
+          "GRAPHQL_PLAYGROUND": true,
           "LOG_LEVEL": "warn",
           "GIN_MODE": "release"
         }

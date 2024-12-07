@@ -1,36 +1,12 @@
-// middleware/auth.js
-const admin = require('firebase-admin');
-const config = require('../config');
+const AuthService = require('../services/authService');
+const TokenVerifier = require('../services/tokenVerifier');
 
-// Initialize Firebase Admin
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert(config.FIREBASE_SERVICE_ACCOUNT),
-    });
-    console.log('Firebase Admin initialized successfully.');
-  } catch (error) {
-    console.error('Failed to initialize Firebase Admin:', error.message);
-    throw new Error('Firebase initialization failed');
-  }
+const tokenVerifier = new TokenVerifier();
+const authService = new AuthService(tokenVerifier);
+
+async function authMiddleware({ req }) {
+  const user = await authService.authenticate(req.headers);
+  return { user };
 }
 
-// Authentication middleware
-async function authenticateToken(token) {
-  if (!token) {
-    throw new Error('Unauthorized: No token provided');
-  }
-
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    return decodedToken;
-  } catch (error) {
-    console.error('Authentication error:', error.message);
-    throw new Error('Unauthorized: Invalid token');
-  }
-}
-
-module.exports = {
-  admin,
-  authenticateToken,
-};
+module.exports = authMiddleware;
