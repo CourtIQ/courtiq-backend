@@ -134,6 +134,7 @@ jobs:
           cd ${{ env.SVC_NAME }}
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
+          gcloud run services update --region ${{env.REGION }} ${{env.SVC_NAME }} --ingress=internal
 
   matchup_service:
     env:
@@ -196,6 +197,7 @@ jobs:
           cd ${{ env.SVC_NAME }}
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
+          gcloud run services update --region ${{env.REGION }} ${{env.SVC_NAME }} --ingress=internal
 
   relationship_service:
     env:
@@ -258,6 +260,7 @@ jobs:
           cd ${{ env.SVC_NAME }}
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
+          gcloud run services update --region ${{env.REGION }} ${{env.SVC_NAME }} --ingress=internal
 
   user_service:
     env:
@@ -320,3 +323,4 @@ jobs:
           cd ${{ env.SVC_NAME }}
           sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
           gcloud run services replace service.yaml
+          gcloud run services update --region ${{env.REGION }} ${{env.SVC_NAME }} --ingress=internal

@@ -1,0 +1,121 @@
+name: Build and Publish
+
+on:
+  pull_request:
+    types: [review_requested]
+
+env:
+  GCR_IMAGE_LOCATION: us-central1
+  REGION: us-central1
+  GCP_PROJECT_ID: courtiq-backend
+
+jobs:
+  api_gateway:
+    env:
+      SVC_NAME: api-gateway
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: false
+          tags: test
+
+  equipment_service:
+    env:
+      SVC_NAME: equipment-service
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: false
+          tags: test
+
+  matchup_service:
+    env:
+      SVC_NAME: matchup-service
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: false
+          tags: test
+
+  relationship_service:
+    env:
+      SVC_NAME: relationship-service
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: false
+          tags: test
+
+  user_service:
+    env:
+      SVC_NAME: user-service
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: false
+          tags: test
