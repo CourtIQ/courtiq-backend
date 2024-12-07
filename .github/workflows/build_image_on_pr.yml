@@ -1,13 +1,8 @@
-name: Build and Publish
+name: Build image on PR
 
 on:
   pull_request:
     types: [review_requested]
-
-env:
-  GCR_IMAGE_LOCATION: us-central1
-  REGION: us-central1
-  GCP_PROJECT_ID: courtiq-backend
 
 jobs:
   api_gateway:
