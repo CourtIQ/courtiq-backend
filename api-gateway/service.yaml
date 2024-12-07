@@ -37,15 +37,15 @@ spec:
         - name: LOG_LEVEL
           value: warn
         - name: API_GATEWAY_URL
-          value: https://api-gateway.court-iq.com
+          value: https://api-gateway-zgctp7qz3q-uc.a.run.app
         - name: USER_SERVICE_URL
-          value: https://user-service.court-iq.com
+          value: https://user-service-zgctp7qz3q-uc.a.run.app
         - name: RELATIONSHIP_SERVICE_URL
-          value: https://relationship-service.court-iq.com
+          value: https://relationship-service-zgctp7qz3q-uc.a.run.app
         - name: MATCHUP_SERVICE_URL
-          value: https://matchup-service.court-iq.com
+          value: https://matchup-service-zgctp7qz3q-uc.a.run.app
         - name: EQUIPMENT_SERVICE_URL
-          value: https://equipment-service.court-iq.com
+          value: https://equipment-service-zgctp7qz3q-uc.a.run.app
         - name: MONGODB_URL
           valueFrom:
             secretKeyRef:
