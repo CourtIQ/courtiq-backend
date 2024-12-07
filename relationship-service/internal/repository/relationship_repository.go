@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/domain"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -29,7 +30,19 @@ func (r *relationshipRepository) Create(rel domain.Relationship) error {
 }
 
 func (r *relationshipRepository) GetByID(id string) (domain.Relationship, error) {
-	return nil, errors.New("GetByID not implemented")
+	ctx := context.TODO() // Ideally, pass context down from callers
+
+	var relationship domain.Relationship
+	// Use MongoDB's `FindOne` to retrieve the document by ID
+	err := r.coll.FindOne(ctx, bson.M{"_id": id}).Decode(&relationship)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("no relationship found with ID: %s", id)
+		}
+		return nil, fmt.Errorf("failed to get relationship: %w", err)
+	}
+
+	return relationship, nil
 }
 
 func (r *relationshipRepository) Update(id string, fields map[string]interface{}) error {
@@ -37,7 +50,18 @@ func (r *relationshipRepository) Update(id string, fields map[string]interface{}
 }
 
 func (r *relationshipRepository) Delete(id string) error {
-	return errors.New("Delete not implemented")
+	ctx := context.TODO()
+
+	result, err := r.coll.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return fmt.Errorf("failed to delete relationship: %w", err)
+	}
+
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("no relationship found with ID: %s", id)
+	}
+
+	return nil
 }
 
 func (r *relationshipRepository) ListByStatus(status domain.RelationshipStatus, limit int, offset int) ([]domain.Relationship, error) {

@@ -34,11 +34,10 @@ func notImplemented(funcName string) error {
 
 // Friendships
 func (s *relationshipService) SendFriendRequest(ctx context.Context, receiverID string) (bool, error) {
-	// requesterID, err := s.getUserIDFromContext(ctx)
-	// if err != nil {
-	// 	return false, fmt.Errorf("failed to get requester user ID: %w", err)
-	// }
-	requesterID := "tester"
+	requesterID, err := s.getUserIDFromContext(ctx)
+	if err != nil {
+		return false, err
+	}
 
 	friendship := domain.NewFriendship(requesterID, receiverID)
 
