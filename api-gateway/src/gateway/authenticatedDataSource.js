@@ -13,5 +13,4 @@ class AuthenticatedDataSource extends RemoteGraphQLDataSource {
 }
 
 
-
 module.exports = AuthenticatedDataSource;
