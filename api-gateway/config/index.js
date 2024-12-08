@@ -1,13 +1,16 @@
-require('dotenv').config();
-
+// Environment and application defaults
 const ENV = process.env.NODE_ENV || 'development';
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const GRAPHQL_PLAYGROUND = process.env.GRAPHQL_PLAYGROUND === 'true';
 
+// Database connection URL
 const MONGODB_URL = process.env.MONGODB_URL;
+
+// Firebase configuration
 const FIREBASE_CONFIG = JSON.parse(process.env.FIREBASE_CONFIG || '{}');
 const FIREBASE_SERVICE_ACCOUNT = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
 
+// Microservice endpoints
 const SERVICES = {
   userService: {
     name: 'user-service',
