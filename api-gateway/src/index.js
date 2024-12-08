@@ -2,7 +2,7 @@
 require('dotenv').config();
 const { ApolloServer } = require('@apollo/server');
 const { startStandaloneServer } = require('@apollo/server/standalone');
-const config = require('./config');
+const config = require('../config');
 const gateway = require('./gateway');
 const authMiddleware = require('./middleware/auth'); // Ensure this file exports a function like the one above
 

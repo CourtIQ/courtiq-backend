@@ -1,5 +1,5 @@
 const { ApolloGateway, IntrospectAndCompose } = require('@apollo/gateway');
-const config = require('../config');
+const config = require('../../config');
 const getServiceUrl = require('../utils/getServiceUrl');
 const AuthenticatedDataSource = require('./authenticatedDataSource');
 
