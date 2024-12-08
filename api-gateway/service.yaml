@@ -15,6 +15,9 @@ spec:
         autoscaling.knative.dev/maxScale: '100'
         run.googleapis.com/client-name: cloud-console
         run.googleapis.com/startup-cpu-boost: 'true'
+        run.googleapis.com/network-interfaces: '[{"network":"courtiq","subnetwork":"us-central1"}]'
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+
     spec:
       containerConcurrency: 80
       timeoutSeconds: 300
