@@ -30,7 +30,7 @@ func (r *relationshipRepository) Create(rel domain.Relationship) error {
 }
 
 func (r *relationshipRepository) GetByID(id string) (domain.Relationship, error) {
-	ctx := context.TODO() // Ideally, pass context down from callers
+	ctx := context.TODO()
 
 	var relationship domain.Relationship
 	// Use MongoDB's `FindOne` to retrieve the document by ID
