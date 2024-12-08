@@ -16,14 +16,25 @@ type Coachship struct {
 
 var _ Relationship = (*Coachship)(nil)
 
-// Implement the Relationship interface
+// Relationship interface methods
 func (c *Coachship) GetID() string                 { return c.ID }
 func (c *Coachship) GetType() RelationshipType     { return c.Type }
 func (c *Coachship) GetStatus() RelationshipStatus { return c.Status }
-func (f *Coachship) GetCreatedAt() time.Time {
-	return f.CreatedAt
+func (c *Coachship) GetCreatedAt() time.Time       { return c.CreatedAt }
+func (c *Coachship) GetUpdatedAt() *time.Time      { return c.UpdatedAt }
+func (c *Coachship) GetParticipantIDs() []string   { return c.ParticipantIDs }
+
+// NewCoachship creates a new Coachship instance with default status and timestamps.
+// coachID and coacheeID define the participants in the coachship.
+func NewCoachship(coachID, coacheeID string) *Coachship {
+	now := time.Now().UTC()
+	return &Coachship{
+		ParticipantIDs: []string{coachID, coacheeID},
+		Type:           RelationshipTypeCoachship,
+		Status:         RelationshipStatusPending,
+		CreatedAt:      now,
+		UpdatedAt:      &now,
+		CoachID:        coachID,
+		CoacheeID:      coacheeID,
+	}
 }
-func (f *Coachship) GetUpdatedAt() *time.Time {
-	return f.UpdatedAt
-}
-func (c *Coachship) GetParticipantIDs() []string { return c.ParticipantIDs }

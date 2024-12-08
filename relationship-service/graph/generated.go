@@ -46,6 +46,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	Satisfies func(ctx context.Context, obj interface{}, next graphql.Resolver, relationshipStatus *model.RelationshipStatus, relationshipType *model.RelationshipType, requireParticipant *bool, requireSender *bool, requireReceiver *bool, noExistingFriendship *bool) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -744,7 +745,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/RelationshipStatus.gql" "schema/enums/RelationshipType.gql" "schema/interfaces/Relationship.gql" "schema/mutations/CoachshipMutations.gql" "schema/mutations/FriendshipMutations.gql" "schema/queries/CoachshipQueries.gql" "schema/queries/FriendshipQueries.gql" "schema/types/Coachship.gql" "schema/types/Friendship.gql"
+//go:embed "schema/directives.gql" "schema/enums/RelationshipStatus.gql" "schema/enums/RelationshipType.gql" "schema/interfaces/Relationship.gql" "schema/mutations/CoachshipMutations.gql" "schema/mutations/FriendshipMutations.gql" "schema/queries/CoachshipQueries.gql" "schema/queries/FriendshipQueries.gql" "schema/types/Coachship.gql" "schema/types/Friendship.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -756,6 +757,7 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "schema/directives.gql", Input: sourceData("schema/directives.gql"), BuiltIn: false},
 	{Name: "schema/enums/RelationshipStatus.gql", Input: sourceData("schema/enums/RelationshipStatus.gql"), BuiltIn: false},
 	{Name: "schema/enums/RelationshipType.gql", Input: sourceData("schema/enums/RelationshipType.gql"), BuiltIn: false},
 	{Name: "schema/interfaces/Relationship.gql", Input: sourceData("schema/interfaces/Relationship.gql"), BuiltIn: false},
@@ -842,6 +844,173 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) dir_satisfies_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.dir_satisfies_argsRelationshipStatus(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["relationshipStatus"] = arg0
+	arg1, err := ec.dir_satisfies_argsRelationshipType(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["relationshipType"] = arg1
+	arg2, err := ec.dir_satisfies_argsRequireParticipant(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["requireParticipant"] = arg2
+	arg3, err := ec.dir_satisfies_argsRequireSender(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["requireSender"] = arg3
+	arg4, err := ec.dir_satisfies_argsRequireReceiver(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["requireReceiver"] = arg4
+	arg5, err := ec.dir_satisfies_argsNoExistingFriendship(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["noExistingFriendship"] = arg5
+	return args, nil
+}
+func (ec *executionContext) dir_satisfies_argsRelationshipStatus(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.RelationshipStatus, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["relationshipStatus"]
+	if !ok {
+		var zeroVal *model.RelationshipStatus
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("relationshipStatus"))
+	if tmp, ok := rawArgs["relationshipStatus"]; ok {
+		return ec.unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, tmp)
+	}
+
+	var zeroVal *model.RelationshipStatus
+	return zeroVal, nil
+}
+
+func (ec *executionContext) dir_satisfies_argsRelationshipType(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.RelationshipType, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["relationshipType"]
+	if !ok {
+		var zeroVal *model.RelationshipType
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("relationshipType"))
+	if tmp, ok := rawArgs["relationshipType"]; ok {
+		return ec.unmarshalORelationshipType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipType(ctx, tmp)
+	}
+
+	var zeroVal *model.RelationshipType
+	return zeroVal, nil
+}
+
+func (ec *executionContext) dir_satisfies_argsRequireParticipant(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*bool, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["requireParticipant"]
+	if !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("requireParticipant"))
+	if tmp, ok := rawArgs["requireParticipant"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
+func (ec *executionContext) dir_satisfies_argsRequireSender(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*bool, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["requireSender"]
+	if !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("requireSender"))
+	if tmp, ok := rawArgs["requireSender"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
+func (ec *executionContext) dir_satisfies_argsRequireReceiver(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*bool, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["requireReceiver"]
+	if !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("requireReceiver"))
+	if tmp, ok := rawArgs["requireReceiver"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
+
+func (ec *executionContext) dir_satisfies_argsNoExistingFriendship(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*bool, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["noExistingFriendship"]
+	if !ok {
+		var zeroVal *bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("noExistingFriendship"))
+	if tmp, ok := rawArgs["noExistingFriendship"]; ok {
+		return ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	}
+
+	var zeroVal *bool
+	return zeroVal, nil
+}
 
 func (ec *executionContext) field_Entity_findCoachshipByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -3001,8 +3170,50 @@ func (ec *executionContext) _Mutation_sendFriendRequest(ctx context.Context, fie
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SendFriendRequest(rctx, fc.Args["receiverId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SendFriendRequest(rctx, fc.Args["receiverId"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			requireParticipant, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireSender, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireReceiver, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			noExistingFriendship, err := ec.unmarshalOBoolean2ᚖbool(ctx, true)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.Satisfies == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive satisfies is not implemented")
+			}
+			return ec.directives.Satisfies(ctx, nil, directive0, nil, nil, requireParticipant, requireSender, requireReceiver, noExistingFriendship)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3056,8 +3267,55 @@ func (ec *executionContext) _Mutation_acceptFriendRequest(ctx context.Context, f
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AcceptFriendRequest(rctx, fc.Args["friendshipId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AcceptFriendRequest(rctx, fc.Args["friendshipId"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			relationshipStatus, err := ec.unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, "PENDING")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireParticipant, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireSender, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireReceiver, err := ec.unmarshalOBoolean2ᚖbool(ctx, true)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			noExistingFriendship, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.Satisfies == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive satisfies is not implemented")
+			}
+			return ec.directives.Satisfies(ctx, nil, directive0, relationshipStatus, nil, requireParticipant, requireSender, requireReceiver, noExistingFriendship)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3111,8 +3369,55 @@ func (ec *executionContext) _Mutation_rejectFriendRequest(ctx context.Context, f
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RejectFriendRequest(rctx, fc.Args["friendshipId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RejectFriendRequest(rctx, fc.Args["friendshipId"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			relationshipStatus, err := ec.unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, "PENDING")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireParticipant, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireSender, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireReceiver, err := ec.unmarshalOBoolean2ᚖbool(ctx, true)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			noExistingFriendship, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.Satisfies == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive satisfies is not implemented")
+			}
+			return ec.directives.Satisfies(ctx, nil, directive0, relationshipStatus, nil, requireParticipant, requireSender, requireReceiver, noExistingFriendship)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3166,8 +3471,55 @@ func (ec *executionContext) _Mutation_cancelFriendRequest(ctx context.Context, f
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CancelFriendRequest(rctx, fc.Args["friendshipId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CancelFriendRequest(rctx, fc.Args["friendshipId"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			relationshipStatus, err := ec.unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, "PENDING")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireParticipant, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireSender, err := ec.unmarshalOBoolean2ᚖbool(ctx, true)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireReceiver, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			noExistingFriendship, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.Satisfies == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive satisfies is not implemented")
+			}
+			return ec.directives.Satisfies(ctx, nil, directive0, relationshipStatus, nil, requireParticipant, requireSender, requireReceiver, noExistingFriendship)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3221,8 +3573,55 @@ func (ec *executionContext) _Mutation_endFriendship(ctx context.Context, field g
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().EndFriendship(rctx, fc.Args["friendshipId"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().EndFriendship(rctx, fc.Args["friendshipId"].(string))
+		}
+
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			relationshipStatus, err := ec.unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, "ACTIVE")
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireParticipant, err := ec.unmarshalOBoolean2ᚖbool(ctx, true)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireSender, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			requireReceiver, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			noExistingFriendship, err := ec.unmarshalOBoolean2ᚖbool(ctx, false)
+			if err != nil {
+				var zeroVal bool
+				return zeroVal, err
+			}
+			if ec.directives.Satisfies == nil {
+				var zeroVal bool
+				return zeroVal, errors.New("directive satisfies is not implemented")
+			}
+			return ec.directives.Satisfies(ctx, nil, directive0, relationshipStatus, nil, requireParticipant, requireSender, requireReceiver, noExistingFriendship)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -8101,6 +8500,22 @@ func (ec *executionContext) unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourt
 }
 
 func (ec *executionContext) marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx context.Context, sel ast.SelectionSet, v *model.RelationshipStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalORelationshipType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipType(ctx context.Context, v interface{}) (*model.RelationshipType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.RelationshipType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalORelationshipType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipType(ctx context.Context, sel ast.SelectionSet, v *model.RelationshipType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

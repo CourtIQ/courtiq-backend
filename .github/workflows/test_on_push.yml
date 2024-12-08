@@ -47,7 +47,7 @@ jobs:
         run: |
           cd ${{ env.SVC_NAME }}
           go mod download
-          go test ./...
+          go test -v ./...
 
   matchup-service:
     env:
@@ -69,7 +69,7 @@ jobs:
         run: |
           cd ${{ env.SVC_NAME }}
           go mod download
-          go test ./...
+          go test -v ./...
 
   relationship-service:
     env:
@@ -91,7 +91,7 @@ jobs:
         run: |
           cd ${{ env.SVC_NAME }}
           go mod download
-          go test ./...
+          go test -v ./...
 
   user-service:
     env:
@@ -113,4 +113,4 @@ jobs:
         run: |
           cd ${{ env.SVC_NAME }}
           go mod download
-          go test ./...
+          go test -v ./...

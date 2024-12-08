@@ -5,9 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/domain"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 )
 
@@ -19,14 +21,6 @@ func NewRelationshipService(repo repository.RelationshipRepository) Relationship
 	return &relationshipService{repo: repo}
 }
 
-func (s *relationshipService) getUserIDFromContext(ctx context.Context) (string, error) {
-	userID, ok := ctx.Value("userID").(string)
-	if !ok || userID == "" {
-		return "", errors.New("no userID in context")
-	}
-	return userID, nil
-}
-
 // Helper to create a "not implemented" error with function name
 func notImplemented(funcName string) error {
 	return errors.New(funcName + " not implemented")
@@ -34,14 +28,14 @@ func notImplemented(funcName string) error {
 
 // Friendships
 func (s *relationshipService) SendFriendRequest(ctx context.Context, receiverID string) (bool, error) {
-	// requesterID, err := s.getUserIDFromContext(ctx)
-	// if err != nil {
-	// 	return false, err
-	// }
-	requesterID := "testtter"
+	requesterID, err := middleware.GetUserIDFromContext(ctx)
+	if err != nil {
+		return false, err
+	}
+
 	friendship := domain.NewFriendship(requesterID, receiverID)
 
-	if err := s.repo.Create(friendship); err != nil {
+	if err := s.repo.Create(ctx, friendship); err != nil {
 		return false, fmt.Errorf("failed to create friendship: %w", err)
 	}
 
@@ -49,19 +43,37 @@ func (s *relationshipService) SendFriendRequest(ctx context.Context, receiverID 
 }
 
 func (s *relationshipService) AcceptFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
-	return false, notImplemented("AcceptFriendRequest")
+	fields := map[string]interface{}{
+		"status":    domain.RelationshipStatusActive,
+		"updatedAt": time.Now().UTC(),
+	}
+
+	if err := s.repo.Update(ctx, friendshipID, fields); err != nil {
+		return false, fmt.Errorf("failed to accept friend request: %w", err)
+	}
+
+	return true, nil
 }
 
 func (s *relationshipService) RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
-	return false, notImplemented("RejectFriendRequest")
+	if err := s.repo.Delete(ctx, friendshipID); err != nil {
+		return false, fmt.Errorf("failed to reject friend request: %w", err)
+	}
+	return true, nil
 }
 
 func (s *relationshipService) CancelFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
-	return false, notImplemented("CancelFriendRequest")
+	if err := s.repo.Delete(ctx, friendshipID); err != nil {
+		return false, fmt.Errorf("failed to cancel friend request: %w", err)
+	}
+	return true, nil
 }
 
 func (s *relationshipService) EndFriendship(ctx context.Context, friendshipID string) (bool, error) {
-	return false, notImplemented("EndFriendship")
+	if err := s.repo.Delete(ctx, friendshipID); err != nil {
+		return false, fmt.Errorf("failed to end friendship: %w", err)
+	}
+	return true, nil
 }
 
 // Coachships

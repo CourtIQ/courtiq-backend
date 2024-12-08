@@ -2,35 +2,59 @@ extend type Mutation {
   """
   Send a friend request to another user.
   The userId parameter is the ID of the user to send the friend request to.
-  Returns the created Friendship object.
+  Returns a success indicator.
+  
+  Conditions:
+  - Possibly check that no existing friendship or pending request exists.
+    For that, you might define a directive like @noExistingRequest
   """
   sendFriendRequest(receiverId: ID!): Boolean!
+  @satisfies(noExistingFriendship: true)
 
   """
   Accept a pending friend request.
   The friendshipId parameter is the ID of the Friendship object to accept.
-  Returns the updated Friendship object.
+  Returns a success indicator.
+  
+  Conditions:
+  - The request must be pending.
+  - The current user must be the receiver, not the sender.
   """
   acceptFriendRequest(friendshipId: ID!): Boolean!
-
+  @satisfies(relationshipStatus: PENDING, requireReceiver: true)
   """
   Reject a pending friend request.
   The friendshipId parameter is the ID of the Friendship object to reject.
   Returns a success indicator.
+  
+  Conditions:
+  - The request must be pending.
+  - The current user must be the receiver.
   """
   rejectFriendRequest(friendshipId: ID!): Boolean!
+  @satisfies(relationshipStatus: PENDING, requireReceiver: true)
 
   """
   Cancel a sent friend request.
   The friendshipId parameter is the ID of the Friendship object to cancel.
   Returns a success indicator.
+  
+  Conditions:
+  - The request must be pending.
+  - The current user must be the sender.
   """
-  cancelFriendRequest(friendshipId: ID!): Boolean!
+  cancelFriendRequest(friendshipId: ID!): Boolean! 
+  @satisfies(relationshipStatus: PENDING, requireSender: true)
 
   """
   Remove a user from your friends list.
   The friendshipId parameter is the ID of the Friendship object to unfriend.
   Returns a success indicator.
+  
+  Conditions:
+  - The user must be a participant (either sender or receiver).
+  - (If you have additional conditions, add corresponding directives.)
   """
   endFriendship(friendshipId: ID!): Boolean!
+    @satisfies(relationshipStatus: ACTIVE, requireParticipant: true)
 }

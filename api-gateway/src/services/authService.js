@@ -8,21 +8,19 @@ class AuthService {
       const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   
       if (!token) {
-        // Returning null allows requests without tokens to proceed (unauthenticated)
-        return null;
-      
-        // Throw an error if no token is provided (strict enforcement)
-        // throw new Error('No auth header provided');
+        return null;  // Allows requests without tokens to proceed as unauthenticated
+        // throw new Error('No auth header provided'); // Strict error if no token is present
       }
-
+  
       try {
         const userClaims = await this.tokenVerifier.verify(token);
-        return userClaims; 
+        return userClaims;
       } catch (error) {
-        // Verification failed
-        return null; // or throw new Error('Invalid token');
+        return null; // Silent fail, treats invalid tokens as unauthenticated
+        // throw new Error('Invalid token'); // Strict error if token is invalid
       }
     }
   }
   
   module.exports = AuthService;
+  

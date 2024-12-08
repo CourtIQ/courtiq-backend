@@ -1,7 +1,6 @@
 const AuthService = require('../services/authService');
-const TokenVerifier = require('../services/tokenVerifier');
 
-const tokenVerifier = new TokenVerifier();
+const tokenVerifier = require('../services/tokenVerifier'); // or `new TokenVerifier()`
 const authService = new AuthService(tokenVerifier);
 
 async function authMiddleware({ req }) {
