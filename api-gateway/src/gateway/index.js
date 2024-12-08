@@ -1,6 +1,6 @@
 const { ApolloGateway, IntrospectAndCompose } = require('@apollo/gateway');
 const config = require('../config');
-const getServiceUrl = require('./getServiceUrl');
+const getServiceUrl = require('../utils/getServiceUrl');
 const AuthenticatedDataSource = require('./authenticatedDataSource');
 
 const subgraphs = Object.values(config.SERVICES).map(service => ({

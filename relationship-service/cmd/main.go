@@ -10,9 +10,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/directives"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/configs"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
 )
@@ -39,12 +41,23 @@ func main() {
 	// Create the service with the repository
 	relationshipService := services.NewRelationshipService(relationshipRepo)
 
-	// Set up the GraphQL server with the resolver that has the service injected
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+	// Set the directive dependencies
+	directives.RelationshipRepo = relationshipRepo
+	directives.GetCurrentUserID = middleware.GetUserIDFromContext
+
+	// Build gqlgen config and assign the directive
+	c := graph.Config{
 		Resolvers: &resolvers.Resolver{
 			RelationshipService: relationshipService,
 		},
-	}))
+	}
+
+	c.Directives.Satisfies = directives.SatisfiesDirective
+	// Create the executable schema
+	schema := graph.NewExecutableSchema(c)
+
+	// Set up the GraphQL server
+	srv := handler.NewDefaultServer(schema)
 
 	// Create router mux
 	mux := http.NewServeMux()

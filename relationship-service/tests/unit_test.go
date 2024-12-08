@@ -4,5 +4,5 @@ package tests
 import "testing"
 
 func TestHelloWorld(t *testing.T) {
-	t.Log("Hello world test is running!")
+	t.Log("Hello world test in user-service is running!")
 }
