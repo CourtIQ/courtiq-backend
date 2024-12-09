@@ -1,32 +1,72 @@
 extend type Mutation {
   """
   Sends a friend request to another user.
+  
   Conditions:
-  - @satisfies(noExistingFriendship: true): Ensure that no existing friendship or pending request already exists between currentUser and receiverId.
+  - nonExistence.noExistingFriendship: Ensures that there is no existing friendship 
+    or pending friend request between the current user and the specified receiver.
+    In other words, you can only send a friend request if you are not already friends,
+    and there is no pending request in either direction.
   """
   sendFriendRequest(receiverId: ID!): Boolean
     @satisfies(conditions: {
       nonExistence: { noExistingFriendship: true }
     })
 
+  """
+  Accepts a pending friend request.
+  
+  Conditions:
+  - existence.relationshipStatus: PENDING, relationshipType: FRIENDSHIP
+    There must be a pending FRIENDSHIP relationship request in the database.
+  - roles.requireReceiver: The current user must be the receiver of the friend request.
+    Only the user who was sent the request can accept it.
+  """
   acceptFriendRequest(friendshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: FRIENDSHIP },
       roles: { requireReceiver: true }
     })
 
+  """
+  Rejects a pending friend request.
+  
+  Conditions:
+  - existence.relationshipStatus: PENDING, relationshipType: FRIENDSHIP
+    There must be a pending FRIENDSHIP relationship.
+  - roles.requireReceiver: The current user must be the receiver of the friend request.
+    Only the user who received the request can reject it.
+  """
   rejectFriendRequest(friendshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: FRIENDSHIP },
       roles: { requireReceiver: true }
     })
 
+  """
+  Cancels a pending friend request.
+  
+  Conditions:
+  - existence.relationshipStatus: PENDING, relationshipType: FRIENDSHIP
+    There must be a pending FRIENDSHIP relationship request.
+  - roles.requireSender: The current user must be the sender of that friend request.
+    Only the user who initiated the request can cancel it.
+  """
   cancelFriendRequest(friendshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: FRIENDSHIP },
       roles: { requireSender: true }
     })
 
+  """
+  Ends an active friendship.
+  
+  Conditions:
+  - existence.relationshipStatus: ACTIVE, relationshipType: FRIENDSHIP
+    There must be an active FRIENDSHIP relationship.
+  - roles.requireParticipants: The current user must be a participant in that friendship
+    to end it. Either of the two friends should be able to end the friendship.
+  """
   endFriendship(friendshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: ACTIVE, relationshipType: FRIENDSHIP },

@@ -1,67 +1,104 @@
 extend type Mutation {
-  # Mutation to request to be a student (i.e., to have someone as your coach)
-  # Only runs if current user is not already a student of the target user or has a pending request.
+  # Mutation to request to be a student (i.e., you want another user to become your coach).
+  # Conditions:
+  # - nonExistence.notExistingStudent: Ensures that there is no existing or pending
+  #   "coachship" relationship where the current user is already the student of the target user.
   requestToBeStudent(ofUserId: ID!): Boolean
     @satisfies(conditions: {
       nonExistence: { notExistingStudent: true }
     })
 
-  # Mutation to accept a request from someone to be your student
+  # Mutation to accept a request from someone to be your student (making you their coach).
+  # Conditions:
+  # - existence.relationshipStatus: PENDING, relationshipType: COACHSHIP:
+  #   There must be a pending "COACHSHIP" relationship request.
+  # - roles.requireCoach: The current user must be in the coach's role for this relationship.
   acceptStudentRequest(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
       roles: { requireCoach: true }
     })
 
-  # Mutation to reject a request from someone to be your student
+  # Mutation to reject a request from someone to be your student.
+  # Conditions:
+  # - existence.relationshipStatus: PENDING, relationshipType: COACHSHIP:
+  #   There must be a pending "COACHSHIP" relationship request.
+  # - roles.requireCoach: The current user must be the coach in this pending relationship.
   rejectStudentRequest(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
       roles: { requireCoach: true }
     })
 
-  # Mutation to cancel a request to be someone's student
+  # Mutation to cancel a request to be someone's student (you sent the request, now you want to withdraw it).
+  # Conditions:
+  # - existence.relationshipStatus: PENDING, relationshipType: COACHSHIP:
+  #   There must be a pending "COACHSHIP" relationship request.
+  # - roles.requireStudent: The current user must be in the student role (the one who requested to be a student).
   cancelRequestToBeStudent(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
       roles: { requireStudent: true }
     })
 
-  # Mutation to remove a student from an active coachship
+  # Mutation to remove a student from an active coachship.
+  # Conditions:
+  # - existence.relationshipStatus: ACTIVE, relationshipType: COACHSHIP:
+  #   There must be an active "COACHSHIP" relationship.
+  # - roles.requireCoach: The current user must be the coach, as only the coach can remove a student.
   removeStudent(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: ACTIVE, relationshipType: COACHSHIP },
       roles: { requireCoach: true }
     })
 
-  # Mutation to request to be a coach (i.e., to have someone as your student)
+  # Mutation to request to be a coach (i.e., you want another user to become your student).
+  # Conditions:
+  # - nonExistence.notExistingCoach: Ensures that there is no existing or pending
+  #   "COACHSHIP" relationship where the current user is already the coach of the target user.
   requestToBeCoach(ofUserId: ID!): Boolean
     @satisfies(conditions: {
       nonExistence: { notExistingCoach: true }
     })
 
-  # Mutation to accept a request from someone to be your coach
+  # Mutation to accept a request from someone to be your coach.
+  # Conditions:
+  # - existence.relationshipStatus: PENDING, relationshipType: COACHSHIP:
+  #   There must be a pending "COACHSHIP" request.
+  # - roles.requireStudent: The current user must be in the student role (the one who received the coach request).
   acceptCoachRequest(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
       roles: { requireStudent: true }
     })
-    
-  # Mutation to reject a coach request
+
+  # Mutation to reject a coach request.
+  # Conditions:
+  # - existence.relationshipStatus: PENDING, relationshipType: COACHSHIP:
+  #   There must be a pending "COACHSHIP" request.
+  # - roles.requireStudent: The current user must be the student in this pending relationship.
   rejectCoachRequest(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
       roles: { requireStudent: true }
     })
-    
-  # Mutation to cancel a coach request
+
+  # Mutation to cancel a coach request.
+  # Conditions:
+  # - existence.relationshipStatus: PENDING, relationshipType: COACHSHIP:
+  #   There must be a pending "COACHSHIP" request.
+  # - roles.requireCoach: The current user must be the coach who initiated this pending relationship.
   cancelCoachRequest(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
       roles: { requireCoach: true }
     })
-    
-  # Mutation to remove a coach from an active coachship
+
+  # Mutation to remove a coach from an active coachship.
+  # Conditions:
+  # - existence.relationshipStatus: ACTIVE, relationshipType: COACHSHIP:
+  #   There must be an active "COACHSHIP" relationship.
+  # - roles.requireStudent: The current user must be the student in the active coachship.
   removeCoach(coachshipId: ID!): Boolean
     @satisfies(conditions: {
       existence: { relationshipStatus: ACTIVE, relationshipType: COACHSHIP },
