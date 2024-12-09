@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/middleware"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -38,7 +39,7 @@ func BuildRoleFilter(
 		if ofUserID, ok := fc.Args["ofUserId"].(string); ok && ofUserID != "" {
 			participantIds = append(participantIds, ofUserID)
 		}
-		filter["participantIds"] = participantIds
+		filter["participantIds"] = bson.M{"$all": participantIds}
 	}
 
 	if role.RequireSender != nil && *role.RequireSender {
@@ -129,7 +130,7 @@ func BuildNonExistenceFilter(
 		if !ok || receiverID == "" {
 			return nil, errors.New("receiverId argument is required and must be a non-empty string")
 		}
-		filter["relationshipType"] = "FRIENDSHIP"
+		filter["type"] = "FRIENDSHIP"
 		filter["participantIds"] = []string{currentUserID, receiverID}
 	}
 
@@ -138,7 +139,7 @@ func BuildNonExistenceFilter(
 		if !ok || ofUserID == "" {
 			return nil, errors.New("ofUserId argument is required and must be a non-empty string")
 		}
-		filter["relationshipType"] = "COACHSHIP"
+		filter["type"] = "COACHSHIP"
 		filter["coachId"] = currentUserID
 		filter["studentId"] = ofUserID
 	}
@@ -148,7 +149,7 @@ func BuildNonExistenceFilter(
 		if !ok || ofUserID == "" {
 			return nil, errors.New("ofUserId argument is required and must be a non-empty string")
 		}
-		filter["relationshipType"] = "COACHSHIP"
+		filter["type"] = "COACHSHIP"
 		filter["coachId"] = ofUserID
 		filter["studentId"] = currentUserID
 	}

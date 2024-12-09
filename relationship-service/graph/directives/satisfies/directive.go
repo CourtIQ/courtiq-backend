@@ -43,38 +43,38 @@ func SatisfiesDirective(ctx context.Context, obj interface{}, next graphql.Resol
 		return nil, fmt.Errorf("error building non-existence filter: %w", err)
 	}
 
-	// Check allowed combinations
+	// After building roleFilter, existenceFilter, and nonExistenceFilter:
 	if conditions.Existence != nil && conditions.NonExistence != nil {
 		return nil, errors.New("cannot have both existence and non-existence conditions simultaneously")
 	}
 
-	// Validate role conditions
-	if conditions.Roles != nil && roleFilter != nil {
-		fmt.Printf("DEBUG: Role filter: %+v\n", roleFilter) // Print the role filter
-		count, err := RelationshipRepo.Count(ctx, roleFilter)
+	// Combine role and existence filters if needed
+	var combinedFilter map[string]interface{}
+	if roleFilter != nil && existenceFilter != nil {
+		// Merge or use $and operator as shown above
+		combinedFilter = map[string]interface{}{
+			"$and": []map[string]interface{}{roleFilter, existenceFilter},
+		}
+	} else if roleFilter != nil {
+		combinedFilter = roleFilter
+	} else if existenceFilter != nil {
+		combinedFilter = existenceFilter
+	}
+
+	// Check combined role + existence conditions if any are set
+	if combinedFilter != nil {
+		fmt.Printf("DEBUG: Combined filter: %+v\n", combinedFilter)
+		count, err := RelationshipRepo.Count(ctx, combinedFilter)
 		if err != nil {
-			return nil, fmt.Errorf("failed to check role conditions: %w", err)
+			return nil, fmt.Errorf("failed to check combined conditions: %w", err)
 		}
 		if count == 0 {
-			return nil, errors.New("role conditions not satisfied")
+			return nil, errors.New("combined conditions not met")
 		}
 	}
 
-	// Validate existence conditions
-	if conditions.Existence != nil && existenceFilter != nil {
-		fmt.Printf("DEBUG: Existence filter: %+v\n", existenceFilter) // Print the existence filter
-		count, err := RelationshipRepo.Count(ctx, existenceFilter)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check existence conditions: %w", err)
-		}
-		if count == 0 {
-			return nil, errors.New("existence condition not met")
-		}
-	}
-
-	// Validate non-existence conditions
-	if conditions.NonExistence != nil && nonExistenceFilter != nil {
-		fmt.Printf("DEBUG: Non-Existence filter: %+v\n", nonExistenceFilter) // Print the non-existence filter
+	// If there's nonExistenceFilter, handle it separately as it conflicts with existence filters
+	if nonExistenceFilter != nil {
 		count, err := RelationshipRepo.Count(ctx, nonExistenceFilter)
 		if err != nil {
 			return nil, fmt.Errorf("failed to check non-existence conditions: %w", err)
@@ -84,6 +84,5 @@ func SatisfiesDirective(ctx context.Context, obj interface{}, next graphql.Resol
 		}
 	}
 
-	// If we reach here, conditions are satisfied
 	return next(ctx)
 }

@@ -44,7 +44,7 @@ func UserMiddleware(next http.Handler) http.Handler {
 func GetUserIDFromContext(ctx context.Context) (string, error) {
 	if !enableAuth {
 		// Auth disabled, return dummy UID without error
-		return "testtter", nil
+		return "sdddfdfsd", nil
 	}
 
 	data, ok := ctx.Value(userContextKey{}).(map[string]interface{})
