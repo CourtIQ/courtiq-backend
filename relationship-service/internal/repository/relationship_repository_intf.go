@@ -33,4 +33,6 @@ type RelationshipRepository interface {
 	// 'filter' is a map of conditions that must match for documents to be counted.
 	// For example: filter could be bson.M{"status": "PENDING", "participantIds": userID}
 	Count(ctx context.Context, filter map[string]interface{}) (int64, error)
+
+	GetFriendshipByID(ctx context.Context, id string) (*domain.Friendship, error)
 }

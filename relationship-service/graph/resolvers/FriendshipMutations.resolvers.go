@@ -9,34 +9,26 @@ import (
 )
 
 // SendFriendRequest is the resolver for the sendFriendRequest field.
-func (r *mutationResolver) SendFriendRequest(ctx context.Context, receiverID string) (bool, error) {
+func (r *mutationResolver) SendFriendRequest(ctx context.Context, receiverID string) (*bool, error) {
 	return r.RelationshipService.SendFriendRequest(ctx, receiverID)
 }
 
 // AcceptFriendRequest is the resolver for the acceptFriendRequest field.
-func (r *mutationResolver) AcceptFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
+func (r *mutationResolver) AcceptFriendRequest(ctx context.Context, friendshipID string) (*bool, error) {
 	return r.RelationshipService.AcceptFriendRequest(ctx, friendshipID)
 }
 
 // RejectFriendRequest is the resolver for the rejectFriendRequest field.
-func (r *mutationResolver) RejectFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
+func (r *mutationResolver) RejectFriendRequest(ctx context.Context, friendshipID string) (*bool, error) {
 	return r.RelationshipService.RejectFriendRequest(ctx, friendshipID)
 }
 
 // CancelFriendRequest is the resolver for the cancelFriendRequest field.
-func (r *mutationResolver) CancelFriendRequest(ctx context.Context, friendshipID string) (bool, error) {
-	success, err := r.RelationshipService.CancelFriendRequest(ctx, friendshipID)
-	if err != nil {
-		return success, err
-	}
-	return success, nil
+func (r *mutationResolver) CancelFriendRequest(ctx context.Context, friendshipID string) (*bool, error) {
+	return r.RelationshipService.CancelFriendRequest(ctx, friendshipID)
 }
 
 // EndFriendship is the resolver for the endFriendship field.
-func (r *mutationResolver) EndFriendship(ctx context.Context, friendshipID string) (bool, error) {
-	success, err := r.RelationshipService.EndFriendship(ctx, friendshipID)
-	if err != nil {
-		return success, err
-	}
-	return success, nil
+func (r *mutationResolver) EndFriendship(ctx context.Context, friendshipID string) (*bool, error) {
+	return r.RelationshipService.EndFriendship(ctx, friendshipID)
 }

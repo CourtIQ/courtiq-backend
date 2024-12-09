@@ -22,7 +22,7 @@ type Friendship implements Relationship @key(fields: "id") {
   updatedAt: String
 
   """ID of the user who initiated the friendship request"""
-  requesterId: ID!
+  senderId: ID!
 
   """ID of the user who received the friendship request"""
   receiverId: ID!

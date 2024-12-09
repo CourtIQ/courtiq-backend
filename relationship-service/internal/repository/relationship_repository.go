@@ -85,6 +85,10 @@ func (r *relationshipRepository) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+func (r *relationshipRepository) ListRelationships(ctx context.Context, limit int, offset int) ([]domain.Relationship, error) {
+	return nil, errors.New("ListRelationships not implemented")
+}
+
 func (r *relationshipRepository) ListByStatus(ctx context.Context, status domain.RelationshipStatus, limit int, offset int) ([]domain.Relationship, error) {
 	return nil, errors.New("ListByStatus not implemented")
 }
@@ -101,4 +105,19 @@ func (r *relationshipRepository) Count(ctx context.Context, filter map[string]in
 		return 0, fmt.Errorf("failed to count documents: %w", err)
 	}
 	return count, nil
+}
+
+func (r *relationshipRepository) GetFriendshipByID(ctx context.Context, id string) (*domain.Friendship, error) {
+	relationship, err := r.GetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("GetFriendshipByID: %w", err)
+	}
+
+	// Type assertion to *domain.Friendship
+	friendship, ok := relationship.(*domain.Friendship)
+	if !ok {
+		return nil, fmt.Errorf("GetFriendshipByID: relationship with ID %s is not a Friendship", id)
+	}
+
+	return friendship, nil
 }

@@ -10,7 +10,7 @@ type Friendship struct {
 	Status         RelationshipStatus `bson:"status" json:"status"`
 	CreatedAt      time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt      *time.Time         `bson:"updatedAt,omitempty" json:"-"`
-	RequesterID    string             `bson:"requesterId" json:"requesterId"`
+	SenderID       string             `bson:"senderId" json:"senderId"`
 	ReceiverID     string             `bson:"receiverId" json:"receiverId"`
 }
 
@@ -30,15 +30,15 @@ func (f *Friendship) GetParticipantIDs() []string {
 	return f.ParticipantIDs
 }
 
-func NewFriendship(requesterID, receiverID string) *Friendship {
+func NewFriendship(senderId, receiverID string) *Friendship {
 	now := time.Now().UTC()
 	return &Friendship{
-		ParticipantIDs: []string{requesterID, receiverID},
+		ParticipantIDs: []string{senderId, receiverID},
 		Type:           RelationshipTypeFriendship,
 		Status:         RelationshipStatusPending,
 		CreatedAt:      now,
 		UpdatedAt:      &now,
-		RequesterID:    requesterID,
+		SenderID:    senderId,
 		ReceiverID:     receiverID,
 	}
 }

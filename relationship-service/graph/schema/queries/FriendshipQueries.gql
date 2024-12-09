@@ -1,28 +1,18 @@
 extend type Query {
-  """
-  Retrieve a specific friendship by ID
-  """
+
   friendship(id: ID!): Friendship
 
-  """
-  List friends for the authenticated user.
-  Returns paginated results of accepted friendships.
-  """
-  friends(limit: Int, offset: Int): [Friendship!]!
+  myFriends(limit: Int, offset: Int): [Friendship!]!
 
-  """
-  List pending friend requests for the authenticated user
-  """
-  pendingFriendRequests: [Friendship!]!
+  friends(ofUserID: String, limit: Int, offset: Int): [Friendship!]!
+    @satisfies(conditions: {
+      existence: { relationshipStatus: ACTIVE, relationshipType: FRIENDSHIP },
+      roles: { requireParticipants: true }
+    })
 
-  """
-  List friend requests sent by the authenticated user
-  """
+  myFriendRequests: [Friendship!]!
+
   sentFriendRequests: [Friendship!]!
 
-  """
-  Check friendship status with another user.
-  Returns the current relationship status between the authenticated user and the specified user.
-  """
   friendshipStatus(otherUserId: ID!): RelationshipStatus
 }

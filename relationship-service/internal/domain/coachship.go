@@ -11,7 +11,7 @@ type Coachship struct {
 	CreatedAt      time.Time          `bson:"createdAt" json:"-"`
 	UpdatedAt      *time.Time         `bson:"updatedAt,omitempty" json:"-"`
 	CoachID        string             `bson:"coachId" json:"coachId"`
-	CoacheeID      string             `bson:"coacheeId" json:"coacheeId"`
+	StudentID      string             `bson:"studentId" json:"studentId"`
 }
 
 var _ Relationship = (*Coachship)(nil)
@@ -26,15 +26,15 @@ func (c *Coachship) GetParticipantIDs() []string   { return c.ParticipantIDs }
 
 // NewCoachship creates a new Coachship instance with default status and timestamps.
 // coachID and coacheeID define the participants in the coachship.
-func NewCoachship(coachID, coacheeID string) *Coachship {
+func NewCoachship(coachID, studentID string) *Coachship {
 	now := time.Now().UTC()
 	return &Coachship{
-		ParticipantIDs: []string{coachID, coacheeID},
+		ParticipantIDs: []string{coachID, studentID},
 		Type:           RelationshipTypeCoachship,
 		Status:         RelationshipStatusPending,
 		CreatedAt:      now,
 		UpdatedAt:      &now,
 		CoachID:        coachID,
-		CoacheeID:      coacheeID,
+		StudentID:      studentID,
 	}
 }

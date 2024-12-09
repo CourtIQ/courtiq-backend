@@ -1,18 +1,19 @@
 """
-Represents a coaching relationship between a coach and a coachee.
+Represents a coaching relationship between a coach and a student.
 Implements the Relationship interface.
+Allows multiple distinct coachships between the same two users by differentiating based on roles.
 """
 type Coachship implements Relationship @key(fields: "id") {
   """Unique identifier for the coaching relationship"""
   id: ID!
 
-  """List of IDs for all participants in this relationship (coach and coachee)"""
+  """List of IDs for all participants in this relationship (coach and student)"""
   participantIds: [ID!]!
 
-  """Type of relationship (always COACHING for Coachship)"""
+  """Type of relationship (always COACHSHIP for Coachship)"""
   type: RelationshipType!
 
-  """Current status of the coaching relationship"""
+  """Current status of the coaching relationship (e.g., PENDING, ACTIVE, ENDED)"""
   status: RelationshipStatus!
 
   """ISO-8601 formatted timestamp when the coaching relationship was created"""
@@ -20,10 +21,10 @@ type Coachship implements Relationship @key(fields: "id") {
 
   """ISO-8601 formatted timestamp when the coaching relationship was last updated"""
   updatedAt: String
-  
+
   """ID of the user who is the coach in this relationship"""
   coachId: ID!
 
-  """ID of the user who is being coached in this relationship"""
-  coacheeId: ID!
+  """ID of the user who is the student in this relationship"""
+  studentId: ID!
 }

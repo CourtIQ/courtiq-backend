@@ -16,23 +16,23 @@ func (r *queryResolver) Coachship(ctx context.Context, id string) (*model.Coachs
 	return r.RelationshipService.GetCoachship(ctx, id)
 }
 
-// Coaches is the resolver for the coaches field.
-func (r *queryResolver) Coaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
+// MyCoaches is the resolver for the myCoaches field.
+func (r *queryResolver) MyCoaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
 	return r.RelationshipService.ListCoaches(ctx, limit, offset)
 }
 
-// Students is the resolver for the students field.
-func (r *queryResolver) Students(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
+// MyStudents is the resolver for the myStudents field.
+func (r *queryResolver) MyStudents(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error) {
 	return r.RelationshipService.ListStudents(ctx, limit, offset)
 }
 
-// SentCoacheeRequests is the resolver for the sentCoacheeRequests field.
-func (r *queryResolver) SentCoacheeRequests(ctx context.Context) ([]*model.Coachship, error) {
-	return r.RelationshipService.ListSentCoacheeRequests(ctx)
+// MyStudentRequests is the resolver for the myStudentRequests field.
+func (r *queryResolver) MyStudentRequests(ctx context.Context) ([]*model.Coachship, error) {
+	return r.RelationshipService.ListReceivedStudentRequests(ctx)
 }
 
-// ReceivedCoachRequests is the resolver for the receivedCoachRequests field.
-func (r *queryResolver) ReceivedCoachRequests(ctx context.Context) ([]*model.Coachship, error) {
+// MyCoachRequests is the resolver for the myCoachRequests field.
+func (r *queryResolver) MyCoachRequests(ctx context.Context) ([]*model.Coachship, error) {
 	return r.RelationshipService.ListReceivedCoachRequests(ctx)
 }
 
@@ -41,14 +41,19 @@ func (r *queryResolver) SentCoachRequests(ctx context.Context) ([]*model.Coachsh
 	return r.RelationshipService.ListSentCoachRequests(ctx)
 }
 
-// ReceivedCoacheeRequests is the resolver for the receivedCoacheeRequests field.
-func (r *queryResolver) ReceivedCoacheeRequests(ctx context.Context) ([]*model.Coachship, error) {
-	return r.RelationshipService.ListReceivedCoacheeRequests(ctx)
+// SentStudentRequests is the resolver for the sentStudentRequests field.
+func (r *queryResolver) SentStudentRequests(ctx context.Context) ([]*model.Coachship, error) {
+	return r.RelationshipService.ListSentStudentRequests(ctx)
 }
 
-// CoachshipStatus is the resolver for the coachshipStatus field.
-func (r *queryResolver) CoachshipStatus(ctx context.Context, otherUserID string) (*model.RelationshipStatus, error) {
-	return r.RelationshipService.CheckCoachshipStatus(ctx, otherUserID)
+// IsStudent is the resolver for the isStudent field.
+func (r *queryResolver) IsStudent(ctx context.Context, studentID string) (*model.RelationshipStatus, error) {
+	return r.RelationshipService.IsStudent(ctx, studentID)
+}
+
+// IsCoach is the resolver for the isCoach field.
+func (r *queryResolver) IsCoach(ctx context.Context, coachID string) (*model.RelationshipStatus, error) {
+	return r.RelationshipService.IsCoach(ctx, coachID)
 }
 
 // Query returns graph.QueryResolver implementation.

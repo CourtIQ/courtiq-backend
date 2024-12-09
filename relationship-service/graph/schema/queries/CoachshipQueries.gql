@@ -4,40 +4,19 @@ extend type Query {
   """
   coachship(id: ID!): Coachship
 
-  """
-  List coaching relationships where the authenticated user is the coach.
-  Returns paginated results of accepted coaching relationships.
-  """
-  coaches(limit: Int, offset: Int): [Coachship!]!
+  myCoaches(limit: Int, offset: Int): [Coachship!]!
 
-  """
-  List coaching relationships where the authenticated user is the coachee.
-  Returns paginated results of accepted coaching relationships.
-  """
-  students(limit: Int, offset: Int): [Coachship!]!
+  myStudents(limit: Int, offset: Int): [Coachship!]!
 
-  """
-  List pending requests where authenticated user has asked others to be their coach
-  """
-  sentCoacheeRequests: [Coachship!]!
+  myStudentRequests: [Coachship!]!
 
-  """
-  List pending requests where others have asked authenticated user to be their coach
-  """
-  receivedCoachRequests: [Coachship!]!
+  myCoachRequests: [Coachship!]!
 
-  """
-  List pending requests where authenticated user has offered to coach others
-  """
   sentCoachRequests: [Coachship!]!
 
-  """
-  List pending requests where others have offered to coach authenticated user
-  """
-  receivedCoacheeRequests: [Coachship!]!
-
-  """
-  Check coaching relationship status between authenticated user and specified user
-  """
-  coachshipStatus(otherUserId: ID!): RelationshipStatus
+  sentStudentRequests: [Coachship!]!
+  
+  isStudent(studentId: ID!): RelationshipStatus
+  
+  isCoach(coachId: ID!): RelationshipStatus
 }

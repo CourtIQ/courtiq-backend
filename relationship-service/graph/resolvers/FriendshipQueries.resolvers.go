@@ -15,14 +15,19 @@ func (r *queryResolver) Friendship(ctx context.Context, id string) (*model.Frien
 	return r.RelationshipService.GetFriendship(ctx, id)
 }
 
-// Friends is the resolver for the friends field.
-func (r *queryResolver) Friends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error) {
-	return r.RelationshipService.ListFriends(ctx, *limit, *offset)
+// MyFriends is the resolver for the myFriends field.
+func (r *queryResolver) MyFriends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error) {
+	return r.RelationshipService.ListMyFriends(ctx, *limit, *offset)
 }
 
-// PendingFriendRequests is the resolver for the pendingFriendRequests field.
-func (r *queryResolver) PendingFriendRequests(ctx context.Context) ([]*model.Friendship, error) {
-	return r.RelationshipService.ListPendingFriendRequests(ctx)
+// Friends is the resolver for the friends field.
+func (r *queryResolver) Friends(ctx context.Context, ofUserID *string, limit *int, offset *int) ([]*model.Friendship, error) {
+	return r.RelationshipService.ListFriends(ctx, *ofUserID, *limit, *offset)
+}
+
+// MyFriendRequests is the resolver for the myFriendRequests field.
+func (r *queryResolver) MyFriendRequests(ctx context.Context) ([]*model.Friendship, error) {
+	return r.RelationshipService.ListFriendRequests(ctx)
 }
 
 // SentFriendRequests is the resolver for the sentFriendRequests field.

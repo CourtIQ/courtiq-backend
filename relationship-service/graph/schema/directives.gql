@@ -1,24 +1,26 @@
-"""
-The @satisfies directive enforces various conditions on a relationship operation before
-allowing the field resolver to run. You can specify conditions like required relationship status,
-relationship type, participant roles, and whether no existing friendship should exist.
-If multiple conditions are provided, all must be met.
+input ExistenceConditions {
+  relationshipStatus: RelationshipStatus
+  relationshipType: RelationshipType
+}
 
-Arguments:
-- relationshipStatus: If set, the referenced relationship must have this status (e.g., PENDING, ACTIVE).
-- relationshipType: If set, the relationship must be of this specific type (e.g., FRIENDSHIP, COACHSHIP).
-- requireParticipant: If true, the current user must be a participant in the relationship (either sender or receiver for friendships, or coach/coachee for coachships).
-- requireSender: If true, the current user must be the sender (the one who initiated the request).
-- requireReceiver: If true, the current user must be the receiver (the one who received the request).
-- noExistingFriendship: If true, ensures that no existing friendship relationship currently exists between the current user and the target user (e.g., when sending a new friend request, ensure no pending or active friendship already exists).
+input RoleConditions {
+  requireParticipants: Boolean
+  requireSender: Boolean
+  requireReceiver: Boolean
+  requireStudent: Boolean
+  requireCoach: Boolean
+}
 
-All these checks are performed before running the resolver. If any check fails, an error is returned and the resolver is not called.
-"""
-directive @satisfies(
-  relationshipStatus: RelationshipStatus,
-  relationshipType: RelationshipType,
-  requireParticipant: Boolean = false,
-  requireSender: Boolean = false,
-  requireReceiver: Boolean = false,
-  noExistingFriendship: Boolean = false
-) on FIELD_DEFINITION
+input NonExistenceConditions {
+  noExistingFriendship: Boolean
+  notExistingCoach: Boolean
+  notExistingStudent: Boolean
+}
+
+input SatisfiesConditions {
+  existence: ExistenceConditions
+  roles: RoleConditions
+  nonExistence: NonExistenceConditions
+}
+
+directive @satisfies(conditions: SatisfiesConditions!) on FIELD_DEFINITION

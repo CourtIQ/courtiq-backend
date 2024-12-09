@@ -1,64 +1,70 @@
 extend type Mutation {
-  """
-  Send a coaching request to another user, offering to be their coach.
-  The userId parameter is the ID of the user you want to coach.
-  Returns the created Coachship object.
-  """
-  sendCoachRequest(userId: ID!): Coachship
+  # Mutation to request to be a student (i.e., to have someone as your coach)
+  # Only runs if current user is not already a student of the target user or has a pending request.
+  requestToBeStudent(ofUserId: ID!): Boolean
+    @satisfies(conditions: {
+      nonExistence: { notExistingStudent: true }
+    })
 
-  """
-  Send a coaching request to another user, asking them to be your coach.
-  The userId parameter is the ID of the user you want to be your coach.
-  Returns the created Coachship object.
-  """
-  sendCoacheeRequest(userId: ID!): Coachship
+  # Mutation to accept a request from someone to be your student
+  acceptStudentRequest(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
+      roles: { requireCoach: true }
+    })
 
-  """
-  Accept a pending coaching request as the coach.
-  The coachshipId parameter is the ID of the Coachship object to accept.
-  Returns the updated Coachship object.
-  """
-  acceptCoachRequest(coachshipId: ID!): Coachship
+  # Mutation to reject a request from someone to be your student
+  rejectStudentRequest(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
+      roles: { requireCoach: true }
+    })
 
-  """
-  Accept a pending coaching request as the coachee.
-  The coachshipId parameter is the ID of the Coachship object to accept.
-  Returns the updated Coachship object.
-  """
-  acceptCoacheeRequest(coachshipId: ID!): Coachship
+  # Mutation to cancel a request to be someone's student
+  cancelRequestToBeStudent(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
+      roles: { requireStudent: true }
+    })
 
-  """
-  Decline a pending coaching request as the coach.
-  The coachshipId parameter is the ID of the Coachship object to decline.
-  Returns a success indicator.
-  """
-  declineCoachRequest(coachshipId: ID!): Boolean
+  # Mutation to remove a student from an active coachship
+  removeStudent(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: ACTIVE, relationshipType: COACHSHIP },
+      roles: { requireCoach: true }
+    })
 
-  """
-  Decline a pending coaching request as the coachee.
-  The coachshipId parameter is the ID of the Coachship object to decline.
-  Returns a success indicator.
-  """
-  declineCoacheeRequest(coachshipId: ID!): Boolean
+  # Mutation to request to be a coach (i.e., to have someone as your student)
+  requestToBeCoach(ofUserId: ID!): Boolean
+    @satisfies(conditions: {
+      nonExistence: { notExistingCoach: true }
+    })
 
-  """
-  Cancel a sent coaching request as the coach.
-  The coachshipId parameter is the ID of the Coachship object to cancel.
-  Returns a success indicator.
-  """
+  # Mutation to accept a request from someone to be your coach
+  acceptCoachRequest(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
+      roles: { requireStudent: true }
+    })
+    
+  # Mutation to reject a coach request
+  rejectCoachRequest(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
+      roles: { requireStudent: true }
+    })
+    
+  # Mutation to cancel a coach request
   cancelCoachRequest(coachshipId: ID!): Boolean
-
-  """
-  Cancel a sent coaching request as the coachee.
-  The coachshipId parameter is the ID of the Coachship object to cancel.
-  Returns a success indicator.
-  """
-  cancelCoacheeRequest(coachshipId: ID!): Boolean
-
-  """
-  End an active coaching relationship.
-  The coachshipId parameter is the ID of the Coachship object to end.
-  Returns a success indicator.
-  """
-  endCoachship(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: PENDING, relationshipType: COACHSHIP },
+      roles: { requireCoach: true }
+    })
+    
+  # Mutation to remove a coach from an active coachship
+  removeCoach(coachshipId: ID!): Boolean
+    @satisfies(conditions: {
+      existence: { relationshipStatus: ACTIVE, relationshipType: COACHSHIP },
+      roles: { requireStudent: true }
+    })
 }

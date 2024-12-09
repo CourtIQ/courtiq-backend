@@ -10,7 +10,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/directives"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/directives/satisfies" // Adjust import path as needed
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/configs"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
@@ -42,8 +42,8 @@ func main() {
 	relationshipService := services.NewRelationshipService(relationshipRepo)
 
 	// Set the directive dependencies
-	directives.RelationshipRepo = relationshipRepo
-	directives.GetCurrentUserID = middleware.GetUserIDFromContext
+	satisfies.RelationshipRepo = relationshipRepo
+	satisfies.GetCurrentUserID = middleware.GetUserIDFromContext
 
 	// Build gqlgen config and assign the directive
 	c := graph.Config{
@@ -52,7 +52,8 @@ func main() {
 		},
 	}
 
-	c.Directives.Satisfies = directives.SatisfiesDirective
+	c.Directives.Satisfies = satisfies.SatisfiesDirective
+
 	// Create the executable schema
 	schema := graph.NewExecutableSchema(c)
 

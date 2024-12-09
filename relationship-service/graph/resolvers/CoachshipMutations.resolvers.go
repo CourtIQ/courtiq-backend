@@ -6,74 +6,59 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
 )
 
-// SendCoachRequest is the resolver for the sendCoachRequest field.
-func (r *mutationResolver) SendCoachRequest(ctx context.Context, userID string) (*model.Coachship, error) {
-	return r.RelationshipService.SendCoachRequest(ctx, userID)
+// RequestToBeStudent is the resolver for the requestToBeStudent field.
+func (r *mutationResolver) RequestToBeStudent(ctx context.Context, ofUserID string) (*bool, error) {
+	return r.RelationshipService.RequestToBeStudent(ctx, ofUserID)
 }
 
-// SendCoacheeRequest is the resolver for the sendCoacheeRequest field.
-func (r *mutationResolver) SendCoacheeRequest(ctx context.Context, userID string) (*model.Coachship, error) {
-	return r.RelationshipService.SendCoacheeRequest(ctx, userID)
+// AcceptStudentRequest is the resolver for the acceptStudentRequest field.
+func (r *mutationResolver) AcceptStudentRequest(ctx context.Context, coachshipID string) (*bool, error) {
+	return r.RelationshipService.AcceptStudentRequest(ctx, coachshipID)
+}
+
+// RejectStudentRequest is the resolver for the rejectStudentRequest field.
+func (r *mutationResolver) RejectStudentRequest(ctx context.Context, coachshipID string) (*bool, error) {
+	return r.RelationshipService.RejectStudentRequest(ctx, coachshipID)
+}
+
+// CancelRequestToBeStudent is the resolver for the cancelRequestToBeStudent field.
+func (r *mutationResolver) CancelRequestToBeStudent(ctx context.Context, coachshipID string) (*bool, error) {
+	panic(fmt.Errorf("not implemented: CancelRequestToBeStudent - cancelRequestToBeStudent"))
+}
+
+// RemoveStudent is the resolver for the removeStudent field.
+func (r *mutationResolver) RemoveStudent(ctx context.Context, coachshipID string) (*bool, error) {
+	return r.RelationshipService.RemoveStudent(ctx, coachshipID)
+}
+
+// RequestToBeCoach is the resolver for the requestToBeCoach field.
+func (r *mutationResolver) RequestToBeCoach(ctx context.Context, ofUserID string) (*bool, error) {
+	return r.RelationshipService.RequestToBeCoach(ctx, ofUserID)
 }
 
 // AcceptCoachRequest is the resolver for the acceptCoachRequest field.
-func (r *mutationResolver) AcceptCoachRequest(ctx context.Context, coachshipID string) (*model.Coachship, error) {
+func (r *mutationResolver) AcceptCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
 	return r.RelationshipService.AcceptCoachRequest(ctx, coachshipID)
 }
 
-// AcceptCoacheeRequest is the resolver for the acceptCoacheeRequest field.
-func (r *mutationResolver) AcceptCoacheeRequest(ctx context.Context, coachshipID string) (*model.Coachship, error) {
-	return r.RelationshipService.AcceptCoacheeRequest(ctx, coachshipID)
-}
-
-// DeclineCoachRequest is the resolver for the declineCoachRequest field.
-func (r *mutationResolver) DeclineCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	success, err := r.RelationshipService.DeclineCoachRequest(ctx, coachshipID)
-	if err != nil {
-		return nil, err
-	}
-	return &success, nil
-}
-
-// DeclineCoacheeRequest is the resolver for the declineCoacheeRequest field.
-func (r *mutationResolver) DeclineCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	success, err := r.RelationshipService.DeclineCoacheeRequest(ctx, coachshipID)
-	if err != nil {
-		return nil, err
-	}
-	return &success, nil
+// RejectCoachRequest is the resolver for the rejectCoachRequest field.
+func (r *mutationResolver) RejectCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
+	return r.RelationshipService.RejectCoachRequest(ctx, coachshipID)
 }
 
 // CancelCoachRequest is the resolver for the cancelCoachRequest field.
 func (r *mutationResolver) CancelCoachRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	success, err := r.RelationshipService.CancelCoachRequest(ctx, coachshipID)
-	if err != nil {
-		return nil, err
-	}
-	return &success, nil
+	return r.RelationshipService.CancelCoachRequest(ctx, coachshipID)
 }
 
-// CancelCoacheeRequest is the resolver for the cancelCoacheeRequest field.
-func (r *mutationResolver) CancelCoacheeRequest(ctx context.Context, coachshipID string) (*bool, error) {
-	success, err := r.RelationshipService.CancelCoacheeRequest(ctx, coachshipID)
-	if err != nil {
-		return nil, err
-	}
-	return &success, nil
-}
-
-// EndCoachship is the resolver for the endCoachship field.
-func (r *mutationResolver) EndCoachship(ctx context.Context, coachshipID string) (*bool, error) {
-	success, err := r.RelationshipService.EndCoachship(ctx, coachshipID)
-	if err != nil {
-		return nil, err
-	}
-	return &success, nil
+// RemoveCoach is the resolver for the removeCoach field.
+func (r *mutationResolver) RemoveCoach(ctx context.Context, coachshipID string) (*bool, error) {
+	return r.RelationshipService.RemoveCoach(ctx, coachshipID)
 }
 
 // Mutation returns graph.MutationResolver implementation.

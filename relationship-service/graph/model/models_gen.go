@@ -27,16 +27,17 @@ type Relationship interface {
 	GetUpdatedAt() *string
 }
 
-// Represents a coaching relationship between a coach and a coachee.
+// Represents a coaching relationship between a coach and a student.
 // Implements the Relationship interface.
+// Allows multiple distinct coachships between the same two users by differentiating based on roles.
 type Coachship struct {
 	// Unique identifier for the coaching relationship
 	ID string `json:"id"`
-	// List of IDs for all participants in this relationship (coach and coachee)
+	// List of IDs for all participants in this relationship (coach and student)
 	ParticipantIds []string `json:"participantIds"`
-	// Type of relationship (always COACHING for Coachship)
+	// Type of relationship (always COACHSHIP for Coachship)
 	Type RelationshipType `json:"type"`
-	// Current status of the coaching relationship
+	// Current status of the coaching relationship (e.g., PENDING, ACTIVE, ENDED)
 	Status RelationshipStatus `json:"status"`
 	// ISO-8601 formatted timestamp when the coaching relationship was created
 	CreatedAt string `json:"createdAt"`
@@ -44,8 +45,8 @@ type Coachship struct {
 	UpdatedAt *string `json:"updatedAt,omitempty"`
 	// ID of the user who is the coach in this relationship
 	CoachID string `json:"coachId"`
-	// ID of the user who is being coached in this relationship
-	CoacheeID string `json:"coacheeId"`
+	// ID of the user who is the student in this relationship
+	StudentID string `json:"studentId"`
 }
 
 func (Coachship) IsRelationship() {}
@@ -79,6 +80,11 @@ func (this Coachship) GetUpdatedAt() *string { return this.UpdatedAt }
 
 func (Coachship) IsEntity() {}
 
+type ExistenceConditions struct {
+	RelationshipStatus *RelationshipStatus `json:"relationshipStatus,omitempty"`
+	RelationshipType   *RelationshipType   `json:"relationshipType,omitempty"`
+}
+
 // Represents a friendship between two users.
 // Implements the Relationship interface and can be referenced across services using its ID.
 type Friendship struct {
@@ -95,7 +101,7 @@ type Friendship struct {
 	// ISO-8601 formatted timestamp when the friendship was last updated
 	UpdatedAt *string `json:"updatedAt,omitempty"`
 	// ID of the user who initiated the friendship request
-	RequesterID string `json:"requesterId"`
+	SenderID string `json:"senderId"`
 	// ID of the user who received the friendship request
 	ReceiverID string `json:"receiverId"`
 }
@@ -134,7 +140,27 @@ func (Friendship) IsEntity() {}
 type Mutation struct {
 }
 
+type NonExistenceConditions struct {
+	NoExistingFriendship *bool `json:"noExistingFriendship,omitempty"`
+	NotExistingCoach     *bool `json:"notExistingCoach,omitempty"`
+	NotExistingStudent   *bool `json:"notExistingStudent,omitempty"`
+}
+
 type Query struct {
+}
+
+type RoleConditions struct {
+	RequireParticipants *bool `json:"requireParticipants,omitempty"`
+	RequireSender       *bool `json:"requireSender,omitempty"`
+	RequireReceiver     *bool `json:"requireReceiver,omitempty"`
+	RequireStudent      *bool `json:"requireStudent,omitempty"`
+	RequireCoach        *bool `json:"requireCoach,omitempty"`
+}
+
+type SatisfiesConditions struct {
+	Existence    *ExistenceConditions    `json:"existence,omitempty"`
+	Roles        *RoleConditions         `json:"roles,omitempty"`
+	NonExistence *NonExistenceConditions `json:"nonExistence,omitempty"`
 }
 
 // Represents the possible status of a relationship between users.

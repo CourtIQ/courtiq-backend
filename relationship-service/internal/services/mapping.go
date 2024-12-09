@@ -26,7 +26,7 @@ func domainFriendshipToModel(f *domain.Friendship) *model.Friendship {
 		Status:         model.RelationshipStatus(f.GetStatus()),
 		CreatedAt:      createdAt,
 		UpdatedAt:      updatedAt,
-		RequesterID:    f.RequesterID,
+		SenderID:       f.SenderID,
 		ReceiverID:     f.ReceiverID,
 	}
 }
@@ -50,7 +50,7 @@ func domainCoachshipToModel(c *domain.Coachship) *model.Coachship {
 		CreatedAt:      createdAt,
 		UpdatedAt:      updatedAt,
 		CoachID:        c.CoachID,
-		CoacheeID:      c.CoacheeID,
+		StudentID:      c.StudentID,
 	}
 }
 
