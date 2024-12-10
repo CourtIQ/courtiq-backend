@@ -100,3 +100,6 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   DateTime:
     model: github.com/99designs/gqlgen/graphql.Time
+  ObjectID:
+    model: github.com/CourtIQ/courtiq-backend/equipment-service/graph/scalar.ObjectID
+

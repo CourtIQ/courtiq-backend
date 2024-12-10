@@ -1,5 +1,0 @@
-extend type Query {
-    myRackets: [TennisRacket!]!
-    getRacket(id: ID!): TennisRacket
-    myCurrentRacket: TennisRacket
-}

@@ -161,7 +161,7 @@ func (ec *executionContext) resolveEntity(
 		switch resolverName {
 
 		case "findEquipmentByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
 			if err != nil {
 				return nil, fmt.Errorf(`unmarshalling param 0 for findEquipmentByID(): %w`, err)
 			}
@@ -180,7 +180,7 @@ func (ec *executionContext) resolveEntity(
 		switch resolverName {
 
 		case "findTennisRacketByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
 			if err != nil {
 				return nil, fmt.Errorf(`unmarshalling param 0 for findTennisRacketByID(): %w`, err)
 			}
@@ -199,32 +199,13 @@ func (ec *executionContext) resolveEntity(
 		switch resolverName {
 
 		case "findTennisStringByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
 			if err != nil {
 				return nil, fmt.Errorf(`unmarshalling param 0 for findTennisStringByID(): %w`, err)
 			}
 			entity, err := ec.resolvers.Entity().FindTennisStringByID(ctx, id0)
 			if err != nil {
 				return nil, fmt.Errorf(`resolving Entity "TennisString": %w`, err)
-			}
-
-			return entity, nil
-		}
-	case "User":
-		resolverName, err := entityResolverNameForUser(ctx, rep)
-		if err != nil {
-			return nil, fmt.Errorf(`finding resolver for Entity "User": %w`, err)
-		}
-		switch resolverName {
-
-		case "findUserByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
-			if err != nil {
-				return nil, fmt.Errorf(`unmarshalling param 0 for findUserByID(): %w`, err)
-			}
-			entity, err := ec.resolvers.Entity().FindUserByID(ctx, id0)
-			if err != nil {
-				return nil, fmt.Errorf(`resolving Entity "User": %w`, err)
 			}
 
 			return entity, nil
@@ -334,31 +315,4 @@ func entityResolverNameForTennisString(ctx context.Context, rep EntityRepresenta
 		return "findTennisStringByID", nil
 	}
 	return "", fmt.Errorf("%w for TennisString", ErrTypeNotFound)
-}
-
-func entityResolverNameForUser(ctx context.Context, rep EntityRepresentation) (string, error) {
-	for {
-		var (
-			m   EntityRepresentation
-			val interface{}
-			ok  bool
-		)
-		_ = val
-		// if all of the KeyFields values for this resolver are null,
-		// we shouldn't use use it
-		allNull := true
-		m = rep
-		val, ok = m["id"]
-		if !ok {
-			break
-		}
-		if allNull {
-			allNull = val == nil
-		}
-		if allNull {
-			break
-		}
-		return "findUserByID", nil
-	}
-	return "", fmt.Errorf("%w for User", ErrTypeNotFound)
 }

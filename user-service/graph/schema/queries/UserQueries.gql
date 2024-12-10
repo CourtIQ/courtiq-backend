@@ -1,10 +1,18 @@
 extend type Query {
+  """
+  Retrieves the currently authenticated user’s profile.
+  Returns null if no authenticated user is found.
+  """
   me: User
 
   """
-  Retrieves a user's profile by their unique ID.
-
+  Retrieves a specific user’s profile by their unique ID.
+  
   - **id**: The unique identifier of the user to retrieve.
+  
+  Useful for displaying profiles of other users within the application.
   """
   getUser(id: ID!): User
+
+  isUsernamesAvailable(username: String!): Boolean
 }

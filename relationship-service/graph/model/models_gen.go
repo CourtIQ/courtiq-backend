@@ -6,161 +6,86 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Represents a relationship between two users in the system.
-// This interface is implemented by specific relationship types like Friendship and Coachship.
 type Relationship interface {
 	IsEntity()
 	IsRelationship()
-	// Unique identifier for the relationship
-	GetID() string
-	// Array of user IDs who are part of this relationship
-	GetParticipantIds() []string
-	// The type of relationship (e.g., FRIENDSHIP, COACHING)
+	GetID() primitive.ObjectID
+	GetParticipants() []primitive.ObjectID
 	GetType() RelationshipType
-	// Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
 	GetStatus() RelationshipStatus
-	// ISO-8601 formatted timestamp when the relationship was created
-	GetCreatedAt() string
-	// ISO-8601 formatted timestamp when the relationship was last updated
-	GetUpdatedAt() *string
+	GetCreatedAt() time.Time
+	GetUpdatedAt() time.Time
 }
 
-// Represents a coaching relationship between a coach and a student.
-// Implements the Relationship interface.
-// Allows multiple distinct coachships between the same two users by differentiating based on roles.
 type Coachship struct {
-	// Unique identifier for the coaching relationship
-	ID string `json:"id"`
-	// List of IDs for all participants in this relationship (coach and student)
-	ParticipantIds []string `json:"participantIds"`
-	// Type of relationship (always COACHSHIP for Coachship)
-	Type RelationshipType `json:"type"`
-	// Current status of the coaching relationship (e.g., PENDING, ACTIVE, ENDED)
-	Status RelationshipStatus `json:"status"`
-	// ISO-8601 formatted timestamp when the coaching relationship was created
-	CreatedAt string `json:"createdAt"`
-	// ISO-8601 formatted timestamp when the coaching relationship was last updated
-	UpdatedAt *string `json:"updatedAt,omitempty"`
-	// ID of the user who is the coach in this relationship
-	CoachID string `json:"coachId"`
-	// ID of the user who is the student in this relationship
-	StudentID string `json:"studentId"`
+	ID           primitive.ObjectID   `json:"id"`
+	Participants []primitive.ObjectID `json:"participants"`
+	Type         RelationshipType     `json:"type"`
+	Status       RelationshipStatus   `json:"status"`
+	CreatedAt    time.Time            `json:"createdAt"`
+	UpdatedAt    time.Time            `json:"updatedAt"`
+	CoachID      string               `json:"coachId"`
+	StudentID    string               `json:"studentId"`
 }
 
-func (Coachship) IsRelationship() {}
-
-// Unique identifier for the relationship
-func (this Coachship) GetID() string { return this.ID }
-
-// Array of user IDs who are part of this relationship
-func (this Coachship) GetParticipantIds() []string {
-	if this.ParticipantIds == nil {
+func (Coachship) IsRelationship()                {}
+func (this Coachship) GetID() primitive.ObjectID { return this.ID }
+func (this Coachship) GetParticipants() []primitive.ObjectID {
+	if this.Participants == nil {
 		return nil
 	}
-	interfaceSlice := make([]string, 0, len(this.ParticipantIds))
-	for _, concrete := range this.ParticipantIds {
+	interfaceSlice := make([]primitive.ObjectID, 0, len(this.Participants))
+	for _, concrete := range this.Participants {
 		interfaceSlice = append(interfaceSlice, concrete)
 	}
 	return interfaceSlice
 }
-
-// The type of relationship (e.g., FRIENDSHIP, COACHING)
-func (this Coachship) GetType() RelationshipType { return this.Type }
-
-// Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
+func (this Coachship) GetType() RelationshipType     { return this.Type }
 func (this Coachship) GetStatus() RelationshipStatus { return this.Status }
-
-// ISO-8601 formatted timestamp when the relationship was created
-func (this Coachship) GetCreatedAt() string { return this.CreatedAt }
-
-// ISO-8601 formatted timestamp when the relationship was last updated
-func (this Coachship) GetUpdatedAt() *string { return this.UpdatedAt }
+func (this Coachship) GetCreatedAt() time.Time       { return this.CreatedAt }
+func (this Coachship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
 
 func (Coachship) IsEntity() {}
 
-type ExistenceConditions struct {
-	RelationshipStatus *RelationshipStatus `json:"relationshipStatus,omitempty"`
-	RelationshipType   *RelationshipType   `json:"relationshipType,omitempty"`
-}
-
-// Represents a friendship between two users.
-// Implements the Relationship interface and can be referenced across services using its ID.
 type Friendship struct {
-	// Unique identifier for the friendship
-	ID string `json:"id"`
-	// List of IDs for both users in the friendship
-	ParticipantIds []string `json:"participantIds"`
-	// Type of relationship (always FRIENDSHIP for Friendship)
-	Type RelationshipType `json:"type"`
-	// Current status of the friendship
-	Status RelationshipStatus `json:"status"`
-	// ISO-8601 formatted timestamp when the friendship was created
-	CreatedAt string `json:"createdAt"`
-	// ISO-8601 formatted timestamp when the friendship was last updated
-	UpdatedAt *string `json:"updatedAt,omitempty"`
-	// ID of the user who initiated the friendship request
-	SenderID string `json:"senderId"`
-	// ID of the user who received the friendship request
-	ReceiverID string `json:"receiverId"`
+	ID           primitive.ObjectID   `json:"id"`
+	Participants []primitive.ObjectID `json:"participants"`
+	Type         RelationshipType     `json:"type"`
+	Status       RelationshipStatus   `json:"status"`
+	CreatedAt    time.Time            `json:"createdAt"`
+	UpdatedAt    time.Time            `json:"updatedAt"`
+	SenderID     string               `json:"senderId"`
+	ReceiverID   string               `json:"receiverId"`
 }
 
-func (Friendship) IsRelationship() {}
-
-// Unique identifier for the relationship
-func (this Friendship) GetID() string { return this.ID }
-
-// Array of user IDs who are part of this relationship
-func (this Friendship) GetParticipantIds() []string {
-	if this.ParticipantIds == nil {
+func (Friendship) IsRelationship()                {}
+func (this Friendship) GetID() primitive.ObjectID { return this.ID }
+func (this Friendship) GetParticipants() []primitive.ObjectID {
+	if this.Participants == nil {
 		return nil
 	}
-	interfaceSlice := make([]string, 0, len(this.ParticipantIds))
-	for _, concrete := range this.ParticipantIds {
+	interfaceSlice := make([]primitive.ObjectID, 0, len(this.Participants))
+	for _, concrete := range this.Participants {
 		interfaceSlice = append(interfaceSlice, concrete)
 	}
 	return interfaceSlice
 }
-
-// The type of relationship (e.g., FRIENDSHIP, COACHING)
-func (this Friendship) GetType() RelationshipType { return this.Type }
-
-// Current status of the relationship (e.g., PENDING, ACTIVE, REJECTED, ENDED)
+func (this Friendship) GetType() RelationshipType     { return this.Type }
 func (this Friendship) GetStatus() RelationshipStatus { return this.Status }
-
-// ISO-8601 formatted timestamp when the relationship was created
-func (this Friendship) GetCreatedAt() string { return this.CreatedAt }
-
-// ISO-8601 formatted timestamp when the relationship was last updated
-func (this Friendship) GetUpdatedAt() *string { return this.UpdatedAt }
+func (this Friendship) GetCreatedAt() time.Time       { return this.CreatedAt }
+func (this Friendship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
 
 func (Friendship) IsEntity() {}
 
 type Mutation struct {
 }
 
-type NonExistenceConditions struct {
-	NoExistingFriendship *bool `json:"noExistingFriendship,omitempty"`
-	NotExistingCoach     *bool `json:"notExistingCoach,omitempty"`
-	NotExistingStudent   *bool `json:"notExistingStudent,omitempty"`
-}
-
 type Query struct {
-}
-
-type RoleConditions struct {
-	RequireParticipants *bool `json:"requireParticipants,omitempty"`
-	RequireSender       *bool `json:"requireSender,omitempty"`
-	RequireReceiver     *bool `json:"requireReceiver,omitempty"`
-	RequireStudent      *bool `json:"requireStudent,omitempty"`
-	RequireCoach        *bool `json:"requireCoach,omitempty"`
-}
-
-type SatisfiesConditions struct {
-	Existence    *ExistenceConditions    `json:"existence,omitempty"`
-	Roles        *RoleConditions         `json:"roles,omitempty"`
-	NonExistence *NonExistenceConditions `json:"nonExistence,omitempty"`
 }
 
 // Represents the possible status of a relationship between users.

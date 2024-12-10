@@ -6,29 +6,33 @@ import (
 	"time"
 )
 
+// Provides structured geographical details about a user's location.
+// All fields are optional and can be omitted if unknown.
 type Location struct {
-	// Name of the city.
+	// Name of the city where the user is located
 	City *string `json:"city,omitempty"`
-	// Name of the state or province.
+	// Name of the state or province where the user is located
 	State *string `json:"state,omitempty"`
-	// Name of the country.
+	// Name of the country where the user is located
 	Country *string `json:"country,omitempty"`
-	// Geographical latitude coordinate.
+	// Latitude coordinate of the user’s location
 	Latitude *float64 `json:"latitude,omitempty"`
-	// Geographical longitude coordinate.
+	// Longitude coordinate of the user’s location
 	Longitude *float64 `json:"longitude,omitempty"`
 }
 
+// Input object containing geographic details for updating a user’s location.
+// All fields are optional.
 type LocationInput struct {
-	// Name of the city.
+	// City portion of the user’s new location
 	City *string `json:"city,omitempty"`
-	// Name of the state or province.
+	// State or province portion of the user’s new location
 	State *string `json:"state,omitempty"`
-	// Name of the country.
+	// Country portion of the user’s new location
 	Country *string `json:"country,omitempty"`
-	// Geographical latitude coordinate.
+	// Latitude coordinate of the user’s new location
 	Latitude *float64 `json:"latitude,omitempty"`
-	// Geographical longitude coordinate.
+	// Longitude coordinate of the user’s new location
 	Longitude *float64 `json:"longitude,omitempty"`
 }
 
@@ -38,49 +42,49 @@ type Mutation struct {
 type Query struct {
 }
 
+// Input object for updating user profile fields.
+// All fields are optional, allowing partial updates.
 type UpdateUserInput struct {
-	// User's first name.
+	// New first name for the user
 	FirstName *string `json:"firstName,omitempty"`
-	// User's last name.
+	// New last name for the user
 	LastName *string `json:"lastName,omitempty"`
-	// User's chosen display name or username.
-	DisplayName *string `json:"displayName,omitempty"`
-	// URL to the user's profile picture.
-	ProfilePicture *string `json:"profilePicture,omitempty"`
-	// User's date of birth.
+	// ISO-8601 formatted date/time for the user’s new birthdate
 	DateOfBirth *time.Time `json:"dateOfBirth,omitempty"`
-	// Short biography or description provided by the user.
+	// New short biography or description for the user
 	Bio *string `json:"bio,omitempty"`
-	// User's rating within the app.
-	Rating *int `json:"rating,omitempty"`
-	// User's geographical location.
+	// Updated geographical location details for the user
 	Location *LocationInput `json:"location,omitempty"`
 }
 
+// Represents an individual user within the application.
+// Implements a federated key for cross-service references.
 type User struct {
-	// Unique identifier for the user.
+	// Unique identifier for the user
 	ID string `json:"id"`
-	// User's email address. Accessible only by the user themselves.
+	// Primary email address of the user (used for communication and login)
 	Email string `json:"email"`
-	// User's first name.
+	// First name of the user, if provided
 	FirstName *string `json:"firstName,omitempty"`
-	// User's last name.
+	// Last name of the user, if provided
 	LastName *string `json:"lastName,omitempty"`
-	// User's chosen display name or username.
+	// User’s chosen display name or handle, shown publicly
 	DisplayName *string `json:"displayName,omitempty"`
-	// URL to the user's profile picture.
+	// User’s chosen username or handle, used for login and public identification
+	Username *string `json:"username,omitempty"`
+	// URL pointing to the user’s profile image (if any)
 	ProfilePicture *string `json:"profilePicture,omitempty"`
-	// User's date of birth.
+	// ISO-8601 formatted date/time representing the user’s date of birth
 	DateOfBirth *time.Time `json:"dateOfBirth,omitempty"`
-	// User's geographical location.
+	// Geographical information about the user’s location
 	Location *Location `json:"location,omitempty"`
-	// Short biography or description provided by the user.
+	// Short biography or description provided by the user
 	Bio *string `json:"bio,omitempty"`
-	// User's rating within the app.
+	// Integer rating or score representing user’s standing or skill level
 	Rating *int `json:"rating,omitempty"`
-	// Timestamp when the user account was created.
+	// ISO-8601 formatted timestamp when the user was initially created
 	CreatedAt *time.Time `json:"createdAt,omitempty"`
-	// Timestamp when the user account was last updated.
+	// ISO-8601 formatted timestamp when the user’s information was last updated
 	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 

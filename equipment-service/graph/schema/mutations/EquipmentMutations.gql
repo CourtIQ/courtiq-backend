@@ -1,0 +1,19 @@
+type Mutation {
+    # Tennis Racket Mutations
+    createTennisRacket(input: CreateTennisRacketInput!): TennisRacket!
+    updateMyTennisRacket(id: ObjectID!, input: UpdateTennisRacketInput!): TennisRacket!
+    deleteMyTennisRacket(id: ObjectID!): TennisRacket!
+    
+    # Tennis String Mutations
+    createTennisString(input: CreateTennisStringInput!): TennisString!
+    updateMyTennisString(id: ObjectID!, input: UpdateTennisStringInput!): TennisString!
+    deleteMyTennisString(id: ObjectID!): TennisString!
+    
+    # Racket-String Operations
+    assignStringToMyRacket(racketId: ObjectID!, stringId: ObjectID!): TennisRacket!
+    removeStringFromMyRacket(racketId: ObjectID!): TennisRacket!
+    
+    # String Status Operations
+    markMyStringAsBurst(stringId: ObjectID!, burstDate: DateTime!): TennisString!
+    updateMyStringTension(stringId: ObjectID!, tension: StringTensionInput!): TennisString!
+}

@@ -95,3 +95,7 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  DateTime:
+    model: github.com/99designs/gqlgen/graphql.Time
+  ObjectID:
+    model: github.com/CourtIQ/courtiq-backend/relationship-service/graph/scalar.ObjectID

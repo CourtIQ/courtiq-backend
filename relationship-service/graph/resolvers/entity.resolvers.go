@@ -6,31 +6,25 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // FindCoachshipByID is the resolver for the findCoachshipByID field.
-func (r *entityResolver) FindCoachshipByID(ctx context.Context, id string) (*model.Coachship, error) {
-	return r.RelationshipService.GetCoachship(ctx, id)
+func (r *entityResolver) FindCoachshipByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error) {
+	return r.RelationshipService.FindCoachshipByID(ctx, id)
 }
 
 // FindFriendshipByID is the resolver for the findFriendshipByID field.
-func (r *entityResolver) FindFriendshipByID(ctx context.Context, id string) (*model.Friendship, error) {
-	return r.RelationshipService.GetFriendship(ctx, id)
+func (r *entityResolver) FindFriendshipByID(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error) {
+	return r.RelationshipService.FindFriendshipByID(ctx, id)
 }
 
 // FindRelationshipByID is the resolver for the findRelationshipByID field.
-func (r *entityResolver) FindRelationshipByID(ctx context.Context, id string) (model.Relationship, error) {
-	if coachship, err := r.RelationshipService.GetCoachship(ctx, id); err == nil {
-		return coachship, nil
-	}
-	if friendship, err := r.RelationshipService.GetFriendship(ctx, id); err == nil {
-		return friendship, nil
-	}
-	return nil, fmt.Errorf("relationship with ID %s not found", id)
+func (r *entityResolver) FindRelationshipByID(ctx context.Context, id primitive.ObjectID) (model.Relationship, error) {
+	return r.RelationshipService.FindRelationshipByID(ctx, id)
 }
 
 // Entity returns graph.EntityResolver implementation.

@@ -1,4 +1,4 @@
-// mongodb/client.go
+// db/client.go
 package db
 
 import (
@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	DatabaseName            = "courtiq-db"
-	RelationshipsCollection = "relationships"
+	DatabaseName          = "courtiq-db"
+	FriendshipsCollection = "friendships"
+	CoachshipsCollection  = "coachships"
 )
 
 // MongoDB represents the MongoDB client wrapper
@@ -24,7 +25,6 @@ type MongoDB struct {
 func NewMongoDB(ctx context.Context, uri string) (*MongoDB, error) {
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
-	log.Printf("Connecting to MongoDB with URI: %s", uri)
 
 	if err != nil {
 		return nil, err

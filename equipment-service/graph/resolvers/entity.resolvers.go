@@ -6,30 +6,25 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // FindEquipmentByID is the resolver for the findEquipmentByID field.
-func (r *entityResolver) FindEquipmentByID(ctx context.Context, id string) (model.Equipment, error) {
-	panic(fmt.Errorf("not implemented: FindEquipmentByID - findEquipmentByID"))
+func (r *entityResolver) FindEquipmentByID(ctx context.Context, id primitive.ObjectID) (model.Equipment, error) {
+	return r.EquipmentServiceIntf.FindEquipmentByID(ctx, id)
 }
 
 // FindTennisRacketByID is the resolver for the findTennisRacketByID field.
-func (r *entityResolver) FindTennisRacketByID(ctx context.Context, id string) (*model.TennisRacket, error) {
-	panic(fmt.Errorf("not implemented: FindTennisRacketByID - findTennisRacketByID"))
+func (r *entityResolver) FindTennisRacketByID(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
+	return r.EquipmentServiceIntf.FindTennisRacketByID(ctx, id)
 }
 
 // FindTennisStringByID is the resolver for the findTennisStringByID field.
-func (r *entityResolver) FindTennisStringByID(ctx context.Context, id string) (*model.TennisString, error) {
-	panic(fmt.Errorf("not implemented: FindTennisStringByID - findTennisStringByID"))
-}
-
-// FindUserByID is the resolver for the findUserByID field.
-func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
+func (r *entityResolver) FindTennisStringByID(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error) {
+	return r.EquipmentServiceIntf.FindTennisStringByID(ctx, id)
 }
 
 // Entity returns graph.EntityResolver implementation.

@@ -1,4 +1,0 @@
-extend type Query {
-    myTennisString: [TennisString!]!
-    getTennisString(id: ID!): TennisString
-}

@@ -1,19 +1,41 @@
+"""
+Input object for updating user profile fields.
+All fields are optional, allowing partial updates.
+"""
+input UpdateUserInput { 
+  """New first name for the user"""
+  firstName: String
 
-input UpdateUserInput {
-    """User's first name."""
-    firstName: String
-    """User's last name."""
-    lastName: String
-    """User's chosen display name or username."""
-    displayName: String
-    """URL to the user's profile picture."""
-    profilePicture: String
-    """User's date of birth."""
-    dateOfBirth: Time
-    """Short biography or description provided by the user."""
-    bio: String
-    """User's rating within the app."""
-    rating: Int
-    """User's geographical location."""
-    location: LocationInput
+  """New last name for the user"""
+  lastName: String
+
+  """ISO-8601 formatted date/time for the user’s new birthdate"""
+  dateOfBirth: Time
+
+  """New short biography or description for the user"""
+  bio: String
+
+  """Updated geographical location details for the user"""
+  location: LocationInput
+}
+
+"""
+Input object containing geographic details for updating a user’s location.
+All fields are optional.
+"""
+input LocationInput {
+  """City portion of the user’s new location"""
+  city: String
+
+  """State or province portion of the user’s new location"""
+  state: String
+
+  """Country portion of the user’s new location"""
+  country: String
+
+  """Latitude coordinate of the user’s new location"""
+  latitude: Float
+
+  """Longitude coordinate of the user’s new location"""
+  longitude: Float
 }

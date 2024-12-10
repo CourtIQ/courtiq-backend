@@ -1,0 +1,40 @@
+input CreateTennisRacketInput {
+    name: String!
+    brand: String
+    model: String
+    headSize: Float
+    weight: Float
+}
+
+input UpdateTennisRacketInput {
+    name: String
+    brand: String
+    model: String
+    headSize: Float
+    weight: Float
+    currentString: ObjectID
+}
+
+input CreateTennisStringInput {
+    name: String!
+    brand: String
+    model: String
+    gauge: StringGauge
+    tension: StringTensionInput
+    stringingDate: DateTime
+}
+
+input UpdateTennisStringInput {
+    name: String
+    brand: String
+    model: String
+    gauge: StringGauge
+    tension: StringTensionInput
+    stringingDate: DateTime
+    burstDate: DateTime
+}
+
+input StringTensionInput {
+    mains: Int       # Tension for the mains
+    crosses: Int     # Tension for the crosses
+}

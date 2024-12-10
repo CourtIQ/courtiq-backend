@@ -4,6 +4,7 @@ go 1.23
 
 require (
 	github.com/99designs/gqlgen v0.17.57
+	github.com/CourtIQ/courtiq-backend/equipment-service v0.0.0-20241209194043-02d71d1ba865
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	github.com/vektah/gqlparser/v2 v2.5.19

@@ -1,19 +1,23 @@
 # Tennis String Type
 type TennisString implements Equipment @key(fields: "id") {
-    # Interface fields must come first and match exactly
-    id: ID!
-    userId: ID!
-    name: String!
-    type: EquipmentType!
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    id: ObjectID!                 # Unique identifier for the string
+    ownerId: ID!            # Owner's ID (user); renamed to match terminology across types
+    name: String!           # Name of the string
+    type: EquipmentType!    # Equipment type (e.g., TENNIS_STRING)
+    createdAt: DateTime!    # Timestamp for when the string was created
+    updatedAt: DateTime!    # Timestamp for the last update
 
     # String-specific fields
-    brand: String
-    model: String
-    gauge: StringGauge
-    tension: StringTension
-    stringingDate: DateTime
-    burstDate: DateTime
+    brand: String           # Brand of the string (optional)
+    model: String           # Model of the string (optional)
+    gauge: StringGauge      # Gauge of the string (optional)
+    tension: StringTension  # Tension for mains and crosses (optional)
+    stringingDate: DateTime # Date when the string was strung (optional)
+    burstDate: DateTime     # Date when the string burst (optional)
 }
 
+# String Tension Type
+type StringTension {
+    mains: Int              # Tension for the mains, in pounds or kg
+    crosses: Int            # Tension for the crosses, in pounds or kg
+}

@@ -1,38 +1,34 @@
-// internal/repository/relationship_repository_intf.go
 package repository
 
 import (
 	"context"
 
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/domain"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// RelationshipRepository defines methods for interacting with relationships in the data store.
-// By passing `context.Context` to each method, callers can propagate timeouts, cancellations,
-// and request-scoped metadata down to the database operations.
-type RelationshipRepository interface {
-	// Create inserts a new relationship into the database.
-	// The implementation can inspect r.GetType() to determine storage details.
-	Create(ctx context.Context, r domain.Relationship) error
+// FriendshipRepository defines the data persistence layer behavior for friendships.
+type FriendshipRepository interface {
+	GetByID(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error)
+	GetMyFriends(ctx context.Context, userID string, limit *int, offset *int) ([]*model.Friendship, error)
+	GetFriendsOfUser(ctx context.Context, userID string, limit *int, offset *int) ([]*model.Friendship, error)
+	GetMyFriendRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
+	GetSentFriendRequests(ctx context.Context, userID string) ([]*model.Friendship, error)
+	Insert(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error)
+	Update(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error)
+	Delete(ctx context.Context, id primitive.ObjectID) error
+}
 
-	// GetByID retrieves a relationship by its ID.
-	// Returns a domain.Relationship interface, which could be a Friendship or Coachship.
-	GetByID(ctx context.Context, id string) (domain.Relationship, error)
-
-	// Update modifies specific fields of an existing relationship identified by ID.
-	Update(ctx context.Context, id string, fields map[string]interface{}) error
-
-	// Delete removes a relationship from the database by its ID.
-	Delete(ctx context.Context, id string) error
-
-	// ListByStatus retrieves relationships by a given status, with pagination.
-	// Returns a slice of domain.Relationship, allowing the caller to handle them generically.
-	ListByStatus(ctx context.Context, status domain.RelationshipStatus, limit int, offset int) ([]domain.Relationship, error)
-
-	// Count returns the number of documents matching the given filter.
-	// 'filter' is a map of conditions that must match for documents to be counted.
-	// For example: filter could be bson.M{"status": "PENDING", "participantIds": userID}
-	Count(ctx context.Context, filter map[string]interface{}) (int64, error)
-
-	GetFriendshipByID(ctx context.Context, id string) (*domain.Friendship, error)
+// CoachshipRepository defines the data persistence layer behavior for coachships.
+type CoachshipRepository interface {
+	GetByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error)
+	GetMyCoaches(ctx context.Context, userID string, limit *int, offset *int) ([]*model.Coachship, error)
+	GetMyStudents(ctx context.Context, userID string, limit *int, offset *int) ([]*model.Coachship, error)
+	GetMyStudentRequests(ctx context.Context, userID string) ([]*model.Coachship, error)
+	GetMyCoachRequests(ctx context.Context, userID string) ([]*model.Coachship, error)
+	GetSentCoachRequests(ctx context.Context, userID string) ([]*model.Coachship, error)
+	GetSentStudentRequests(ctx context.Context, userID string) ([]*model.Coachship, error)
+	Insert(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error)
+	Update(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error)
+	Delete(ctx context.Context, id primitive.ObjectID) error
 }

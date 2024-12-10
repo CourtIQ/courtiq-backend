@@ -1,0 +1,55 @@
+##############################################
+# Relationship Queries
+##############################################
+
+extend type Query {
+  # Friendship Queries
+  
+  # Fetch a specific friendship by its ID
+  friendship(id: ObjectID!): Friendship
+
+  # Fetch friendships for the current user, with optional pagination
+  myFriends(limit: Int = 10, offset: Int = 0): [Friendship!]!
+
+  # Fetch friendships for a specific user (ofUserID), with optional pagination
+  friends(ofUserID: ID!, limit: Int = 10, offset: Int = 0): [Friendship!]!
+
+  # Fetch friend requests received by the current user
+  myFriendRequests: [Friendship!]!
+
+  # Fetch friend requests sent by the current user
+  sentFriendRequests: [Friendship!]!
+
+  # Check the friendship status between the current user and another user
+  friendshipStatus(otherUserId: ObjectID!): RelationshipStatus
+
+
+  # Coachship Queries
+  
+  # Fetch a specific coachship by its ID
+  coachship(id: ObjectID!): Coachship
+
+  # Fetch all coaches of the current user, with optional pagination
+  myCoaches(limit: Int = 10, offset: Int = 0): [Coachship!]!
+
+  # Fetch all students of the current user, with optional pagination
+  myStudents(limit: Int = 10, offset: Int = 0): [Coachship!]!
+
+  # Fetch student requests received by the current user
+  myStudentRequests: [Coachship!]!
+
+  # Fetch coach requests received by the current user
+  myCoachRequests: [Coachship!]!
+
+  # Fetch coach requests sent by the current user
+  sentCoachRequests: [Coachship!]!
+
+  # Fetch student requests sent by the current user
+  sentStudentRequests: [Coachship!]!
+
+  # Check if a given user (studentId) is a student of the current user
+  isStudent(studentId: ID!): RelationshipStatus
+
+  # Check if a given user (coachId) is a coach of the current user
+  isCoach(coachId: ID!): RelationshipStatus
+}

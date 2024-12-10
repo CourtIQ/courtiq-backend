@@ -1,29 +1,67 @@
 scalar Time
 
-
+"""
+Represents an individual user within the application.
+Implements a federated key for cross-service references.
+"""
 type User @key(fields: "id") {
-    """Unique identifier for the user."""
-    id: ID!
-    """User's email address. Accessible only by the user themselves."""
-    email: String!
-    """User's first name."""
-    firstName: String
-    """User's last name."""
-    lastName: String
-    """User's chosen display name or username."""
-    displayName: String
-    """URL to the user's profile picture."""
-    profilePicture: String
-    """User's date of birth."""
-    dateOfBirth: Time
-    """User's geographical location."""
-    location: Location
-    """Short biography or description provided by the user."""
-    bio: String
-    """User's rating within the app."""
-    rating: Int
-    """Timestamp when the user account was created."""
-    createdAt: Time
-    """Timestamp when the user account was last updated."""
-    updatedAt: Time
+  """Unique identifier for the user"""
+  id: ID!
+
+  """Primary email address of the user (used for communication and login)"""
+  email: String!
+
+  """First name of the user, if provided"""
+  firstName: String
+
+  """Last name of the user, if provided"""
+  lastName: String
+
+  """User’s chosen display name or handle, shown publicly"""
+  displayName: String
+
+  """User’s chosen username or handle, used for login and public identification"""
+  username: String
+
+  """URL pointing to the user’s profile image (if any)"""
+  profilePicture: String
+
+  """ISO-8601 formatted date/time representing the user’s date of birth"""
+  dateOfBirth: Time
+
+  """Geographical information about the user’s location"""
+  location: Location
+
+  """Short biography or description provided by the user"""
+  bio: String
+
+  """Integer rating or score representing user’s standing or skill level"""
+  rating: Int
+
+  """ISO-8601 formatted timestamp when the user was initially created"""
+  createdAt: Time
+
+  """ISO-8601 formatted timestamp when the user’s information was last updated"""
+  updatedAt: Time
+}
+
+"""
+Provides structured geographical details about a user's location.
+All fields are optional and can be omitted if unknown.
+"""
+type Location {
+  """Name of the city where the user is located"""
+  city: String
+
+  """Name of the state or province where the user is located"""
+  state: String
+
+  """Name of the country where the user is located"""
+  country: String
+
+  """Latitude coordinate of the user’s location"""
+  latitude: Float
+
+  """Longitude coordinate of the user’s location"""
+  longitude: Float
 }

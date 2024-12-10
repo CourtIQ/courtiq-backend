@@ -161,7 +161,7 @@ func (ec *executionContext) resolveEntity(
 		switch resolverName {
 
 		case "findCoachshipByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
 			if err != nil {
 				return nil, fmt.Errorf(`unmarshalling param 0 for findCoachshipByID(): %w`, err)
 			}
@@ -180,7 +180,7 @@ func (ec *executionContext) resolveEntity(
 		switch resolverName {
 
 		case "findFriendshipByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
 			if err != nil {
 				return nil, fmt.Errorf(`unmarshalling param 0 for findFriendshipByID(): %w`, err)
 			}
@@ -199,7 +199,7 @@ func (ec *executionContext) resolveEntity(
 		switch resolverName {
 
 		case "findRelationshipByID":
-			id0, err := ec.unmarshalNID2string(ctx, rep["id"])
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
 			if err != nil {
 				return nil, fmt.Errorf(`unmarshalling param 0 for findRelationshipByID(): %w`, err)
 			}

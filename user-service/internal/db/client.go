@@ -3,7 +3,6 @@ package db
 
 import (
 	"context"
-	"log"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -24,14 +23,12 @@ type MongoDB struct {
 func NewMongoDB(ctx context.Context, uri string) (*MongoDB, error) {
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
-	log.Printf("Connecting to MongoDB with URI: %s", uri)
 
 	if err != nil {
 		return nil, err
 	}
 
 	db := client.Database(DatabaseName)
-	log.Printf("Connected to MongoDB database: %s", DatabaseName)
 
 	return &MongoDB{
 		client: client,

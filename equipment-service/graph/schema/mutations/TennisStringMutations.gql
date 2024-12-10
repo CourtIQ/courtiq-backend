@@ -1,6 +1,0 @@
-extend type Mutation {
-    addTennisString(input: TennisStringInput!): TennisString
-    updateTennisString(id: ID!, input: TennisStringInput!): TennisString
-    deleteTennisString(id: ID!): Boolean
-    assignStringToRacket(racketId: ID!, stringId: ID!): TennisRacket
-}

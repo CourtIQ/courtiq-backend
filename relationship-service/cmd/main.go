@@ -10,13 +10,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/directives/satisfies" // Adjust import path as needed
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/configs"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/middleware"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
+	// If you have a `utils` package with middleware:
+	// "github.com/CourtIQ/courtiq-backend/equipment-service/internal/utils"
 )
 
 func main() {
@@ -27,49 +25,39 @@ func main() {
 	configs.SetupLogging(config)
 
 	// Initialize MongoDB client
-	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	_, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	// Get the relationships collection
-	coll := mongodb.GetCollection(db.RelationshipsCollection)
+	// Create repositories
+	// racketRepo := repository.NewCoachshipRepository(mongodb)
+	// stringRepo := repository.NewFriendshipRepository(mongodb)
 
-	// Create the repository using the collection
-	relationshipRepo := repository.NewRelationshipRepository(coll)
+	// Create the service with the repositories
+	// equipmentService := services.NewRelationshipService(racketRepo, stringRepo)
 
-	// Create the service with the repository
-	relationshipService := services.NewRelationshipService(relationshipRepo)
-
-	// Set the directive dependencies
-	satisfies.RelationshipRepo = relationshipRepo
-	satisfies.GetCurrentUserID = middleware.GetUserIDFromContext
-
-	// Build gqlgen config and assign the directive
-	c := graph.Config{
+	// Set up the GraphQL server with the resolver that has the service injected
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
-			RelationshipService: relationshipService,
+			// EquipmentServiceIntf: equipmentService,
 		},
-	}
-
-	c.Directives.Satisfies = satisfies.SatisfiesDirective
-
-	// Create the executable schema
-	schema := graph.NewExecutableSchema(c)
-
-	// Set up the GraphQL server
-	srv := handler.NewDefaultServer(schema)
+	}))
 
 	// Create router mux
 	mux := http.NewServeMux()
 
-	// Setup routes
+	// If you'd like to add user middleware, for example:
+	// mux.Handle("/graphql", utils.NewUserMiddleware(utils.AuthConfig{EnableAuth: true})(srv))
+	// Otherwise, just use srv directly.
+	// For now, let's just mount srv directly:
+	mux.Handle("/graphql", srv)
+
+	// Setup playground if enabled
 	if config.PlaygroundEnabled {
 		mux.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("GraphQL Playground enabled at /")
 	}
-
-	mux.Handle("/graphql", srv)
 
 	// Start server
 	address := fmt.Sprintf(":%d", config.Port)

@@ -1,16 +1,16 @@
 # Tennis Racket Type
 type TennisRacket implements Equipment @key(fields: "id") {
-    id: ID!
-    userId: ID!
-    name: String!
-    type: EquipmentType!
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    id: ObjectID!                     # Unique identifier for the racket
+    ownerId: ID!                # Owner's ID (user)
+    name: String!               # Name of the racket
+    type: EquipmentType!        # Equipment type (e.g., TENNIS_RACKET)
+    createdAt: DateTime!        # Timestamp for when the racket was created
+    updatedAt: DateTime!        # Timestamp for the last update
 
-    # Racket specific fields
-    brand: String!
-    model: String!
-    headSize: Float!
-    weight: Float!
-    currentString: TennisString
+    # Racket-specific fields
+    brand: String               # Brand of the racket (e.g., Wilson, Babolat)
+    model: String               # Model of the racket (e.g., Blade 98)
+    headSize: Float             # Head size of the racket in square inches (e.g., 98.0)
+    weight: Float               # Weight of the racket in grams (e.g., 305.0)
+    currentString: TennisString # Current string setup for the racket, optional
 }

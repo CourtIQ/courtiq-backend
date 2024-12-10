@@ -1,6 +1,0 @@
-scalar DateTime
-
-extend type User @key(fields: "id") {
-  id: ID! @external
-  equipments: [Equipment]
-}
