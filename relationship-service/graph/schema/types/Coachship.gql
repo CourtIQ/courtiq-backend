@@ -1,11 +1,11 @@
 # Coachship is a relationship where one user is a coach and the other is a student.
 type Coachship implements Relationship @key(fields: "id") {
   id: ObjectID!
-  participants: [ID!]!
+  participants: [ObjectID!]!
   type: RelationshipType!
   status: RelationshipStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
-  coachId: ID!   # The user ID of the coach in this relationship
-  studentId: ID! # The user ID of the student in this relationship
+  coachId: ObjectID!   # The user ID of the coach in this relationship
+  studentId: ObjectID! # The user ID of the student in this relationship
 }

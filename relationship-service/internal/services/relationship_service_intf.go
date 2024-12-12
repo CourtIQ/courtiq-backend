@@ -13,7 +13,7 @@ type RelationshipServiceIntf interface {
 	// Friendship Queries
 	Friendship(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error)
 	MyFriends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error)
-	Friends(ctx context.Context, ofUserID string, limit *int, offset *int) ([]*model.Friendship, error)
+	Friends(ctx context.Context, ofUserID primitive.ObjectID, limit *int, offset *int) ([]*model.Friendship, error)
 	MyFriendRequests(ctx context.Context) ([]*model.Friendship, error)
 	SentFriendRequests(ctx context.Context) ([]*model.Friendship, error)
 	FriendshipStatus(ctx context.Context, otherUserID primitive.ObjectID) (*model.RelationshipStatus, error)
@@ -26,24 +26,24 @@ type RelationshipServiceIntf interface {
 	MyCoachRequests(ctx context.Context) ([]*model.Coachship, error)
 	SentCoachRequests(ctx context.Context) ([]*model.Coachship, error)
 	SentStudentRequests(ctx context.Context) ([]*model.Coachship, error)
-	IsStudent(ctx context.Context, studentID string) (*model.RelationshipStatus, error)
-	IsCoach(ctx context.Context, coachID string) (*model.RelationshipStatus, error)
+	IsStudent(ctx context.Context, studentID primitive.ObjectID) (*model.RelationshipStatus, error)
+	IsCoach(ctx context.Context, coachID primitive.ObjectID) (*model.RelationshipStatus, error)
 
 	// Friendship Mutations
-	SendFriendRequest(ctx context.Context, receiverID string) (*model.Friendship, error)
+	SendFriendRequest(ctx context.Context, receiverID primitive.ObjectID) (*model.Friendship, error)
 	AcceptFriendRequest(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error)
 	RejectFriendRequest(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error)
 	CancelFriendRequest(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error)
 	EndFriendship(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error)
 
 	// Coachship Mutations
-	RequestToBeStudent(ctx context.Context, ofUserID string) (*model.Coachship, error)
+	RequestToBeStudent(ctx context.Context, ofUserID primitive.ObjectID) (*model.Coachship, error)
 	AcceptStudentRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)
 	RejectStudentRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)
 	CancelRequestToBeStudent(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)
 	RemoveStudent(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)
 
-	RequestToBeCoach(ctx context.Context, ofUserID string) (*model.Coachship, error)
+	RequestToBeCoach(ctx context.Context, ofUserID primitive.ObjectID) (*model.Coachship, error)
 	AcceptCoachRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)
 	RejectCoachRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)
 	CancelCoachRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error)

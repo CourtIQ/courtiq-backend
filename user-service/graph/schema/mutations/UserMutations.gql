@@ -1,10 +1,3 @@
 extend type Mutation {
-  """
-  Updates the profile of the currently authenticated user using the provided input.
-  Returns the updated User object.
-  
-  Fields not supplied in the input remain unchanged.
-  Authorization is typically required to ensure only the owner can update their profile.
-  """
   updateUser(input: UpdateUserInput!): User
 }

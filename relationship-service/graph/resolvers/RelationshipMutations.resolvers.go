@@ -13,7 +13,7 @@ import (
 )
 
 // SendFriendRequest is the resolver for the sendFriendRequest field.
-func (r *mutationResolver) SendFriendRequest(ctx context.Context, receiverID string) (*model.Friendship, error) {
+func (r *mutationResolver) SendFriendRequest(ctx context.Context, receiverID primitive.ObjectID) (*model.Friendship, error) {
 	return r.RelationshipService.SendFriendRequest(ctx, receiverID)
 }
 
@@ -38,7 +38,7 @@ func (r *mutationResolver) EndFriendship(ctx context.Context, friendshipID primi
 }
 
 // RequestToBeStudent is the resolver for the requestToBeStudent field.
-func (r *mutationResolver) RequestToBeStudent(ctx context.Context, ofUserID string) (*model.Coachship, error) {
+func (r *mutationResolver) RequestToBeStudent(ctx context.Context, ofUserID primitive.ObjectID) (*model.Coachship, error) {
 	return r.RelationshipService.RequestToBeStudent(ctx, ofUserID)
 }
 
@@ -63,7 +63,7 @@ func (r *mutationResolver) RemoveStudent(ctx context.Context, coachshipID primit
 }
 
 // RequestToBeCoach is the resolver for the requestToBeCoach field.
-func (r *mutationResolver) RequestToBeCoach(ctx context.Context, ofUserID string) (*model.Coachship, error) {
+func (r *mutationResolver) RequestToBeCoach(ctx context.Context, ofUserID primitive.ObjectID) (*model.Coachship, error) {
 	return r.RelationshipService.RequestToBeCoach(ctx, ofUserID)
 }
 

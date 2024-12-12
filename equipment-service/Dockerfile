@@ -1,5 +1,5 @@
 # equipment-service/Dockerfile (same for other Go services)
-FROM golang:1.23-alpine as builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 

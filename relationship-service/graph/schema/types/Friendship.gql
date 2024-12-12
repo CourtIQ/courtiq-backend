@@ -1,11 +1,11 @@
 # Friendship is a relationship where two users are friends.
 type Friendship implements Relationship @key(fields: "id") {
   id: ObjectID!
-  participants: [ID!]!
+  participants: [ObjectID!]!
   type: RelationshipType!
   status: RelationshipStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
-  senderId: ID!   # The user ID who sent the friend request (initiator)
-  receiverId: ID! # The user ID who received the friend request
+  senderId: ObjectID!   # The user ID who sent the friend request (initiator)
+  receiverId: ObjectID! # The user ID who received the friend request
 }

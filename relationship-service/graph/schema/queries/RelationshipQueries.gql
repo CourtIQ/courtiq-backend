@@ -12,7 +12,7 @@ extend type Query {
   myFriends(limit: Int = 10, offset: Int = 0): [Friendship!]!
 
   # Fetch friendships for a specific user (ofUserID), with optional pagination
-  friends(ofUserID: ID!, limit: Int = 10, offset: Int = 0): [Friendship!]!
+  friends(ofUserID: ObjectID!, limit: Int = 10, offset: Int = 0): [Friendship!]!
 
   # Fetch friend requests received by the current user
   myFriendRequests: [Friendship!]!
@@ -48,8 +48,8 @@ extend type Query {
   sentStudentRequests: [Coachship!]!
 
   # Check if a given user (studentId) is a student of the current user
-  isStudent(studentId: ID!): RelationshipStatus
+  isStudent(studentId: ObjectID!): RelationshipStatus
 
   # Check if a given user (coachId) is a coach of the current user
-  isCoach(coachId: ID!): RelationshipStatus
+  isCoach(coachId: ObjectID!): RelationshipStatus
 }

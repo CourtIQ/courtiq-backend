@@ -44,6 +44,7 @@ type UpdateUserInput struct {
 // Implements a federated key for cross-service references.
 type User struct {
 	ID             primitive.ObjectID `json:"id"`
+	FirebaseID     string             `json:"firebaseId"`
 	Email          string             `json:"email"`
 	FirstName      *string            `json:"firstName,omitempty"`
 	LastName       *string            `json:"lastName,omitempty"`

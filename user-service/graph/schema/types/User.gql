@@ -7,6 +7,7 @@ Implements a federated key for cross-service references.
 """
 type User @key(fields: "id") {
   id: ObjectID!
+  firebaseId: String!
   email: String!
   firstName: String
   lastName: String
