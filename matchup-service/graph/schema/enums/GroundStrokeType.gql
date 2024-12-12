@@ -1,14 +1,5 @@
-"""
-Represents the base type of a ground stroke shot in tennis.
-"""
-enum GroundStrokeType {
-  """
-  A forehand ground stroke.
-  """
-  FOREHAND
 
-  """
-  A backhand ground stroke.
-  """
+enum GroundStrokeType {
+  FOREHAND
   BACKHAND
 }

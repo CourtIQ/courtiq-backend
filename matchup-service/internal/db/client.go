@@ -12,6 +12,7 @@ import (
 const (
 	DatabaseName       = "courtiq-db"
 	MatchupsCollection = "matchups"
+	PointsCollection   = "matchup_points"
 )
 
 // MongoDB represents the MongoDB client wrapper

@@ -6,15 +6,21 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // FindUserByID is the resolver for the findUserByID field.
-func (r *entityResolver) FindUserByID(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
+func (r *entityResolver) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
+	name := "Dummy User"
+	user := &model.User{
+		ID:          id,                      // Use the provided ObjectID
+		DisplayName: &name,                   // Hardcoded display name
+		Email:       "dummyuser@example.com", // Hardcoded email
+	}
+	return user, nil
 }
 
 // Entity returns graph.EntityResolver implementation.

@@ -46,7 +46,7 @@ func NewUserMiddleware(cfg AuthConfig) func(http.Handler) http.Handler {
 func GetUserIDFromContext(ctx context.Context, cfg AuthConfig) (string, error) {
 	if !cfg.EnableAuth {
 		// Auth disabled, return dummy UID without error
-		return "test_user_id", nil
+		return "67575a5b47d020255890ea63", nil
 	}
 
 	data, ok := ctx.Value(userContextKey{}).(map[string]interface{})

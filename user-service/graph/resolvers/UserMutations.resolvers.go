@@ -14,7 +14,7 @@ import (
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
+	panic(fmt.Errorf("not implemented: UpdateUser - updateUser"))
 }
 
 // Mutation returns graph.MutationResolver implementation.

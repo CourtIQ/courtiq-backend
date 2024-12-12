@@ -15,7 +15,8 @@ type Equipment interface {
 	IsEntity()
 	IsEquipment()
 	GetID() primitive.ObjectID
-	GetOwnerID() string
+	GetOwnerID() primitive.ObjectID
+	GetOwner() *User
 	GetName() string
 	GetType() EquipmentType
 	GetCreatedAt() time.Time
@@ -57,7 +58,8 @@ type StringTensionInput struct {
 
 type TennisRacket struct {
 	ID            primitive.ObjectID `json:"id"`
-	OwnerID       string             `json:"ownerId"`
+	OwnerID       primitive.ObjectID `json:"ownerId"`
+	Owner         *User              `json:"owner"`
 	Name          string             `json:"name"`
 	Type          EquipmentType      `json:"type"`
 	CreatedAt     time.Time          `json:"createdAt"`
@@ -69,19 +71,21 @@ type TennisRacket struct {
 	CurrentString *TennisString      `json:"currentString,omitempty"`
 }
 
-func (TennisRacket) IsEquipment()                   {}
-func (this TennisRacket) GetID() primitive.ObjectID { return this.ID }
-func (this TennisRacket) GetOwnerID() string        { return this.OwnerID }
-func (this TennisRacket) GetName() string           { return this.Name }
-func (this TennisRacket) GetType() EquipmentType    { return this.Type }
-func (this TennisRacket) GetCreatedAt() time.Time   { return this.CreatedAt }
-func (this TennisRacket) GetUpdatedAt() time.Time   { return this.UpdatedAt }
+func (TennisRacket) IsEquipment()                        {}
+func (this TennisRacket) GetID() primitive.ObjectID      { return this.ID }
+func (this TennisRacket) GetOwnerID() primitive.ObjectID { return this.OwnerID }
+func (this TennisRacket) GetOwner() *User                { return this.Owner }
+func (this TennisRacket) GetName() string                { return this.Name }
+func (this TennisRacket) GetType() EquipmentType         { return this.Type }
+func (this TennisRacket) GetCreatedAt() time.Time        { return this.CreatedAt }
+func (this TennisRacket) GetUpdatedAt() time.Time        { return this.UpdatedAt }
 
 func (TennisRacket) IsEntity() {}
 
 type TennisString struct {
 	ID            primitive.ObjectID `json:"id"`
-	OwnerID       string             `json:"ownerId"`
+	OwnerID       primitive.ObjectID `json:"ownerId"`
+	Owner         *User              `json:"owner"`
 	Name          string             `json:"name"`
 	Type          EquipmentType      `json:"type"`
 	CreatedAt     time.Time          `json:"createdAt"`
@@ -94,13 +98,14 @@ type TennisString struct {
 	BurstDate     *time.Time         `json:"burstDate,omitempty"`
 }
 
-func (TennisString) IsEquipment()                   {}
-func (this TennisString) GetID() primitive.ObjectID { return this.ID }
-func (this TennisString) GetOwnerID() string        { return this.OwnerID }
-func (this TennisString) GetName() string           { return this.Name }
-func (this TennisString) GetType() EquipmentType    { return this.Type }
-func (this TennisString) GetCreatedAt() time.Time   { return this.CreatedAt }
-func (this TennisString) GetUpdatedAt() time.Time   { return this.UpdatedAt }
+func (TennisString) IsEquipment()                        {}
+func (this TennisString) GetID() primitive.ObjectID      { return this.ID }
+func (this TennisString) GetOwnerID() primitive.ObjectID { return this.OwnerID }
+func (this TennisString) GetOwner() *User                { return this.Owner }
+func (this TennisString) GetName() string                { return this.Name }
+func (this TennisString) GetType() EquipmentType         { return this.Type }
+func (this TennisString) GetCreatedAt() time.Time        { return this.CreatedAt }
+func (this TennisString) GetUpdatedAt() time.Time        { return this.UpdatedAt }
 
 func (TennisString) IsEntity() {}
 
@@ -122,6 +127,14 @@ type UpdateTennisStringInput struct {
 	StringingDate *time.Time          `json:"stringingDate,omitempty"`
 	BurstDate     *time.Time          `json:"burstDate,omitempty"`
 }
+
+type User struct {
+	ID          primitive.ObjectID `json:"id"`
+	Username    string             `json:"username"`
+	DisplayName string             `json:"displayName"`
+}
+
+func (User) IsEntity() {}
 
 type EquipmentType string
 

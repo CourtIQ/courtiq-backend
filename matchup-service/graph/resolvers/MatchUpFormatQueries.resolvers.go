@@ -9,23 +9,16 @@ import (
 	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Empty is the resolver for the _empty field.
-func (r *mutationResolver) Empty(ctx context.Context) (*string, error) {
-	panic(fmt.Errorf("not implemented: Empty - _empty"))
+// GetMatchUp is the resolver for the getMatchUp field.
+func (r *queryResolver) GetMatchUp(ctx context.Context, id primitive.ObjectID) (*model.MatchUp, error) {
+	panic(fmt.Errorf("not implemented: GetMatchUp - getMatchUp"))
 }
-
-// Empty is the resolver for the _empty field.
-func (r *queryResolver) Empty(ctx context.Context) (*string, error) {
-	panic(fmt.Errorf("not implemented: Empty - _empty"))
-}
-
-// Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

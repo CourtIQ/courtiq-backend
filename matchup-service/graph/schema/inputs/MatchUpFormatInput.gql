@@ -1,4 +1,5 @@
 input MatchUpFormatInput {
+    tracker: ObjectID!
     numberOfSets: NumberOfSets!
     setFormat: SetFormatInput!
     finalSetFormat: SetFormatInput

@@ -51,9 +51,15 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
+	// Convert uid to ObjectID
+	ownerID, err := primitive.ObjectIDFromHex(uid)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID format: %w", err)
+	}
+
 	racket := &model.TennisRacket{
 		ID:        primitive.NewObjectID(),
-		OwnerID:   uid,
+		OwnerID:   ownerID,
 		Name:      input.Name,
 		Brand:     input.Brand,
 		Model:     input.Model,
@@ -136,9 +142,15 @@ func (s *EquipmentService) CreateTennisString(ctx context.Context, input model.C
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
+	// Convert uid to ObjectID
+	ownerID, err := primitive.ObjectIDFromHex(uid)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID format: %w", err)
+	}
+
 	str := &model.TennisString{
 		ID:            primitive.NewObjectID(),
-		OwnerID:       uid,
+		OwnerID:       ownerID,
 		Name:          input.Name,
 		Brand:         input.Brand,
 		Model:         input.Model,

@@ -11,6 +11,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
+
+	// "github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/configs"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/db"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/repository"

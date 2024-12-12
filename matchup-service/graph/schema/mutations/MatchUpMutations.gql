@@ -1,0 +1,31 @@
+extend type Mutation {
+    createMatchUp(
+        matchUpFormat: MatchUpFormatInput!
+        matchUpType: MatchUpType!
+        participants: [ObjectID!]!
+    ): MatchUp!
+    
+    updateMatchUpStatus(
+        status: MatchUpStatus!, 
+        matchUpId: ObjectID!
+    ): MatchUp!
+    
+    addPointToMatchUp(
+        matchUpId: ObjectID!
+    ): MatchUp!
+    
+    # addShotToMatchUp(
+    #     matchUpId: ObjectID!
+    #     shot: ShotInput!
+    # ): MatchUp!
+
+    undoShotFromMatchUp(
+        matchUpId: ObjectID!
+    ): MatchUp!
+
+    undoPointFromMatchUp(
+        matchUpId: ObjectID!
+    ): MatchUp!
+
+    deleteMatchUp(matchUpId: ObjectID!): MatchUp!
+}

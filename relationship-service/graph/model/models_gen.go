@@ -15,7 +15,7 @@ type Relationship interface {
 	IsEntity()
 	IsRelationship()
 	GetID() primitive.ObjectID
-	GetParticipants() []primitive.ObjectID
+	GetParticipants() []string
 	GetType() RelationshipType
 	GetStatus() RelationshipStatus
 	GetCreatedAt() time.Time
@@ -23,23 +23,23 @@ type Relationship interface {
 }
 
 type Coachship struct {
-	ID           primitive.ObjectID   `json:"id"`
-	Participants []primitive.ObjectID `json:"participants"`
-	Type         RelationshipType     `json:"type"`
-	Status       RelationshipStatus   `json:"status"`
-	CreatedAt    time.Time            `json:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt"`
-	CoachID      string               `json:"coachId"`
-	StudentID    string               `json:"studentId"`
+	ID           primitive.ObjectID `json:"id"`
+	Participants []string           `json:"participants"`
+	Type         RelationshipType   `json:"type"`
+	Status       RelationshipStatus `json:"status"`
+	CreatedAt    time.Time          `json:"createdAt"`
+	UpdatedAt    time.Time          `json:"updatedAt"`
+	CoachID      string             `json:"coachId"`
+	StudentID    string             `json:"studentId"`
 }
 
 func (Coachship) IsRelationship()                {}
 func (this Coachship) GetID() primitive.ObjectID { return this.ID }
-func (this Coachship) GetParticipants() []primitive.ObjectID {
+func (this Coachship) GetParticipants() []string {
 	if this.Participants == nil {
 		return nil
 	}
-	interfaceSlice := make([]primitive.ObjectID, 0, len(this.Participants))
+	interfaceSlice := make([]string, 0, len(this.Participants))
 	for _, concrete := range this.Participants {
 		interfaceSlice = append(interfaceSlice, concrete)
 	}
@@ -53,23 +53,23 @@ func (this Coachship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
 func (Coachship) IsEntity() {}
 
 type Friendship struct {
-	ID           primitive.ObjectID   `json:"id"`
-	Participants []primitive.ObjectID `json:"participants"`
-	Type         RelationshipType     `json:"type"`
-	Status       RelationshipStatus   `json:"status"`
-	CreatedAt    time.Time            `json:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt"`
-	SenderID     string               `json:"senderId"`
-	ReceiverID   string               `json:"receiverId"`
+	ID           primitive.ObjectID `json:"id"`
+	Participants []string           `json:"participants"`
+	Type         RelationshipType   `json:"type"`
+	Status       RelationshipStatus `json:"status"`
+	CreatedAt    time.Time          `json:"createdAt"`
+	UpdatedAt    time.Time          `json:"updatedAt"`
+	SenderID     string             `json:"senderId"`
+	ReceiverID   string             `json:"receiverId"`
 }
 
 func (Friendship) IsRelationship()                {}
 func (this Friendship) GetID() primitive.ObjectID { return this.ID }
-func (this Friendship) GetParticipants() []primitive.ObjectID {
+func (this Friendship) GetParticipants() []string {
 	if this.Participants == nil {
 		return nil
 	}
-	interfaceSlice := make([]primitive.ObjectID, 0, len(this.Participants))
+	interfaceSlice := make([]string, 0, len(this.Participants))
 	for _, concrete := range this.Participants {
 		interfaceSlice = append(interfaceSlice, concrete)
 	}

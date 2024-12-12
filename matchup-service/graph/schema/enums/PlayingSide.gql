@@ -1,4 +1,4 @@
 enum PlayingSide {
-  A
-  B
+    DEUCE
+    AD
 }

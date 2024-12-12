@@ -4,35 +4,25 @@ package model
 
 import (
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Provides structured geographical details about a user's location.
 // All fields are optional and can be omitted if unknown.
 type Location struct {
-	// Name of the city where the user is located
-	City *string `json:"city,omitempty"`
-	// Name of the state or province where the user is located
-	State *string `json:"state,omitempty"`
-	// Name of the country where the user is located
-	Country *string `json:"country,omitempty"`
-	// Latitude coordinate of the user’s location
-	Latitude *float64 `json:"latitude,omitempty"`
-	// Longitude coordinate of the user’s location
+	City      *string  `json:"city,omitempty"`
+	State     *string  `json:"state,omitempty"`
+	Country   *string  `json:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty"`
 	Longitude *float64 `json:"longitude,omitempty"`
 }
 
-// Input object containing geographic details for updating a user’s location.
-// All fields are optional.
 type LocationInput struct {
-	// City portion of the user’s new location
-	City *string `json:"city,omitempty"`
-	// State or province portion of the user’s new location
-	State *string `json:"state,omitempty"`
-	// Country portion of the user’s new location
-	Country *string `json:"country,omitempty"`
-	// Latitude coordinate of the user’s new location
-	Latitude *float64 `json:"latitude,omitempty"`
-	// Longitude coordinate of the user’s new location
+	City      *string  `json:"city,omitempty"`
+	State     *string  `json:"state,omitempty"`
+	Country   *string  `json:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty"`
 	Longitude *float64 `json:"longitude,omitempty"`
 }
 
@@ -42,50 +32,30 @@ type Mutation struct {
 type Query struct {
 }
 
-// Input object for updating user profile fields.
-// All fields are optional, allowing partial updates.
 type UpdateUserInput struct {
-	// New first name for the user
-	FirstName *string `json:"firstName,omitempty"`
-	// New last name for the user
-	LastName *string `json:"lastName,omitempty"`
-	// ISO-8601 formatted date/time for the user’s new birthdate
-	DateOfBirth *time.Time `json:"dateOfBirth,omitempty"`
-	// New short biography or description for the user
-	Bio *string `json:"bio,omitempty"`
-	// Updated geographical location details for the user
-	Location *LocationInput `json:"location,omitempty"`
+	FirstName   *string        `json:"firstName,omitempty"`
+	LastName    *string        `json:"lastName,omitempty"`
+	DateOfBirth *time.Time     `json:"dateOfBirth,omitempty"`
+	Bio         *string        `json:"bio,omitempty"`
+	Location    *LocationInput `json:"location,omitempty"`
 }
 
 // Represents an individual user within the application.
 // Implements a federated key for cross-service references.
 type User struct {
-	// Unique identifier for the user
-	ID string `json:"id"`
-	// Primary email address of the user (used for communication and login)
-	Email string `json:"email"`
-	// First name of the user, if provided
-	FirstName *string `json:"firstName,omitempty"`
-	// Last name of the user, if provided
-	LastName *string `json:"lastName,omitempty"`
-	// User’s chosen display name or handle, shown publicly
-	DisplayName *string `json:"displayName,omitempty"`
-	// User’s chosen username or handle, used for login and public identification
-	Username *string `json:"username,omitempty"`
-	// URL pointing to the user’s profile image (if any)
-	ProfilePicture *string `json:"profilePicture,omitempty"`
-	// ISO-8601 formatted date/time representing the user’s date of birth
-	DateOfBirth *time.Time `json:"dateOfBirth,omitempty"`
-	// Geographical information about the user’s location
-	Location *Location `json:"location,omitempty"`
-	// Short biography or description provided by the user
-	Bio *string `json:"bio,omitempty"`
-	// Integer rating or score representing user’s standing or skill level
-	Rating *int `json:"rating,omitempty"`
-	// ISO-8601 formatted timestamp when the user was initially created
-	CreatedAt *time.Time `json:"createdAt,omitempty"`
-	// ISO-8601 formatted timestamp when the user’s information was last updated
-	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
+	ID             primitive.ObjectID `json:"id"`
+	Email          string             `json:"email"`
+	FirstName      *string            `json:"firstName,omitempty"`
+	LastName       *string            `json:"lastName,omitempty"`
+	DisplayName    *string            `json:"displayName,omitempty"`
+	Username       *string            `json:"username,omitempty"`
+	ProfilePicture *string            `json:"profilePicture,omitempty"`
+	DateOfBirth    *time.Time         `json:"dateOfBirth,omitempty"`
+	Location       *Location          `json:"location,omitempty"`
+	Bio            *string            `json:"bio,omitempty"`
+	Rating         *int               `json:"rating,omitempty"`
+	CreatedAt      *time.Time         `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time         `json:"updatedAt,omitempty"`
 }
 
 func (User) IsEntity() {}

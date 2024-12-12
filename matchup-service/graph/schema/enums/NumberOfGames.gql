@@ -1,13 +1,8 @@
-# graph/schema/enums/NumberOfGames.gql
 enum NumberOfGames {
-    ONE
-    TWO
-    THREE
-    FOUR
-    FIVE
-    SIX
-    SEVEN
-    EIGHT
-    NINE
-    TEN
+  ONE
+  THREE
+  FOUR
+  FIVE
+  SIX
+  TEN
 }

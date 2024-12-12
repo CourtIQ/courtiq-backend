@@ -14,12 +14,12 @@ import (
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
+	panic(fmt.Errorf("not implemented: Me - me"))
 }
 
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
+	panic(fmt.Errorf("not implemented: GetUser - getUser"))
 }
 
 // IsUsernamesAvailable is the resolver for the isUsernamesAvailable field.

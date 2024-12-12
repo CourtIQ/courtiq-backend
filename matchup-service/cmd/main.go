@@ -8,10 +8,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
+
 	configs "github.com/CourtIQ/courtiq-backend/matchup-service/internal/config"
-	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
-	// "github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
 )
 
 func main() {
@@ -21,26 +19,12 @@ func main() {
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Initialize MongoDB client
-	// mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to MongoDB: %v", err)
-	// }
-
-	// Get the matchups collection
-	// coll := mongodb.GetCollection(db.MatchUpsCollection)
-
-	// Create the repository using the collection
-	// matchupsRepo := repository.NewMatchupsRepository(coll)
-
-	// Create the service with the repository
-	// matchupsService := services.NewMatchupsService(matchupsRepo)
+	// Create the service (using dummy implementation for now)
+	// matchupService := service.NewMatchUpService()
 
 	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{
-			// RelationshipService: relationshipService,
-		},
+		// Resolvers: resolvers.NewResolver(matchupService),
 	}))
 
 	// Create router mux

@@ -1,36 +1,7 @@
-"""
-Represents the reason for winning a point in tennis.
-
-The reasons can include ace, winner, forced error, unforced error, error, and double fault.
-"""
 enum PointWinReason {
-  """
-  An ace.
-  """
   ACE
-
-  """
-  A winner.
-  """
   WINNER
-
-  """
-  A forced error.
-  """
   FORCED_ERROR
-
-  """
-  An unforced error.
-  """
   UNFORCED_ERROR
-
-  """
-  An error.
-  """
-  ERROR
-
-  """
-  A double fault.
-  """
   DOUBLE_FAULT
 }

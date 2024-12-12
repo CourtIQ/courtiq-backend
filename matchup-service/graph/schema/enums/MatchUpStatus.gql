@@ -7,7 +7,5 @@ enum MatchUpStatus {
     CANCELLED
     ABANDONED
     RETIRED
-    WALKOVER
-    NOT_PLAYED
     REQUESTED
 }

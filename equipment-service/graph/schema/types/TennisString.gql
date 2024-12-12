@@ -1,7 +1,8 @@
 # Tennis String Type
 type TennisString implements Equipment @key(fields: "id") {
     id: ObjectID!                 # Unique identifier for the string
-    ownerId: ID!            # Owner's ID (user); renamed to match terminology across types
+    ownerId: ObjectID!            # Owner's ID (user)
+    owner: User! @requires(fields: "ownerId")               # Owner's ID (user)
     name: String!           # Name of the string
     type: EquipmentType!    # Equipment type (e.g., TENNIS_STRING)
     createdAt: DateTime!    # Timestamp for when the string was created

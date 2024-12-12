@@ -33,7 +33,7 @@ resolver:
   # omit_template_comment: false
 
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
-# struct_tag: json
+struct_tag: json
 
 # Optional: turn on to use []Thing instead of []*Thing
 # omit_slice_element_pointers: false
@@ -100,3 +100,5 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   DateTime:
     model: github.com/99designs/gqlgen/graphql.Time
+  ObjectID:
+    model: github.com/CourtIQ/courtiq-backend/matchup-service/graph/scalar.ObjectID

@@ -7,78 +7,81 @@ import (
 	"io"
 	"strconv"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MatchUp struct {
-	ID                  string         `json:"id"`
-	MatchUpFormat       *MatchUpFormat `json:"matchUpFormat"`
-	MatchUpStatus       MatchUpStatus  `json:"matchUpStatus"`
-	MatchUpType         MatchUpType    `json:"matchUpType"`
-	Participants        []*Participant `json:"participants"`
-	CurrentSetIndex     *int           `json:"currentSetIndex,omitempty"`
-	CurrentSetGameIndex *int           `json:"currentSetGameIndex,omitempty"`
-	CurrentScore        *Score         `json:"currentScore,omitempty"`
-	CurrentServer       PlayingSide    `json:"currentServer"`
-	Points              []*Point       `json:"points"`
-	PointsSequence      [][][]*Point   `json:"pointsSequence"`
-	StartTime           time.Time      `json:"startTime"`
-	EndTime             *time.Time     `json:"endTime,omitempty"`
-	LastUpdated         time.Time      `json:"lastUpdated"`
+	ID                          primitive.ObjectID   `json:"id"`
+	MatchUpFormat               *MatchUpFormat       `json:"matchUpFormat"`
+	MatchUpStatus               MatchUpStatus        `json:"matchUpStatus"`
+	MatchUpType                 MatchUpType          `json:"matchUpType"`
+	ParticipantIds              []primitive.ObjectID `json:"participantIds"`
+	Participants                *ParticipantsMap     `json:"participants"`
+	CurrentSetIndex             *int                 `json:"currentSetIndex,omitempty"`
+	CurrentGameIndexWithinSet   *int                 `json:"currentGameIndexWithinSet,omitempty"`
+	CurrentPointIndexWithinGame *int                 `json:"currentPointIndexWithinGame,omitempty"`
+	CurrentScore                *Score               `json:"currentScore,omitempty"`
+	CurrentServer               primitive.ObjectID   `json:"currentServer"`
+	PointsSequence              []primitive.ObjectID `json:"pointsSequence"`
+	StartTime                   time.Time            `json:"startTime"`
+	EndTime                     *time.Time           `json:"endTime,omitempty"`
+	CreatedAt                   time.Time            `json:"createdAt"`
+	UpdatedAt                   time.Time            `json:"updatedAt"`
 }
 
 type MatchUpFormat struct {
-	ID             string       `json:"id"`
-	NumberOfSets   NumberOfSets `json:"numberOfSets"`
-	SetFormat      *SetFormat   `json:"setFormat"`
-	FinalSetFormat *SetFormat   `json:"finalSetFormat,omitempty"`
-	InitialServer  PlayingSide  `json:"initialServer"`
+	ID             primitive.ObjectID `json:"id"`
+	Tracker        primitive.ObjectID `json:"tracker"`
+	NumberOfSets   NumberOfSets       `json:"numberOfSets"`
+	SetFormat      *SetFormat         `json:"setFormat"`
+	FinalSetFormat *SetFormat         `json:"finalSetFormat,omitempty"`
+	InitialServer  PlayingSide        `json:"initialServer"`
 }
 
 type MatchUpFormatInput struct {
-	NumberOfSets   NumberOfSets    `json:"numberOfSets"`
-	SetFormat      *SetFormatInput `json:"setFormat"`
-	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty"`
+	Tracker        primitive.ObjectID `json:"tracker"`
+	NumberOfSets   NumberOfSets       `json:"numberOfSets"`
+	SetFormat      *SetFormatInput    `json:"setFormat"`
+	FinalSetFormat *SetFormatInput    `json:"finalSetFormat,omitempty"`
 }
 
 type Mutation struct {
 }
 
-type Participant struct {
-	ID          string      `json:"id"`
-	PlayingSide PlayingSide `json:"playingSide"`
+type ParticipantsMap struct {
+	A primitive.ObjectID `json:"A"`
+	B primitive.ObjectID `json:"B"`
 }
 
 type Point struct {
-	ID          string         `json:"id"`
-	MatchUpID   string         `json:"matchUpId"`
-	SetIndex    int            `json:"setIndex"`
-	GameIndex   int            `json:"gameIndex"`
-	PointIndex  int            `json:"pointIndex"`
-	ServingSide PlayingSide    `json:"servingSide"`
-	WinningSide PlayingSide    `json:"winningSide"`
-	Timestamp   time.Time      `json:"timestamp"`
-	Metadata    *PointMetadata `json:"metadata"`
-}
-
-type PointMetadata struct {
-	IsBreakPoint    bool `json:"isBreakPoint"`
-	IsGamePoint     bool `json:"isGamePoint"`
-	IsSetPoint      bool `json:"isSetPoint"`
-	IsMatchPoint    bool `json:"isMatchPoint"`
-	IsTiebreak      bool `json:"isTiebreak"`
-	TiebreakPoint   *int `json:"tiebreakPoint,omitempty"`
-	IsDecidingPoint bool `json:"isDecidingPoint"`
-	Duration        *int `json:"duration,omitempty"`
-	RallyLength     int  `json:"rallyLength"`
+	ID                   primitive.ObjectID `json:"id"`
+	SetIndex             int                `json:"setIndex"`
+	GameIndexWithinSet   int                `json:"gameIndexWithinSet"`
+	PointIndexWithinGame int                `json:"pointIndexWithinGame"`
+	IsTiebreak           bool               `json:"isTiebreak"`
+	TiebreakPointNumber  *int               `json:"tiebreakPointNumber,omitempty"`
+	PointWinner          primitive.ObjectID `json:"pointWinner"`
+	PointServer          primitive.ObjectID `json:"pointServer"`
+	PointWinReason       *PointWinReason    `json:"pointWinReason,omitempty"`
+	PlayingSide          PlayingSide        `json:"playingSide"`
+	CourtSide            CourtSide          `json:"courtSide"`
+	ScoreBefore          *Score             `json:"scoreBefore"`
+	ScoreAfter           *Score             `json:"scoreAfter"`
+	Shots                []*Shot            `json:"shots"`
+	IsBreakPoint         bool               `json:"isBreakPoint"`
+	IsGamePoint          bool               `json:"isGamePoint"`
+	IsSetPoint           bool               `json:"isSetPoint"`
+	IsMatchPoint         bool               `json:"isMatchPoint"`
+	PlayedAt             *time.Time         `json:"playedAt,omitempty"`
 }
 
 type Query struct {
 }
 
 type Score struct {
-	SideA       *SideScore `json:"sideA"`
-	SideB       *SideScore `json:"sideB"`
-	LastUpdated time.Time  `json:"lastUpdated"`
+	A *SideScore `json:"a"`
+	B *SideScore `json:"b"`
 }
 
 type SetFormat struct {
@@ -97,11 +100,21 @@ type SetFormatInput struct {
 	TiebreakAt     *int                 `json:"tiebreakAt,omitempty"`
 }
 
+type Shot struct {
+	PlayerID          primitive.ObjectID `json:"playerId"`
+	ShotType          ShotType           `json:"shotType"`
+	ServeStyle        *ServeStyle        `json:"serveStyle,omitempty"`
+	GroundStrokeType  *GroundStrokeType  `json:"groundStrokeType,omitempty"`
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty"`
+	PlayedAt          *time.Time         `json:"playedAt,omitempty"`
+}
+
 type SideScore struct {
-	CurrentPointScore    GameScore `json:"currentPointScore"`
-	CurrentGameScore     int       `json:"currentGameScore"`
-	CurrentSetScore      int       `json:"currentSetScore"`
-	CurrentTiebreakScore *int      `json:"currentTiebreakScore,omitempty"`
+	Player               primitive.ObjectID `json:"player"`
+	CurrentPointScore    GameScore          `json:"currentPointScore"`
+	CurrentGameScore     int                `json:"currentGameScore"`
+	CurrentSetScore      int                `json:"currentSetScore"`
+	CurrentTiebreakScore *int               `json:"currentTiebreakScore,omitempty"`
 }
 
 type TiebreakFormat struct {
@@ -112,6 +125,47 @@ type TiebreakFormat struct {
 type TiebreakFormatInput struct {
 	Points       TiebreakPoints `json:"points"`
 	MustWinByTwo bool           `json:"mustWinByTwo"`
+}
+
+type CourtSide string
+
+const (
+	CourtSideLeft  CourtSide = "LEFT"
+	CourtSideRight CourtSide = "RIGHT"
+)
+
+var AllCourtSide = []CourtSide{
+	CourtSideLeft,
+	CourtSideRight,
+}
+
+func (e CourtSide) IsValid() bool {
+	switch e {
+	case CourtSideLeft, CourtSideRight:
+		return true
+	}
+	return false
+}
+
+func (e CourtSide) String() string {
+	return string(e)
+}
+
+func (e *CourtSide) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CourtSide(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CourtSide", str)
+	}
+	return nil
+}
+
+func (e CourtSide) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type DeuceType string
@@ -204,22 +258,17 @@ func (e GameScore) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-// Represents the style of a ground stroke shot in tennis.
 type GroundStrokeStyle string
 
 const (
-	// A slice ground stroke.
-	GroundStrokeStyleSlice GroundStrokeStyle = "SLICE"
-	// A topspin ground stroke.
-	GroundStrokeStyleTopspin GroundStrokeStyle = "TOPSPIN"
-	// A flat ground stroke.
-	GroundStrokeStyleFlat GroundStrokeStyle = "FLAT"
-	// A lob ground stroke.
-	GroundStrokeStyleLob GroundStrokeStyle = "LOB"
-	// A drop shot ground stroke.
-	GroundStrokeStyleDropShot GroundStrokeStyle = "DROP_SHOT"
-	// A passing shot ground stroke.
-	GroundStrokeStylePassingShot GroundStrokeStyle = "PASSING_SHOT"
+	GroundStrokeStyleSlice       GroundStrokeStyle = "SLICE"
+	GroundStrokeStyleTopspin     GroundStrokeStyle = "TOPSPIN"
+	GroundStrokeStyleFlat        GroundStrokeStyle = "FLAT"
+	GroundStrokeStyleLob         GroundStrokeStyle = "LOB"
+	GroundStrokeStyleDropShot    GroundStrokeStyle = "DROP_SHOT"
+	GroundStrokeStyleCrosscourt  GroundStrokeStyle = "CROSSCOURT"
+	GroundStrokeStyleDownTheLine GroundStrokeStyle = "DOWN_THE_LINE"
+	GroundStrokeStyleSmash       GroundStrokeStyle = "SMASH"
 )
 
 var AllGroundStrokeStyle = []GroundStrokeStyle{
@@ -228,12 +277,14 @@ var AllGroundStrokeStyle = []GroundStrokeStyle{
 	GroundStrokeStyleFlat,
 	GroundStrokeStyleLob,
 	GroundStrokeStyleDropShot,
-	GroundStrokeStylePassingShot,
+	GroundStrokeStyleCrosscourt,
+	GroundStrokeStyleDownTheLine,
+	GroundStrokeStyleSmash,
 }
 
 func (e GroundStrokeStyle) IsValid() bool {
 	switch e {
-	case GroundStrokeStyleSlice, GroundStrokeStyleTopspin, GroundStrokeStyleFlat, GroundStrokeStyleLob, GroundStrokeStyleDropShot, GroundStrokeStylePassingShot:
+	case GroundStrokeStyleSlice, GroundStrokeStyleTopspin, GroundStrokeStyleFlat, GroundStrokeStyleLob, GroundStrokeStyleDropShot, GroundStrokeStyleCrosscourt, GroundStrokeStyleDownTheLine, GroundStrokeStyleSmash:
 		return true
 	}
 	return false
@@ -260,13 +311,10 @@ func (e GroundStrokeStyle) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-// Represents the base type of a ground stroke shot in tennis.
 type GroundStrokeType string
 
 const (
-	// A forehand ground stroke.
 	GroundStrokeTypeForehand GroundStrokeType = "FOREHAND"
-	// A backhand ground stroke.
 	GroundStrokeTypeBackhand GroundStrokeType = "BACKHAND"
 )
 
@@ -314,8 +362,6 @@ const (
 	MatchUpStatusCancelled  MatchUpStatus = "CANCELLED"
 	MatchUpStatusAbandoned  MatchUpStatus = "ABANDONED"
 	MatchUpStatusRetired    MatchUpStatus = "RETIRED"
-	MatchUpStatusWalkover   MatchUpStatus = "WALKOVER"
-	MatchUpStatusNotPlayed  MatchUpStatus = "NOT_PLAYED"
 	MatchUpStatusRequested  MatchUpStatus = "REQUESTED"
 )
 
@@ -327,14 +373,12 @@ var AllMatchUpStatus = []MatchUpStatus{
 	MatchUpStatusCancelled,
 	MatchUpStatusAbandoned,
 	MatchUpStatusRetired,
-	MatchUpStatusWalkover,
-	MatchUpStatusNotPlayed,
 	MatchUpStatusRequested,
 }
 
 func (e MatchUpStatus) IsValid() bool {
 	switch e {
-	case MatchUpStatusScheduled, MatchUpStatusInProgress, MatchUpStatusCompleted, MatchUpStatusSuspended, MatchUpStatusCancelled, MatchUpStatusAbandoned, MatchUpStatusRetired, MatchUpStatusWalkover, MatchUpStatusNotPlayed, MatchUpStatusRequested:
+	case MatchUpStatusScheduled, MatchUpStatusInProgress, MatchUpStatusCompleted, MatchUpStatusSuspended, MatchUpStatusCancelled, MatchUpStatusAbandoned, MatchUpStatusRetired, MatchUpStatusRequested:
 		return true
 	}
 	return false
@@ -406,33 +450,25 @@ type NumberOfGames string
 
 const (
 	NumberOfGamesOne   NumberOfGames = "ONE"
-	NumberOfGamesTwo   NumberOfGames = "TWO"
 	NumberOfGamesThree NumberOfGames = "THREE"
 	NumberOfGamesFour  NumberOfGames = "FOUR"
 	NumberOfGamesFive  NumberOfGames = "FIVE"
 	NumberOfGamesSix   NumberOfGames = "SIX"
-	NumberOfGamesSeven NumberOfGames = "SEVEN"
-	NumberOfGamesEight NumberOfGames = "EIGHT"
-	NumberOfGamesNine  NumberOfGames = "NINE"
 	NumberOfGamesTen   NumberOfGames = "TEN"
 )
 
 var AllNumberOfGames = []NumberOfGames{
 	NumberOfGamesOne,
-	NumberOfGamesTwo,
 	NumberOfGamesThree,
 	NumberOfGamesFour,
 	NumberOfGamesFive,
 	NumberOfGamesSix,
-	NumberOfGamesSeven,
-	NumberOfGamesEight,
-	NumberOfGamesNine,
 	NumberOfGamesTen,
 }
 
 func (e NumberOfGames) IsValid() bool {
 	switch e {
-	case NumberOfGamesOne, NumberOfGamesTwo, NumberOfGamesThree, NumberOfGamesFour, NumberOfGamesFive, NumberOfGamesSix, NumberOfGamesSeven, NumberOfGamesEight, NumberOfGamesNine, NumberOfGamesTen:
+	case NumberOfGamesOne, NumberOfGamesThree, NumberOfGamesFour, NumberOfGamesFive, NumberOfGamesSix, NumberOfGamesTen:
 		return true
 	}
 	return false
@@ -505,18 +541,18 @@ func (e NumberOfSets) MarshalGQL(w io.Writer) {
 type PlayingSide string
 
 const (
-	PlayingSideA PlayingSide = "A"
-	PlayingSideB PlayingSide = "B"
+	PlayingSideDeuce PlayingSide = "DEUCE"
+	PlayingSideAd    PlayingSide = "AD"
 )
 
 var AllPlayingSide = []PlayingSide{
-	PlayingSideA,
-	PlayingSideB,
+	PlayingSideDeuce,
+	PlayingSideAd,
 }
 
 func (e PlayingSide) IsValid() bool {
 	switch e {
-	case PlayingSideA, PlayingSideB:
+	case PlayingSideDeuce, PlayingSideAd:
 		return true
 	}
 	return false
@@ -543,24 +579,14 @@ func (e PlayingSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-// Represents the reason for winning a point in tennis.
-//
-// The reasons can include ace, winner, forced error, unforced error, error, and double fault.
 type PointWinReason string
 
 const (
-	// An ace.
-	PointWinReasonAce PointWinReason = "ACE"
-	// A winner.
-	PointWinReasonWinner PointWinReason = "WINNER"
-	// A forced error.
-	PointWinReasonForcedError PointWinReason = "FORCED_ERROR"
-	// An unforced error.
+	PointWinReasonAce           PointWinReason = "ACE"
+	PointWinReasonWinner        PointWinReason = "WINNER"
+	PointWinReasonForcedError   PointWinReason = "FORCED_ERROR"
 	PointWinReasonUnforcedError PointWinReason = "UNFORCED_ERROR"
-	// An error.
-	PointWinReasonError PointWinReason = "ERROR"
-	// A double fault.
-	PointWinReasonDoubleFault PointWinReason = "DOUBLE_FAULT"
+	PointWinReasonDoubleFault   PointWinReason = "DOUBLE_FAULT"
 )
 
 var AllPointWinReason = []PointWinReason{
@@ -568,13 +594,12 @@ var AllPointWinReason = []PointWinReason{
 	PointWinReasonWinner,
 	PointWinReasonForcedError,
 	PointWinReasonUnforcedError,
-	PointWinReasonError,
 	PointWinReasonDoubleFault,
 }
 
 func (e PointWinReason) IsValid() bool {
 	switch e {
-	case PointWinReasonAce, PointWinReasonWinner, PointWinReasonForcedError, PointWinReasonUnforcedError, PointWinReasonError, PointWinReasonDoubleFault:
+	case PointWinReasonAce, PointWinReasonWinner, PointWinReasonForcedError, PointWinReasonUnforcedError, PointWinReasonDoubleFault:
 		return true
 	}
 	return false
@@ -601,19 +626,12 @@ func (e PointWinReason) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-// Represents the style of a tennis serve.
-//
-// The style can be flat, kick, slice, or other.
 type ServeStyle string
 
 const (
-	// A flat serve.
-	ServeStyleFlat ServeStyle = "FLAT"
-	// A kick serve.
-	ServeStyleKick ServeStyle = "KICK"
-	// A slice serve.
+	ServeStyleFlat  ServeStyle = "FLAT"
+	ServeStyleKick  ServeStyle = "KICK"
 	ServeStyleSlice ServeStyle = "SLICE"
-	// Any other type of serve.
 	ServeStyleOther ServeStyle = "OTHER"
 )
 
@@ -653,16 +671,12 @@ func (e ServeStyle) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-// Represents the base type of a shot in tennis.
 type ShotType string
 
 const (
-	// A serve shot.
-	ShotTypeServe ShotType = "SERVE"
-	// A ground stroke shot.
+	ShotTypeServe        ShotType = "SERVE"
 	ShotTypeGroundStroke ShotType = "GROUND_STROKE"
-	// A volley shot.
-	ShotTypeVolley ShotType = "VOLLEY"
+	ShotTypeVolley       ShotType = "VOLLEY"
 )
 
 var AllShotType = []ShotType{

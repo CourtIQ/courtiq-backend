@@ -1,19 +1,6 @@
-"""
-Represents the base type of a shot in tennis.
-"""
+
 enum ShotType {
-  """
-  A serve shot.
-  """
   SERVE
-
-  """
-  A ground stroke shot.
-  """
   GROUND_STROKE
-
-  """
-  A volley shot.
-  """
   VOLLEY
 }

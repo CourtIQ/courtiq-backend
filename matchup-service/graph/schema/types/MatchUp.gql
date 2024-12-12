@@ -1,69 +1,27 @@
 type MatchUp {
-    id: ID!
+    id: ObjectID!
     matchUpFormat: MatchUpFormat!
     matchUpStatus: MatchUpStatus!
     matchUpType: MatchUpType!
-    participants: [Participant!]!
+
+    participantIds: [ObjectID!]!
+    participants: ParticipantsMap!
+
     currentSetIndex: Int
-    currentSetGameIndex: Int
+    currentGameIndexWithinSet: Int
+    currentPointIndexWithinGame: Int
     currentScore: Score
-    currentServer: PlayingSide!
-    points: [Point!]!
-    pointsSequence: [[[Point!]!]!]!
+    currentServer: ObjectID!
+
+    pointsSequence: [ObjectID!]!
+
     startTime: DateTime!
     endTime: DateTime
-    lastUpdated: DateTime!
+    createdAt: DateTime!
+    updatedAt: DateTime!
 }
 
-type Score {
-    sideA: SideScore!
-    sideB: SideScore!
-    lastUpdated: DateTime!
-}
-
-type SideScore {
-    currentPointScore: GameScore!
-    currentGameScore: Int!
-    currentSetScore: Int!
-    currentTiebreakScore: Int
-}
-
-type Participant {
-    id: ID!
-    # user: User!
-    playingSide: PlayingSide!
-}
-
-enum GameScore {
-    LOVE
-    FIFTEEN
-    THIRTY
-    FORTY
-    ADVANTAGE
-}
-
-type Point {
-    id: ID!
-    matchUpId: ID!
-    setIndex: Int!
-    gameIndex: Int!
-    pointIndex: Int!
-    servingSide: PlayingSide!
-    winningSide: PlayingSide!
-    timestamp: DateTime!
-    metadata: PointMetadata!
-}
-
-type PointMetadata {
-    isBreakPoint: Boolean!
-    isGamePoint: Boolean!
-    isSetPoint: Boolean!
-    isMatchPoint: Boolean!
-    isTiebreak: Boolean!
-    tiebreakPoint: Int
-    isDecidingPoint: Boolean!
-    duration: Int
-    rallyLength: Int!
-    # pointWonBy: PointWonReason!
-    # shots: [Shot!]
+type ParticipantsMap {
+    A: ObjectID!
+    B: ObjectID!
 }

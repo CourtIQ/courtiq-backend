@@ -19,7 +19,7 @@ func (r *queryResolver) MyTennisRackets(ctx context.Context, limit *int, offset 
 
 // MyTennisRacket is the resolver for the myTennisRacket field.
 func (r *queryResolver) MyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
-	return r.EquipmentServiceIntf.MyTennisRacket(ctx, id)
+	return r.EquipmentServiceIntf.FindTennisRacketByID(ctx, id)
 }
 
 // MyTennisStrings is the resolver for the myTennisStrings field.
@@ -29,7 +29,7 @@ func (r *queryResolver) MyTennisStrings(ctx context.Context, limit *int, offset 
 
 // MyTennisString is the resolver for the myTennisString field.
 func (r *queryResolver) MyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error) {
-	return r.EquipmentServiceIntf.MyTennisString(ctx, id)
+	return r.EquipmentServiceIntf.FindTennisStringByID(ctx, id)
 }
 
 // MyEquipment is the resolver for the myEquipment field.

@@ -1,7 +1,7 @@
 # Friendship is a relationship where two users are friends.
 type Friendship implements Relationship @key(fields: "id") {
   id: ObjectID!
-  participants: [ObjectID!]!
+  participants: [ID!]!
   type: RelationshipType!
   status: RelationshipStatus!
   createdAt: DateTime!

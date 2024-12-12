@@ -1,21 +1,25 @@
-# graph/schema/types/MatchUpFormat.gql
+##################
+# MatchUpFormat  
+##################
+
 type MatchUpFormat {
-    id: ID!
-    numberOfSets: NumberOfSets!
-    setFormat: SetFormat!
-    finalSetFormat: SetFormat
-    initialServer: PlayingSide!
+  id: ObjectID!
+  tracker: ObjectID!
+  numberOfSets: NumberOfSets!
+  setFormat: SetFormat!
+  finalSetFormat: SetFormat
+  initialServer: PlayingSide!
 }
 
 type SetFormat {
-    numberOfGames: NumberOfGames!
-    deuceType: DeuceType!
-    mustWinByTwo: Boolean!
-    tiebreakFormat: TiebreakFormat
-    tiebreakAt: Int
+  numberOfGames: NumberOfGames!
+  deuceType: DeuceType!
+  mustWinByTwo: Boolean!
+  tiebreakFormat: TiebreakFormat
+  tiebreakAt: Int
 }
 
 type TiebreakFormat {
-    points: TiebreakPoints!
-    mustWinByTwo: Boolean!
+  points: TiebreakPoints!
+  mustWinByTwo: Boolean!
 }
