@@ -8,6 +8,7 @@ import (
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/utils"
+	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -16,9 +17,6 @@ type EquipmentService struct {
 	racketRepo repository.TennisRacketRepository
 	stringRepo repository.TennisStringRepository
 }
-
-// Example AuthConfig. Adjust EnableAuth as needed.
-var authCfg = utils.AuthConfig{EnableAuth: false}
 
 // NewEquipmentService constructs an EquipmentService with the given repositories.
 func NewEquipmentService(
@@ -46,13 +44,11 @@ func applyPaginationDefaults(limit, offset *int) (int, int) {
 // ---- Mutations - Tennis Racket ----
 
 func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.CreateTennisRacketInput) (*model.TennisRacket, error) {
-	uid, err := utils.GetUserIDFromContext(ctx, authCfg)
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
-	// Convert uid to ObjectID
-	ownerID, err := primitive.ObjectIDFromHex(uid)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID format: %w", err)
 	}
@@ -80,11 +76,12 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 }
 
 func (s *EquipmentService) UpdateMyTennisRacket(ctx context.Context, id primitive.ObjectID, input model.UpdateTennisRacketInput) (*model.TennisRacket, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
+	if err != nil {
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
-	racket, err := s.racketRepo.FindByID(ctx, id)
+	racket, err := s.racketRepo.FindByID(ctx, ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -117,11 +114,12 @@ func (s *EquipmentService) UpdateMyTennisRacket(ctx context.Context, id primitiv
 }
 
 func (s *EquipmentService) DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
+	if err != nil {
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
-	racket, err := s.racketRepo.FindByID(ctx, id)
+	racket, err := s.racketRepo.FindByID(ctx, ownerID)
 	if err != nil {
 		return nil, err
 	}
@@ -139,15 +137,9 @@ func (s *EquipmentService) DeleteMyTennisRacket(ctx context.Context, id primitiv
 // ---- Mutations - Tennis String ----
 
 func (s *EquipmentService) CreateTennisString(ctx context.Context, input model.CreateTennisStringInput) (*model.TennisString, error) {
-	uid, err := utils.GetUserIDFromContext(ctx, authCfg)
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
-
-	// Convert uid to ObjectID
-	ownerID, err := primitive.ObjectIDFromHex(uid)
-	if err != nil {
-		return nil, fmt.Errorf("invalid user ID format: %w", err)
 	}
 
 	str := &model.TennisString{
@@ -170,9 +162,6 @@ func (s *EquipmentService) CreateTennisString(ctx context.Context, input model.C
 }
 
 func (s *EquipmentService) UpdateMyTennisString(ctx context.Context, id primitive.ObjectID, input model.UpdateTennisStringInput) (*model.TennisString, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	strObj, err := s.stringRepo.FindByID(ctx, id)
 	if err != nil {
@@ -214,9 +203,6 @@ func (s *EquipmentService) UpdateMyTennisString(ctx context.Context, id primitiv
 }
 
 func (s *EquipmentService) DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	strObj, err := s.stringRepo.FindByID(ctx, id)
 	if err != nil {
@@ -235,9 +221,6 @@ func (s *EquipmentService) DeleteMyTennisString(ctx context.Context, id primitiv
 // ---- Mutations - Racket-String Operations ----
 
 func (s *EquipmentService) AssignStringToMyRacket(ctx context.Context, racketID primitive.ObjectID, stringID primitive.ObjectID) (*model.TennisRacket, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	racket, err := s.racketRepo.FindByID(ctx, racketID)
 	if err != nil {
@@ -264,9 +247,6 @@ func (s *EquipmentService) AssignStringToMyRacket(ctx context.Context, racketID 
 }
 
 func (s *EquipmentService) RemoveStringFromMyRacket(ctx context.Context, racketID primitive.ObjectID) (*model.TennisRacket, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	racket, err := s.racketRepo.FindByID(ctx, racketID)
 	if err != nil {
@@ -287,9 +267,6 @@ func (s *EquipmentService) RemoveStringFromMyRacket(ctx context.Context, racketI
 // ---- Mutations - String Status Operations ----
 
 func (s *EquipmentService) MarkMyStringAsBurst(ctx context.Context, stringID primitive.ObjectID, burstDate time.Time) (*model.TennisString, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	strObj, err := s.stringRepo.FindByID(ctx, stringID)
 	if err != nil {
@@ -308,9 +285,6 @@ func (s *EquipmentService) MarkMyStringAsBurst(ctx context.Context, stringID pri
 }
 
 func (s *EquipmentService) UpdateMyStringTension(ctx context.Context, stringID primitive.ObjectID, tension model.StringTensionInput) (*model.TennisString, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	strObj, err := s.stringRepo.FindByID(ctx, stringID)
 	if err != nil {
@@ -334,13 +308,13 @@ func (s *EquipmentService) UpdateMyStringTension(ctx context.Context, stringID p
 // ---- Queries ----
 
 func (s *EquipmentService) MyTennisRackets(ctx context.Context, limit *int, offset *int) ([]*model.TennisRacket, error) {
-	uid, err := utils.GetUserIDFromContext(ctx, authCfg)
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return []*model.TennisRacket{}, fmt.Errorf("failed to get user ID: %w", err)
+		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
 	l, o := applyPaginationDefaults(limit, offset)
-	allRackets, err := s.racketRepo.Find(ctx, bson.M{"ownerId": uid})
+	allRackets, err := s.racketRepo.Find(ctx, bson.M{"ownerId": ownerID})
 	if err != nil {
 		return nil, err
 	}
@@ -357,9 +331,6 @@ func (s *EquipmentService) MyTennisRackets(ctx context.Context, limit *int, offs
 }
 
 func (s *EquipmentService) MyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	racket, err := s.racketRepo.FindByID(ctx, id)
 	if err != nil {
@@ -372,13 +343,13 @@ func (s *EquipmentService) MyTennisRacket(ctx context.Context, id primitive.Obje
 }
 
 func (s *EquipmentService) MyTennisStrings(ctx context.Context, limit *int, offset *int) ([]*model.TennisString, error) {
-	uid, err := utils.GetUserIDFromContext(ctx, authCfg)
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return []*model.TennisString{}, fmt.Errorf("failed to get user ID: %w", err)
+		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
 	l, o := applyPaginationDefaults(limit, offset)
-	allStrings, err := s.stringRepo.Find(ctx, bson.M{"ownerId": uid})
+	allStrings, err := s.stringRepo.Find(ctx, bson.M{"ownerId": ownerID})
 	if err != nil {
 		return nil, err
 	}
@@ -395,9 +366,6 @@ func (s *EquipmentService) MyTennisStrings(ctx context.Context, limit *int, offs
 }
 
 func (s *EquipmentService) MyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error) {
-	if _, err := utils.GetUserIDFromContext(ctx, authCfg); err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
 
 	strObj, err := s.stringRepo.FindByID(ctx, id)
 	if err != nil {
@@ -410,21 +378,21 @@ func (s *EquipmentService) MyTennisString(ctx context.Context, id primitive.Obje
 }
 
 func (s *EquipmentService) MyEquipment(ctx context.Context, limit *int, offset *int) ([]model.Equipment, error) {
-	uid, err := utils.GetUserIDFromContext(ctx, authCfg)
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return []model.Equipment{}, fmt.Errorf("failed to get user ID: %w", err)
+		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
 	l, o := applyPaginationDefaults(limit, offset)
 
 	// Fetch rackets
-	rackets, err := s.racketRepo.Find(ctx, bson.M{"ownerId": uid})
+	rackets, err := s.racketRepo.Find(ctx, bson.M{"ownerId": ownerID})
 	if err != nil {
 		return nil, err
 	}
 
 	// Fetch strings
-	strings, err := s.stringRepo.Find(ctx, bson.M{"ownerId": uid})
+	strings, err := s.stringRepo.Find(ctx, bson.M{"ownerId": ownerID})
 	if err != nil {
 		return nil, err
 	}

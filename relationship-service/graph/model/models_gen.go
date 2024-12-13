@@ -23,7 +23,7 @@ type Relationship interface {
 }
 
 type Coachship struct {
-	ID           primitive.ObjectID   `json:"id"`
+	ID           primitive.ObjectID   `json:"id" bson:"_id"`
 	Participants []primitive.ObjectID `json:"participants"`
 	Type         RelationshipType     `json:"type"`
 	Status       RelationshipStatus   `json:"status"`
@@ -53,7 +53,7 @@ func (this Coachship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
 func (Coachship) IsEntity() {}
 
 type Friendship struct {
-	ID           primitive.ObjectID   `json:"id"`
+	ID           primitive.ObjectID   `json:"id" bson:"_id"`
 	Participants []primitive.ObjectID `json:"participants"`
 	Type         RelationshipType     `json:"type"`
 	Status       RelationshipStatus   `json:"status"`

@@ -57,7 +57,7 @@ type StringTensionInput struct {
 }
 
 type TennisRacket struct {
-	ID            primitive.ObjectID `json:"id"`
+	ID            primitive.ObjectID `json:"id" bson:"_id"`
 	OwnerID       primitive.ObjectID `json:"ownerId"`
 	Owner         *User              `json:"owner"`
 	Name          string             `json:"name"`
@@ -83,7 +83,7 @@ func (this TennisRacket) GetUpdatedAt() time.Time        { return this.UpdatedAt
 func (TennisRacket) IsEntity() {}
 
 type TennisString struct {
-	ID            primitive.ObjectID `json:"id"`
+	ID            primitive.ObjectID `json:"id" bson:"_id"`
 	OwnerID       primitive.ObjectID `json:"ownerId"`
 	Owner         *User              `json:"owner"`
 	Name          string             `json:"name"`
@@ -129,7 +129,7 @@ type UpdateTennisStringInput struct {
 }
 
 type User struct {
-	ID          primitive.ObjectID `json:"id"`
+	ID          primitive.ObjectID `json:"id" bson:"_id"`
 	Username    string             `json:"username"`
 	DisplayName string             `json:"displayName"`
 }

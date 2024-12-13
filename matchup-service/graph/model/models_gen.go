@@ -12,7 +12,7 @@ import (
 )
 
 type MatchUp struct {
-	ID                          primitive.ObjectID   `json:"id"`
+	ID                          primitive.ObjectID   `json:"id" bson:"_id"`
 	MatchUpFormat               *MatchUpFormat       `json:"matchUpFormat"`
 	MatchUpStatus               MatchUpStatus        `json:"matchUpStatus"`
 	MatchUpType                 MatchUpType          `json:"matchUpType"`
@@ -31,7 +31,7 @@ type MatchUp struct {
 }
 
 type MatchUpFormat struct {
-	ID             primitive.ObjectID `json:"id"`
+	ID             primitive.ObjectID `json:"id" bson:"_id"`
 	Tracker        primitive.ObjectID `json:"tracker"`
 	NumberOfSets   NumberOfSets       `json:"numberOfSets"`
 	SetFormat      *SetFormat         `json:"setFormat"`
@@ -55,7 +55,7 @@ type ParticipantsMap struct {
 }
 
 type Point struct {
-	ID                   primitive.ObjectID `json:"id"`
+	ID                   primitive.ObjectID `json:"id" bson:"_id"`
 	SetIndex             int                `json:"setIndex"`
 	GameIndexWithinSet   int                `json:"gameIndexWithinSet"`
 	PointIndexWithinGame int                `json:"pointIndexWithinGame"`

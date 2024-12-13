@@ -86,10 +86,10 @@ type ComplexityRoot struct {
 		FirstName      func(childComplexity int) int
 		ID             func(childComplexity int) int
 		LastName       func(childComplexity int) int
+		LastUpdated    func(childComplexity int) int
 		Location       func(childComplexity int) int
 		ProfilePicture func(childComplexity int) int
 		Rating         func(childComplexity int) int
-		UpdatedAt      func(childComplexity int) int
 		Username       func(childComplexity int) int
 	}
 
@@ -301,6 +301,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.LastName(childComplexity), true
 
+	case "User.lastUpdated":
+		if e.complexity.User.LastUpdated == nil {
+			break
+		}
+
+		return e.complexity.User.LastUpdated(childComplexity), true
+
 	case "User.location":
 		if e.complexity.User.Location == nil {
 			break
@@ -321,13 +328,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Rating(childComplexity), true
-
-	case "User.updatedAt":
-		if e.complexity.User.UpdatedAt == nil {
-			break
-		}
-
-		return e.complexity.User.UpdatedAt(childComplexity), true
 
 	case "User.username":
 		if e.complexity.User.Username == nil {
@@ -790,16 +790,16 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
 				return ec.fieldContext_User_dateOfBirth(ctx, field)
-			case "location":
-				return ec.fieldContext_User_location(ctx, field)
 			case "bio":
 				return ec.fieldContext_User_bio(ctx, field)
+			case "location":
+				return ec.fieldContext_User_location(ctx, field)
 			case "rating":
 				return ec.fieldContext_User_rating(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_User_lastUpdated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1077,16 +1077,16 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
 				return ec.fieldContext_User_dateOfBirth(ctx, field)
-			case "location":
-				return ec.fieldContext_User_location(ctx, field)
 			case "bio":
 				return ec.fieldContext_User_bio(ctx, field)
+			case "location":
+				return ec.fieldContext_User_location(ctx, field)
 			case "rating":
 				return ec.fieldContext_User_rating(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_User_lastUpdated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1159,16 +1159,16 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
 				return ec.fieldContext_User_dateOfBirth(ctx, field)
-			case "location":
-				return ec.fieldContext_User_location(ctx, field)
 			case "bio":
 				return ec.fieldContext_User_bio(ctx, field)
+			case "location":
+				return ec.fieldContext_User_location(ctx, field)
 			case "rating":
 				return ec.fieldContext_User_rating(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_User_lastUpdated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1230,16 +1230,16 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
 				return ec.fieldContext_User_dateOfBirth(ctx, field)
-			case "location":
-				return ec.fieldContext_User_location(ctx, field)
 			case "bio":
 				return ec.fieldContext_User_bio(ctx, field)
+			case "location":
+				return ec.fieldContext_User_location(ctx, field)
 			case "rating":
 				return ec.fieldContext_User_rating(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_User_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_User_updatedAt(ctx, field)
+			case "lastUpdated":
+				return ec.fieldContext_User_lastUpdated(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1923,6 +1923,47 @@ func (ec *executionContext) fieldContext_User_dateOfBirth(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _User_bio(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_bio(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bio, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_bio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_location(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_location(ctx, field)
 	if err != nil {
@@ -1971,47 +2012,6 @@ func (ec *executionContext) fieldContext_User_location(_ context.Context, field 
 				return ec.fieldContext_Location_longitude(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _User_bio(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_bio(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Bio, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_User_bio(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "User",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2099,8 +2099,8 @@ func (ec *executionContext) fieldContext_User_createdAt(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_updatedAt(ctx, field)
+func (ec *executionContext) _User_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_lastUpdated(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2113,7 +2113,7 @@ func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
+		return obj.LastUpdated, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2127,7 +2127,7 @@ func (ec *executionContext) _User_updatedAt(ctx context.Context, field graphql.C
 	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_lastUpdated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -4434,16 +4434,16 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_profilePicture(ctx, field, obj)
 		case "dateOfBirth":
 			out.Values[i] = ec._User_dateOfBirth(ctx, field, obj)
-		case "location":
-			out.Values[i] = ec._User_location(ctx, field, obj)
 		case "bio":
 			out.Values[i] = ec._User_bio(ctx, field, obj)
+		case "location":
+			out.Values[i] = ec._User_location(ctx, field, obj)
 		case "rating":
 			out.Values[i] = ec._User_rating(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
-		case "updatedAt":
-			out.Values[i] = ec._User_updatedAt(ctx, field, obj)
+		case "lastUpdated":
+			out.Values[i] = ec._User_lastUpdated(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

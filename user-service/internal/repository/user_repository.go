@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/db"
@@ -28,11 +29,13 @@ func (r *userRepository) GetByID(ctx context.Context, id primitive.ObjectID) (*m
 
 	var user model.User
 	err := r.coll.FindOne(ctx, filter).Decode(&user)
-	if err == mongo.ErrNoDocuments {
-		// No user found with that ID
-		return nil, nil
-	} else if err != nil {
-		return nil, fmt.Errorf("error fetching user by ID: %w", err)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// No user found with that ID
+			return nil, nil
+		}
+		// An unexpected error occurred
+		return nil, err
 	}
 
 	return &user, nil
@@ -56,6 +59,9 @@ func (r *userRepository) UpdateUser(ctx context.Context, id primitive.ObjectID, 
 	if input.Bio != nil {
 		updateFields["bio"] = *input.Bio
 	}
+	lastUpdated := primitive.NewDateTimeFromTime(time.Now())
+
+	updateFields["lastUpdated"] = lastUpdated
 
 	// Handle location if provided
 	if input.Location != nil {

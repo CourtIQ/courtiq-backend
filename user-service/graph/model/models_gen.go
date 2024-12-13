@@ -52,11 +52,11 @@ type User struct {
 	Username       *string            `json:"username,omitempty"`
 	ProfilePicture *string            `json:"profilePicture,omitempty"`
 	DateOfBirth    *time.Time         `json:"dateOfBirth,omitempty"`
-	Location       *Location          `json:"location,omitempty"`
 	Bio            *string            `json:"bio,omitempty"`
+	Location       *Location          `json:"location,omitempty"`
 	Rating         *int               `json:"rating,omitempty"`
 	CreatedAt      *time.Time         `json:"createdAt,omitempty"`
-	UpdatedAt      *time.Time         `json:"updatedAt,omitempty"`
+	LastUpdated    *time.Time         `json:"lastUpdated,omitempty"`
 }
 
 func (User) IsEntity() {}

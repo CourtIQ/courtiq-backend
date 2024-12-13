@@ -15,11 +15,11 @@ type User @key(fields: "id") {
   username: String
   profilePicture: String
   dateOfBirth: Time
-  location: Location
   bio: String
+  location: Location
   rating: Int
   createdAt: Time
-  updatedAt: Time
+  lastUpdated: Time
 }
 
 """
