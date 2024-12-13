@@ -1,11 +1,17 @@
-const AuthService = require('../services/authService');
+// const AuthService = require('../services/authService');
+// const TokenVerifier = require('../utils/tokenVerifier');
 
-const tokenVerifier = require('../services/tokenVerifier'); // or `new TokenVerifier()`
-const authService = new AuthService(tokenVerifier);
+// const tokenVerifier = new TokenVerifier();
 
-async function authMiddleware({ req }) {
-  const user = await authService.authenticate(req.headers);
-  return { user };
-}
+// const authService = new AuthService(tokenVerifier);
 
-module.exports = authMiddleware;
+// async function authMiddleware({ req }) {
+//   try {
+//     const user = await authService.authenticate(req.headers);
+//     return { user }; // Attach user to the context
+//   } catch (err) {
+//     console.error('Authentication failed:', err.message);
+//     return { user: null }; // Proceed as unauthenticated
+//   }
+// }
+// module.exports = authMiddleware;

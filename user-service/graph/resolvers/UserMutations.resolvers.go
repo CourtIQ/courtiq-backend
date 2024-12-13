@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
@@ -14,7 +13,7 @@ import (
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: UpdateUser - updateUser"))
+	return r.UserServiceIntf.UpdateUser(ctx, &input)
 }
 
 // Mutation returns graph.MutationResolver implementation.

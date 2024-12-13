@@ -43,7 +43,7 @@ type UpdateUserInput struct {
 // Represents an individual user within the application.
 // Implements a federated key for cross-service references.
 type User struct {
-	ID             primitive.ObjectID `json:"id"`
+	ID             primitive.ObjectID `json:"id" bson:"_id"`
 	FirebaseID     string             `json:"firebaseId"`
 	Email          string             `json:"email"`
 	FirstName      *string            `json:"firstName,omitempty"`

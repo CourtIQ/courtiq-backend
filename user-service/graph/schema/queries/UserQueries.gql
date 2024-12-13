@@ -1,5 +1,5 @@
 extend type Query {
   me: User
-  getUser(id: ID!): User
-  isUsernamesAvailable(username: String!): Boolean
+  getUser(id: ObjectID!): User
+  isUsernamesAvailable(username: String!): Boolean!
 }

@@ -13,17 +13,14 @@ const (
 	UsersCollection = "users"
 )
 
-// MongoDB represents the MongoDB client wrapper
 type MongoDB struct {
 	client *mongo.Client
 	db     *mongo.Database
 }
 
-// NewMongoDB creates a new MongoDB instance
 func NewMongoDB(ctx context.Context, uri string) (*MongoDB, error) {
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(ctx, clientOptions)
-
 	if err != nil {
 		return nil, err
 	}

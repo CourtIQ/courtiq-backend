@@ -6,25 +6,25 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: Me - me"))
+	return r.UserServiceIntf.Me(ctx)
 }
 
 // GetUser is the resolver for the getUser field.
-func (r *queryResolver) GetUser(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: GetUser - getUser"))
+func (r *queryResolver) GetUser(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
+	return r.UserServiceIntf.GetUser(ctx, id)
 }
 
 // IsUsernamesAvailable is the resolver for the isUsernamesAvailable field.
-func (r *queryResolver) IsUsernamesAvailable(ctx context.Context, username string) (*bool, error) {
-	panic(fmt.Errorf("not implemented: IsUsernamesAvailable - isUsernamesAvailable"))
+func (r *queryResolver) IsUsernamesAvailable(ctx context.Context, username string) (bool, error) {
+	return r.UserServiceIntf.IsUsernamesAvailable(ctx, username)
 }
 
 // Query returns graph.QueryResolver implementation.

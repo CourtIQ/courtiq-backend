@@ -58,7 +58,6 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 	}
 
 	racket := &model.TennisRacket{
-		ID:        primitive.NewObjectID(),
 		OwnerID:   ownerID,
 		Name:      input.Name,
 		Brand:     input.Brand,
@@ -73,6 +72,9 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 	if err := s.racketRepo.Insert(ctx, racket); err != nil {
 		return nil, err
 	}
+
+	// take the racket data that is returned from the repository and return it
+	// with the _id field set to id if you know what i mean
 
 	return racket, nil
 }

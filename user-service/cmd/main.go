@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,10 @@ import (
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/configs"
+	"github.com/CourtIQ/courtiq-backend/user-service/internal/db"
+	"github.com/CourtIQ/courtiq-backend/user-service/internal/middleware"
+	"github.com/CourtIQ/courtiq-backend/user-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/user-service/internal/services"
 )
 
 func main() {
@@ -19,38 +24,35 @@ func main() {
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// // Initialize MongoDB client
-	// mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to MongoDB: %v", err)
-	// }
+	// Initialize MongoDB client
+	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
 
-	// // Get the relationships collection
-	// coll := mongodb.GetCollection(db.UsersCollection)
+	// Create repositories
+	userRepo := repository.NewUserRepository(mongodb)
 
-	// // Create the repository using the collection
-	// userRepo := repository.NewUserRepo(coll)
-
-	// // Create the service with the repository
-	// userService := services.NewUserService(userRepo)
+	// Create the service with the repositories
+	userService := services.NewUserService(userRepo)
 
 	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
-			// UserService: userService,
+			UserServiceIntf: userService,
 		},
 	}))
 
 	// Create router mux
 	mux := http.NewServeMux()
 
-	// Setup routes
+	mux.Handle("/graphql", middleware.WithUserClaims(srv))
+
+	// Setup playground if enabled
 	if config.PlaygroundEnabled {
 		mux.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("GraphQL Playground enabled at /")
 	}
-
-	mux.Handle("/graphql", srv)
 
 	// Start server
 	address := fmt.Sprintf(":%d", config.Port)

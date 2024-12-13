@@ -51,10 +51,6 @@ func main() {
 	// Create router mux
 	mux := http.NewServeMux()
 
-	// If you'd like to add user middleware, for example:
-	// mux.Handle("/graphql", utils.NewUserMiddleware(utils.AuthConfig{EnableAuth: true})(srv))
-	// Otherwise, just use srv directly.
-	// For now, let's just mount srv directly:
 	mux.Handle("/graphql", srv)
 
 	// Setup playground if enabled

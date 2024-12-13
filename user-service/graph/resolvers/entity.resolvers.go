@@ -14,13 +14,7 @@ import (
 
 // FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
-	name := "Dummy User"
-	user := &model.User{
-		ID:          id,                      // Use the provided ObjectID
-		DisplayName: &name,                   // Hardcoded display name
-		Email:       "dummyuser@example.com", // Hardcoded email
-	}
-	return user, nil
+	return r.UserServiceIntf.GetUser(ctx, id)
 }
 
 // Entity returns graph.EntityResolver implementation.

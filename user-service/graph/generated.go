@@ -69,7 +69,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetUser              func(childComplexity int, id string) int
+		GetUser              func(childComplexity int, id primitive.ObjectID) int
 		IsUsernamesAvailable func(childComplexity int, username string) int
 		Me                   func(childComplexity int) int
 		__resolve__service   func(childComplexity int) int
@@ -106,8 +106,8 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Me(ctx context.Context) (*model.User, error)
-	GetUser(ctx context.Context, id string) (*model.User, error)
-	IsUsernamesAvailable(ctx context.Context, username string) (*bool, error)
+	GetUser(ctx context.Context, id primitive.ObjectID) (*model.User, error)
+	IsUsernamesAvailable(ctx context.Context, username string) (bool, error)
 }
 
 type executableSchema struct {
@@ -198,7 +198,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetUser(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.GetUser(childComplexity, args["id"].(primitive.ObjectID)), true
 
 	case "Query.isUsernamesAvailable":
 		if e.complexity.Query.IsUsernamesAvailable == nil {
@@ -646,13 +646,13 @@ func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArg
 func (ec *executionContext) field_Query_getUser_argsID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
-) (string, error) {
+) (primitive.ObjectID, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
-		return ec.unmarshalNID2string(ctx, tmp)
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
 	}
 
-	var zeroVal string
+	var zeroVal primitive.ObjectID
 	return zeroVal, nil
 }
 
@@ -1190,7 +1190,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUser(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().GetUser(rctx, fc.Args["id"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1279,11 +1279,14 @@ func (ec *executionContext) _Query_isUsernamesAvailable(ctx context.Context, fie
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_isUsernamesAvailable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4299,13 +4302,16 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "isUsernamesAvailable":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_isUsernamesAvailable(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -4845,21 +4851,6 @@ func (ec *executionContext) unmarshalNFieldSet2string(ctx context.Context, v int
 
 func (ec *executionContext) marshalNFieldSet2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalString(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalID(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
