@@ -21,7 +21,7 @@ type UserServiceIntf interface {
 	// Returns the updated User object or an error if the update fails.
 	UpdateUser(ctx context.Context, input *model.UpdateUserInput) (*model.User, error)
 
-	// IsUsernamesAvailable checks if the given username is available.
+	// IsUsernameAvailable checks if the given username is available.
 	// Returns true if the username is available, false otherwise.
-	IsUsernamesAvailable(ctx context.Context, username string) (bool, error)
+	IsUsernameAvailable(ctx context.Context, username string) (bool, error)
 }

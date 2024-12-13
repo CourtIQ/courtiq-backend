@@ -76,8 +76,8 @@ func (s *userService) UpdateUser(ctx context.Context, input *model.UpdateUserInp
 	return updatedUser, nil
 }
 
-// IsUsernamesAvailable checks if the given username is available.
-func (s *userService) IsUsernamesAvailable(ctx context.Context, username string) (bool, error) {
+// IsUsernameAvailable checks if the given username is available.
+func (s *userService) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
 	// Check if the username is available
 	available, err := s.userRepo.Count(ctx, username)
 	if err != nil {

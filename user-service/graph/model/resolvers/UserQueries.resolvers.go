@@ -22,7 +22,7 @@ func (r *queryResolver) GetUser(ctx context.Context, id primitive.ObjectID) (*mo
 	return r.UserServiceIntf.GetUser(ctx, id)
 }
 
-// IsUsernameAvailable is the resolver for the isUsernameAvailable field.
+// IsUsernameAvailable is the resolver for the IsUsernameAvailable field.
 func (r *queryResolver) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
 	return r.UserServiceIntf.IsUsernameAvailable(ctx, username)
 }
