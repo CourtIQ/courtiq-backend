@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
@@ -20,6 +21,11 @@ func (r *queryResolver) MyTennisRackets(ctx context.Context, limit *int, offset 
 // MyTennisRacket is the resolver for the myTennisRacket field.
 func (r *queryResolver) MyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
 	return r.EquipmentServiceIntf.FindTennisRacketByID(ctx, id)
+}
+
+// MyStringHistory is the resolver for the myStringHistory field.
+func (r *queryResolver) MyStringHistory(ctx context.Context, racket primitive.ObjectID) ([]*model.TennisString, error) {
+	panic(fmt.Errorf("not implemented: MyStringHistory - myStringHistory"))
 }
 
 // MyTennisStrings is the resolver for the myTennisStrings field.

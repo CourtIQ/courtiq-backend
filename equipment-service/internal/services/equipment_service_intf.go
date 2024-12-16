@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"time"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,20 +12,15 @@ type EquipmentServiceIntf interface {
 	// Mutations - Tennis Racket
 	CreateTennisRacket(ctx context.Context, input model.CreateTennisRacketInput) (*model.TennisRacket, error)
 	UpdateMyTennisRacket(ctx context.Context, id primitive.ObjectID, input model.UpdateTennisRacketInput) (*model.TennisRacket, error)
-	DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error)
+	DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (bool, error)
 
 	// Mutations - Tennis String
 	CreateTennisString(ctx context.Context, input model.CreateTennisStringInput) (*model.TennisString, error)
 	UpdateMyTennisString(ctx context.Context, id primitive.ObjectID, input model.UpdateTennisStringInput) (*model.TennisString, error)
-	DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error)
+	DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (bool, error)
 
 	// Mutations - Racket-String Operations
 	AssignStringToMyRacket(ctx context.Context, racketID primitive.ObjectID, stringID primitive.ObjectID) (*model.TennisRacket, error)
-	RemoveStringFromMyRacket(ctx context.Context, racketID primitive.ObjectID) (*model.TennisRacket, error)
-
-	// Mutations - String Status Operations
-	MarkMyStringAsBurst(ctx context.Context, stringID primitive.ObjectID, burstDate time.Time) (*model.TennisString, error)
-	UpdateMyStringTension(ctx context.Context, stringID primitive.ObjectID, tension model.StringTensionInput) (*model.TennisString, error)
 
 	// Queries (now with pagination parameters for list queries)
 	MyTennisRackets(ctx context.Context, limit *int, offset *int) ([]*model.TennisRacket, error)

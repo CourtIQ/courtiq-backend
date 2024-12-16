@@ -9,9 +9,7 @@ type TennisRacket implements Equipment @key(fields: "id") {
 
     # Racket-specific fields
     currentStringId: ObjectID             # ID of the current string setup for the racket, optional
-    stringingHistory: [ObjectID!]         # List of string setups for the racket, optional
     brand: String                         # Brand of the racket (e.g., Wilson, Babolat)
     model: String                         # Model of the racket (e.g., Blade 98)
     weight: Float                         # Weight of the racket in grams (e.g., 305.0)
-    currentString: TennisString           # Current string setup for the racket, optional
 }

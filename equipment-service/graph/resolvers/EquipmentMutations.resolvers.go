@@ -6,7 +6,7 @@ package resolvers
 
 import (
 	"context"
-	"time"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
@@ -24,7 +24,7 @@ func (r *mutationResolver) UpdateMyTennisRacket(ctx context.Context, id primitiv
 }
 
 // DeleteMyTennisRacket is the resolver for the deleteMyTennisRacket field.
-func (r *mutationResolver) DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
+func (r *mutationResolver) DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	return r.EquipmentServiceIntf.DeleteMyTennisRacket(ctx, id)
 }
 
@@ -39,28 +39,13 @@ func (r *mutationResolver) UpdateMyTennisString(ctx context.Context, id primitiv
 }
 
 // DeleteMyTennisString is the resolver for the deleteMyTennisString field.
-func (r *mutationResolver) DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error) {
+func (r *mutationResolver) DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	return r.EquipmentServiceIntf.DeleteMyTennisString(ctx, id)
 }
 
-// AssignStringToMyRacket is the resolver for the assignStringToMyRacket field.
-func (r *mutationResolver) AssignStringToMyRacket(ctx context.Context, racketID primitive.ObjectID, stringID primitive.ObjectID) (*model.TennisRacket, error) {
-	return r.EquipmentServiceIntf.AssignStringToMyRacket(ctx, racketID, stringID)
-}
-
-// RemoveStringFromMyRacket is the resolver for the removeStringFromMyRacket field.
-func (r *mutationResolver) RemoveStringFromMyRacket(ctx context.Context, racketID primitive.ObjectID) (*model.TennisRacket, error) {
-	return r.EquipmentServiceIntf.RemoveStringFromMyRacket(ctx, racketID)
-}
-
-// MarkMyStringAsBurst is the resolver for the markMyStringAsBurst field.
-func (r *mutationResolver) MarkMyStringAsBurst(ctx context.Context, stringID primitive.ObjectID, burstDate time.Time) (*model.TennisString, error) {
-	return r.EquipmentServiceIntf.MarkMyStringAsBurst(ctx, stringID, burstDate)
-}
-
-// UpdateMyStringTension is the resolver for the updateMyStringTension field.
-func (r *mutationResolver) UpdateMyStringTension(ctx context.Context, stringID primitive.ObjectID, tension model.StringTensionInput) (*model.TennisString, error) {
-	return r.EquipmentServiceIntf.UpdateMyStringTension(ctx, stringID, tension)
+// AssignRacketToString is the resolver for the assignRacketToString field.
+func (r *mutationResolver) AssignRacketToString(ctx context.Context, racketID primitive.ObjectID, stringID primitive.ObjectID) (*model.TennisString, error) {
+	panic(fmt.Errorf("not implemented: AssignRacketToString - assignRacketToString"))
 }
 
 // Mutation returns graph.MutationResolver implementation.

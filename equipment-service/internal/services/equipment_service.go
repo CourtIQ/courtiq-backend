@@ -59,7 +59,6 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 		Name:      input.Name,
 		Brand:     input.Brand,
 		Model:     input.Model,
-		HeadSize:  input.HeadSize,
 		Weight:    input.Weight,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -100,9 +99,6 @@ func (s *EquipmentService) UpdateMyTennisRacket(ctx context.Context, id primitiv
 	if input.Model != nil {
 		racket.Model = input.Model
 	}
-	if input.HeadSize != nil {
-		racket.HeadSize = input.HeadSize
-	}
 	if input.Weight != nil {
 		racket.Weight = input.Weight
 	}
@@ -114,25 +110,11 @@ func (s *EquipmentService) UpdateMyTennisRacket(ctx context.Context, id primitiv
 	return racket, nil
 }
 
-func (s *EquipmentService) DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
-	ownerID, err := middleware.GetMongoIDFromContext(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user ID: %w", err)
-	}
-
-	racket, err := s.racketRepo.FindByID(ctx, ownerID)
-	if err != nil {
-		return nil, err
-	}
-	if racket == nil {
-		return nil, nil // Not found
-	}
-
+func (s *EquipmentService) DeleteMyTennisRacket(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	if err := s.racketRepo.Delete(ctx, id); err != nil {
-		return nil, err
+		return false, err
 	}
-
-	return racket, nil
+	return true, nil
 }
 
 // ---- Mutations - Tennis String ----
@@ -199,20 +181,11 @@ func (s *EquipmentService) UpdateMyTennisString(ctx context.Context, id primitiv
 	return strObj, nil
 }
 
-func (s *EquipmentService) DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error) {
-
-	strObj, err := s.stringRepo.FindByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if strObj == nil {
-		return nil, nil
-	}
-
+func (s *EquipmentService) DeleteMyTennisString(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	if err := s.stringRepo.Delete(ctx, id); err != nil {
-		return nil, err
+		return false, err
 	}
-	return strObj, nil
+	return true, nil
 }
 
 // ---- Mutations - Racket-String Operations ----
@@ -235,71 +208,11 @@ func (s *EquipmentService) AssignStringToMyRacket(ctx context.Context, racketID 
 		return nil, nil
 	}
 
-	racket.CurrentString = strObj
 	racket.UpdatedAt = time.Now()
 	if err := s.racketRepo.Update(ctx, racket); err != nil {
 		return nil, err
 	}
 	return racket, nil
-}
-
-func (s *EquipmentService) RemoveStringFromMyRacket(ctx context.Context, racketID primitive.ObjectID) (*model.TennisRacket, error) {
-
-	racket, err := s.racketRepo.FindByID(ctx, racketID)
-	if err != nil {
-		return nil, err
-	}
-	if racket == nil {
-		return nil, nil
-	}
-
-	racket.CurrentString = nil
-	racket.UpdatedAt = time.Now()
-	if err := s.racketRepo.Update(ctx, racket); err != nil {
-		return nil, err
-	}
-	return racket, nil
-}
-
-// ---- Mutations - String Status Operations ----
-
-func (s *EquipmentService) MarkMyStringAsBurst(ctx context.Context, stringID primitive.ObjectID, burstDate time.Time) (*model.TennisString, error) {
-
-	strObj, err := s.stringRepo.FindByID(ctx, stringID)
-	if err != nil {
-		return nil, err
-	}
-	if strObj == nil {
-		return nil, nil
-	}
-
-	strObj.BurstDate = &burstDate
-	strObj.UpdatedAt = time.Now()
-	if err := s.stringRepo.Update(ctx, strObj); err != nil {
-		return nil, err
-	}
-	return strObj, nil
-}
-
-func (s *EquipmentService) UpdateMyStringTension(ctx context.Context, stringID primitive.ObjectID, tension model.StringTensionInput) (*model.TennisString, error) {
-
-	strObj, err := s.stringRepo.FindByID(ctx, stringID)
-	if err != nil {
-		return nil, err
-	}
-	if strObj == nil {
-		return nil, nil
-	}
-
-	strObj.Tension = &model.StringTension{
-		Mains:   tension.Mains,
-		Crosses: tension.Crosses,
-	}
-	strObj.UpdatedAt = time.Now()
-	if err := s.stringRepo.Update(ctx, strObj); err != nil {
-		return nil, err
-	}
-	return strObj, nil
 }
 
 // ---- Queries ----
