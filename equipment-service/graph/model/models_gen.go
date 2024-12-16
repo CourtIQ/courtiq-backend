@@ -88,7 +88,6 @@ type TennisString struct {
 	UpdatedAt     time.Time          `json:"updatedAt"`
 	Brand         *string            `json:"brand,omitempty"`
 	Model         *string            `json:"model,omitempty"`
-	Gauge         *StringGauge       `json:"gauge,omitempty"`
 	Tension       *StringTension     `json:"tension,omitempty"`
 	StringingDate *time.Time         `json:"stringingDate,omitempty"`
 	BurstDate     *time.Time         `json:"burstDate,omitempty"`
