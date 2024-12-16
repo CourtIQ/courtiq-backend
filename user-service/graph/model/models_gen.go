@@ -3,6 +3,9 @@
 package model
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,8 +36,10 @@ type Query struct {
 }
 
 type UpdateUserInput struct {
+	Username    *string        `json:"username,omitempty"`
 	FirstName   *string        `json:"firstName,omitempty"`
 	LastName    *string        `json:"lastName,omitempty"`
+	Gender      *Gender        `json:"gender,omitempty"`
 	DateOfBirth *time.Time     `json:"dateOfBirth,omitempty"`
 	Bio         *string        `json:"bio,omitempty"`
 	Location    *LocationInput `json:"location,omitempty"`
@@ -50,6 +55,7 @@ type User struct {
 	LastName       *string            `json:"lastName,omitempty"`
 	DisplayName    *string            `json:"displayName,omitempty"`
 	Username       *string            `json:"username,omitempty"`
+	Gender         *Gender            `json:"gender,omitempty"`
 	ProfilePicture *string            `json:"profilePicture,omitempty"`
 	DateOfBirth    *time.Time         `json:"dateOfBirth,omitempty"`
 	Bio            *string            `json:"bio,omitempty"`
@@ -60,3 +66,48 @@ type User struct {
 }
 
 func (User) IsEntity() {}
+
+type Gender string
+
+const (
+	GenderMale           Gender = "MALE"
+	GenderFemale         Gender = "FEMALE"
+	GenderNonBinary      Gender = "NON_BINARY"
+	GenderPreferNotToSay Gender = "PREFER_NOT_TO_SAY"
+)
+
+var AllGender = []Gender{
+	GenderMale,
+	GenderFemale,
+	GenderNonBinary,
+	GenderPreferNotToSay,
+}
+
+func (e Gender) IsValid() bool {
+	switch e {
+	case GenderMale, GenderFemale, GenderNonBinary, GenderPreferNotToSay:
+		return true
+	}
+	return false
+}
+
+func (e Gender) String() string {
+	return string(e)
+}
+
+func (e *Gender) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Gender(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Gender", str)
+	}
+	return nil
+}
+
+func (e Gender) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}

@@ -84,6 +84,7 @@ type ComplexityRoot struct {
 		Email          func(childComplexity int) int
 		FirebaseID     func(childComplexity int) int
 		FirstName      func(childComplexity int) int
+		Gender         func(childComplexity int) int
 		ID             func(childComplexity int) int
 		LastName       func(childComplexity int) int
 		LastUpdated    func(childComplexity int) int
@@ -287,6 +288,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.FirstName(childComplexity), true
 
+	case "User.gender":
+		if e.complexity.User.Gender == nil {
+			break
+		}
+
+		return e.complexity.User.Gender(childComplexity), true
+
 	case "User.id":
 		if e.complexity.User.ID == nil {
 			break
@@ -449,7 +457,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/inputs/UpdateUserInput.gql" "schema/mutations/UserMutations.gql" "schema/queries/UserQueries.gql" "schema/types/User.gql"
+//go:embed "schema/enums/Gender.gql" "schema/inputs/UpdateUserInput.gql" "schema/mutations/UserMutations.gql" "schema/queries/UserQueries.gql" "schema/types/User.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -461,6 +469,7 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
+	{Name: "schema/enums/Gender.gql", Input: sourceData("schema/enums/Gender.gql"), BuiltIn: false},
 	{Name: "schema/inputs/UpdateUserInput.gql", Input: sourceData("schema/inputs/UpdateUserInput.gql"), BuiltIn: false},
 	{Name: "schema/mutations/UserMutations.gql", Input: sourceData("schema/mutations/UserMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/UserQueries.gql", Input: sourceData("schema/queries/UserQueries.gql"), BuiltIn: false},
@@ -786,6 +795,8 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_displayName(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
 			case "profilePicture":
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
@@ -1073,6 +1084,8 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_displayName(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
 			case "profilePicture":
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
@@ -1155,6 +1168,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_displayName(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
 			case "profilePicture":
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
@@ -1226,6 +1241,8 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_displayName(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
+			case "gender":
+				return ec.fieldContext_User_gender(ctx, field)
 			case "profilePicture":
 				return ec.fieldContext_User_profilePicture(ctx, field)
 			case "dateOfBirth":
@@ -1836,6 +1853,47 @@ func (ec *executionContext) fieldContext_User_username(_ context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_gender(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_gender(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Gender, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Gender)
+	fc.Result = res
+	return ec.marshalOGender2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐGender(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_gender(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Gender does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4016,13 +4074,20 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"firstName", "lastName", "dateOfBirth", "bio", "location"}
+	fieldsInOrder := [...]string{"username", "firstName", "lastName", "gender", "dateOfBirth", "bio", "location"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "username":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Username = data
 		case "firstName":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("firstName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -4037,6 +4102,13 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.LastName = data
+		case "gender":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gender"))
+			data, err := ec.unmarshalOGender2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐGender(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Gender = data
 		case "dateOfBirth":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dateOfBirth"))
 			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
@@ -4430,6 +4502,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_displayName(ctx, field, obj)
 		case "username":
 			out.Values[i] = ec._User_username(ctx, field, obj)
+		case "gender":
+			out.Values[i] = ec._User_gender(ctx, field, obj)
 		case "profilePicture":
 			out.Values[i] = ec._User_profilePicture(ctx, field, obj)
 		case "dateOfBirth":
@@ -5454,6 +5528,22 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOGender2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐGender(ctx context.Context, v interface{}) (*model.Gender, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.Gender)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOGender2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋuserᚑserviceᚋgraphᚋmodelᚐGender(ctx context.Context, sel ast.SelectionSet, v *model.Gender) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

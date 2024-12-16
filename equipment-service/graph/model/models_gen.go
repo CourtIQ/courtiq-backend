@@ -16,7 +16,6 @@ type Equipment interface {
 	IsEquipment()
 	GetID() primitive.ObjectID
 	GetOwnerID() primitive.ObjectID
-	GetOwner() *User
 	GetName() string
 	GetType() EquipmentType
 	GetCreatedAt() time.Time
@@ -59,7 +58,6 @@ type StringTensionInput struct {
 type TennisRacket struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
 	OwnerID       primitive.ObjectID `json:"ownerId"`
-	Owner         *User              `json:"owner"`
 	Name          string             `json:"name"`
 	Type          EquipmentType      `json:"type"`
 	CreatedAt     time.Time          `json:"createdAt"`
@@ -74,7 +72,6 @@ type TennisRacket struct {
 func (TennisRacket) IsEquipment()                        {}
 func (this TennisRacket) GetID() primitive.ObjectID      { return this.ID }
 func (this TennisRacket) GetOwnerID() primitive.ObjectID { return this.OwnerID }
-func (this TennisRacket) GetOwner() *User                { return this.Owner }
 func (this TennisRacket) GetName() string                { return this.Name }
 func (this TennisRacket) GetType() EquipmentType         { return this.Type }
 func (this TennisRacket) GetCreatedAt() time.Time        { return this.CreatedAt }
@@ -85,7 +82,6 @@ func (TennisRacket) IsEntity() {}
 type TennisString struct {
 	ID            primitive.ObjectID `json:"id" bson:"_id"`
 	OwnerID       primitive.ObjectID `json:"ownerId"`
-	Owner         *User              `json:"owner"`
 	Name          string             `json:"name"`
 	Type          EquipmentType      `json:"type"`
 	CreatedAt     time.Time          `json:"createdAt"`
@@ -101,7 +97,6 @@ type TennisString struct {
 func (TennisString) IsEquipment()                        {}
 func (this TennisString) GetID() primitive.ObjectID      { return this.ID }
 func (this TennisString) GetOwnerID() primitive.ObjectID { return this.OwnerID }
-func (this TennisString) GetOwner() *User                { return this.Owner }
 func (this TennisString) GetName() string                { return this.Name }
 func (this TennisString) GetType() EquipmentType         { return this.Type }
 func (this TennisString) GetCreatedAt() time.Time        { return this.CreatedAt }

@@ -2,7 +2,6 @@
 type TennisRacket implements Equipment @key(fields: "id") {
     id: ObjectID!                                           # Unique identifier for the racket
     ownerId: ObjectID!                                      # Owner's ID (user)
-    owner: User! @requires(fields: "ownerId")                                            # Owner's ID (user)
     name: String!                                           # Name of the racket
     type: EquipmentType!                                    # Equipment type (e.g., TENNIS_RACKET)
     createdAt: DateTime!                                    # Timestamp for when the racket was created

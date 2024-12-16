@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/utils"
-	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -54,6 +54,7 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 	}
 
 	racket := &model.TennisRacket{
+		ID:        primitive.NewObjectID(),
 		OwnerID:   ownerID,
 		Name:      input.Name,
 		Brand:     input.Brand,
@@ -313,10 +314,24 @@ func (s *EquipmentService) MyTennisRackets(ctx context.Context, limit *int, offs
 		return nil, fmt.Errorf("failed to get user ID: %w", err)
 	}
 
+	// Debugging: Log the ownerID
+	fmt.Println("Owner ID:", ownerID)
+
 	l, o := applyPaginationDefaults(limit, offset)
+
+	// Debugging: Log pagination values
+	fmt.Printf("Limit: %d, Offset: %d\n", l, o)
+
+	// Find all rackets for the owner
 	allRackets, err := s.racketRepo.Find(ctx, bson.M{"ownerId": ownerID})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to fetch rackets: %w", err)
+	}
+
+	// Debugging: Check if any rackets are found
+	if len(allRackets) == 0 {
+		fmt.Println("No rackets found for owner")
+		return []*model.TennisRacket{}, nil
 	}
 
 	end := o + l
@@ -324,9 +339,12 @@ func (s *EquipmentService) MyTennisRackets(ctx context.Context, limit *int, offs
 		end = len(allRackets)
 	}
 	if o > len(allRackets) {
+		// Return an empty slice if offset is greater than total records
 		return []*model.TennisRacket{}, nil
 	}
 
+	// Debugging: Log the slice being returned
+	fmt.Printf("Returning rackets %d to %d\n", o, end)
 	return allRackets[o:end], nil
 }
 

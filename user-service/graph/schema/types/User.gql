@@ -13,6 +13,7 @@ type User @key(fields: "id") {
   lastName: String
   displayName: String
   username: String
+  gender: Gender
   profilePicture: String
   dateOfBirth: Time
   bio: String

@@ -1,8 +1,9 @@
 
 input UpdateUserInput { 
+  username: String
   firstName: String
   lastName: String
-  displayName: String
+  gender: Gender
   dateOfBirth: Time
   bio: String
   location: LocationInput

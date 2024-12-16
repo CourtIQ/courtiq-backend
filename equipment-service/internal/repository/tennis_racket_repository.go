@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/db"
@@ -48,6 +49,9 @@ func (r *tennisRacketMongoRepo) Delete(ctx context.Context, id primitive.ObjectI
 }
 
 func (r *tennisRacketMongoRepo) Find(ctx context.Context, filter interface{}) ([]*model.TennisRacket, error) {
+	// Debugging: Log the filter being used
+	fmt.Printf("Executing Find with filter: %v\n", filter)
+
 	cursor, err := r.collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -58,5 +62,8 @@ func (r *tennisRacketMongoRepo) Find(ctx context.Context, filter interface{}) ([
 	if err := cursor.All(ctx, &rackets); err != nil {
 		return nil, err
 	}
+
+	// Debugging: Log the result count
+	fmt.Printf("Found %d rackets\n", len(rackets))
 	return rackets, nil
 }

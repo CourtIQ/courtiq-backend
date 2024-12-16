@@ -2,7 +2,6 @@
 interface Equipment @key(fields: "id") {
     id: ObjectID!                 # Unique identifier for equipment
     ownerId: ObjectID!            # Owner's ID (user)
-    owner: User! @requires(fields: "ownerId")               # Owner's ID (user)
     name: String!           # Equipment name (required)
     type: EquipmentType!    # Equipment type (TENNIS_STRING, TENNIS_RACKET, etc.)
     createdAt: DateTime!

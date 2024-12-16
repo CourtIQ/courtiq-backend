@@ -2,7 +2,6 @@
 type TennisString implements Equipment @key(fields: "id") {
     id: ObjectID!                 # Unique identifier for the string
     ownerId: ObjectID!            # Owner's ID (user)
-    owner: User! @requires(fields: "ownerId")               # Owner's ID (user)
     name: String!           # Name of the string
     type: EquipmentType!    # Equipment type (e.g., TENNIS_STRING)
     createdAt: DateTime!    # Timestamp for when the string was created
@@ -11,7 +10,6 @@ type TennisString implements Equipment @key(fields: "id") {
     # String-specific fields
     brand: String           # Brand of the string (optional)
     model: String           # Model of the string (optional)
-    gauge: StringGauge      # Gauge of the string (optional)
     tension: StringTension  # Tension for mains and crosses (optional)
     stringingDate: DateTime # Date when the string was strung (optional)
     burstDate: DateTime     # Date when the string burst (optional)
