@@ -15,7 +15,7 @@ import (
 
 // CreateMatchUp is the resolver for the createMatchUp field.
 func (r *mutationResolver) CreateMatchUp(ctx context.Context, matchUpFormat model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: CreateMatchUp - createMatchUp"))
+	return r.MatchUpServiceIntf.CreateMatchUp(ctx, matchUpFormat)
 }
 
 // UpdateMatchUpStatus is the resolver for the updateMatchUpStatus field.

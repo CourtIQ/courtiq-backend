@@ -1,0 +1,18 @@
+mutation CreateMatchUp {
+  createMatchUp(
+    matchUpFormat: {
+      tracker: "507f1f77bcf86cd799439011",
+      numberOfSets:ONE,
+      setFormat: {
+        numberOfGames: ONE,
+        mustWinByTwo: true,
+        deuceType:NORMAL_DEUCE
+      	}
+    },
+
+    matchUpType: SINGLES
+    participants: ["00e04c3ace9d00e04c3ace9d", "00e04c5a76f900e04c5a76f9"],
+  ) {
+    id
+  }
+} 
