@@ -1,22 +1,17 @@
 # Tennis Racket Type
 type TennisRacket implements Equipment @key(fields: "id") {
-    id: ObjectID!                                           # Unique identifier for the racket
-    ownerId: ObjectID!                                      # Owner's ID (user)
-    name: String!                                           # Name of the racket
-    type: EquipmentType!                                    # Equipment type (e.g., TENNIS_RACKET)
-    createdAt: DateTime!                                    # Timestamp for when the racket was created
-    updatedAt: DateTime!                                    # Timestamp for the last update
+    id: ObjectID!                         # Unique identifier for the racket
+    ownerId: ObjectID!                    # Owner's ID (user)
+    name: String!                         # Name of the racket
+    type: EquipmentType!                  # Equipment type (e.g., TENNIS_RACKET)
+    createdAt: DateTime!                  # Timestamp for when the racket was created
+    updatedAt: DateTime!                  # Timestamp for the last update
 
     # Racket-specific fields
-    brand: String               # Brand of the racket (e.g., Wilson, Babolat)
-    model: String               # Model of the racket (e.g., Blade 98)
-    headSize: Float             # Head size of the racket in square inches (e.g., 98.0)
-    weight: Float               # Weight of the racket in grams (e.g., 305.0)
-    currentString: TennisString # Current string setup for the racket, optional
-}
-
-extend type User @key(fields: "id") {
-  id: ObjectID! @external
-  username: String! @external
-  displayName: String! @external
+    currentStringId: ObjectID             # ID of the current string setup for the racket, optional
+    stringingHistory: [ObjectID!]         # List of string setups for the racket, optional
+    brand: String                         # Brand of the racket (e.g., Wilson, Babolat)
+    model: String                         # Model of the racket (e.g., Blade 98)
+    weight: Float                         # Weight of the racket in grams (e.g., 305.0)
+    currentString: TennisString           # Current string setup for the racket, optional
 }

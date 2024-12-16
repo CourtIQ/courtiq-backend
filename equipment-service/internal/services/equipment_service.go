@@ -149,7 +149,6 @@ func (s *EquipmentService) CreateTennisString(ctx context.Context, input model.C
 		Name:          input.Name,
 		Brand:         input.Brand,
 		Model:         input.Model,
-		Gauge:         input.Gauge,
 		Tension:       utils.ConvertStringTensionInput(input.Tension),
 		StringingDate: input.StringingDate,
 		CreatedAt:     time.Now(),
@@ -181,9 +180,6 @@ func (s *EquipmentService) UpdateMyTennisString(ctx context.Context, id primitiv
 	}
 	if input.Model != nil {
 		strObj.Model = input.Model
-	}
-	if input.Gauge != nil {
-		strObj.Gauge = input.Gauge
 	}
 	if input.Tension != nil {
 		strObj.Tension = utils.ConvertStringTensionInput(input.Tension)

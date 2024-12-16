@@ -104,7 +104,6 @@ type ComplexityRoot struct {
 		Brand         func(childComplexity int) int
 		BurstDate     func(childComplexity int) int
 		CreatedAt     func(childComplexity int) int
-		Gauge         func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Model         func(childComplexity int) int
 		Name          func(childComplexity int) int
@@ -516,13 +515,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TennisString.CreatedAt(childComplexity), true
-
-	case "TennisString.gauge":
-		if e.complexity.TennisString.Gauge == nil {
-			break
-		}
-
-		return e.complexity.TennisString.Gauge(childComplexity), true
 
 	case "TennisString.id":
 		if e.complexity.TennisString.ID == nil {
@@ -1663,8 +1655,6 @@ func (ec *executionContext) fieldContext_Entity_findTennisStringByID(ctx context
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -1981,8 +1971,6 @@ func (ec *executionContext) fieldContext_Mutation_createTennisString(ctx context
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2062,8 +2050,6 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisString(ctx conte
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2143,8 +2129,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteMyTennisString(ctx conte
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2382,8 +2366,6 @@ func (ec *executionContext) fieldContext_Mutation_markMyStringAsBurst(ctx contex
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2463,8 +2445,6 @@ func (ec *executionContext) fieldContext_Mutation_updateMyStringTension(ctx cont
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2699,8 +2679,6 @@ func (ec *executionContext) fieldContext_Query_myTennisStrings(ctx context.Conte
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2777,8 +2755,6 @@ func (ec *executionContext) fieldContext_Query_myTennisString(ctx context.Contex
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -3652,8 +3628,6 @@ func (ec *executionContext) fieldContext_TennisRacket_currentString(_ context.Co
 				return ec.fieldContext_TennisString_brand(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
-			case "gauge":
-				return ec.fieldContext_TennisString_gauge(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -4008,47 +3982,6 @@ func (ec *executionContext) fieldContext_TennisString_model(_ context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _TennisString_gauge(ctx context.Context, field graphql.CollectedField, obj *model.TennisString) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TennisString_gauge(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Gauge, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.StringGauge)
-	fc.Result = res
-	return ec.marshalOStringGauge2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐStringGauge(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TennisString_gauge(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TennisString",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type StringGauge does not have child fields")
 		},
 	}
 	return fc, nil
@@ -7047,8 +6980,6 @@ func (ec *executionContext) _TennisString(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TennisString_brand(ctx, field, obj)
 		case "model":
 			out.Values[i] = ec._TennisString_model(ctx, field, obj)
-		case "gauge":
-			out.Values[i] = ec._TennisString_gauge(ctx, field, obj)
 		case "tension":
 			out.Values[i] = ec._TennisString_tension(ctx, field, obj)
 		case "stringingDate":
