@@ -59,6 +59,13 @@ func (r *userRepository) UpdateUser(ctx context.Context, id primitive.ObjectID, 
 	if input.Bio != nil {
 		updateFields["bio"] = *input.Bio
 	}
+	if input.Username != nil {
+		updateFields["username"] = *input.Username
+	}
+	if input.Gender != nil {
+		updateFields["gender"] = *input.Gender
+	}
+
 	lastUpdated := primitive.NewDateTimeFromTime(time.Now())
 
 	updateFields["lastUpdated"] = lastUpdated

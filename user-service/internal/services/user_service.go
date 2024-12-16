@@ -9,6 +9,7 @@ import (
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/repository"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -78,8 +79,12 @@ func (s *userService) UpdateUser(ctx context.Context, input *model.UpdateUserInp
 
 // IsUsernameAvailable checks if the given username is available.
 func (s *userService) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
+	filterFields := bson.M{}
+
+	filterFields["username"] = username
+
 	// Check if the username is available
-	available, err := s.userRepo.Count(ctx, username)
+	available, err := s.userRepo.Count(ctx, filterFields)
 	if err != nil {
 		return false, fmt.Errorf("error checking username availability: %w", err)
 	}
