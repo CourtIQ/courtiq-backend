@@ -3,6 +3,7 @@ extend type Query {
     # Optional limit and offset parameters for pagination
     myTennisRackets(limit: Int = 10, offset: Int = 0): [TennisRacket!]!     
     myTennisRacket(id: ObjectID!): TennisRacket
+    myStringHistory(racket: ObjectID!): [TennisString!]!
 
     # String Queries
     # Optional limit and offset parameters for pagination

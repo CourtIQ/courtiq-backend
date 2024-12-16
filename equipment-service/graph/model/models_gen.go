@@ -23,20 +23,20 @@ type Equipment interface {
 }
 
 type CreateTennisRacketInput struct {
-	Name     string   `json:"name"`
-	Brand    *string  `json:"brand,omitempty"`
-	Model    *string  `json:"model,omitempty"`
-	HeadSize *float64 `json:"headSize,omitempty"`
-	Weight   *float64 `json:"weight,omitempty"`
+	Name   string   `json:"name"`
+	Brand  *string  `json:"brand,omitempty"`
+	Model  *string  `json:"model,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
 }
 
 type CreateTennisStringInput struct {
 	Name          string              `json:"name"`
 	Brand         *string             `json:"brand,omitempty"`
 	Model         *string             `json:"model,omitempty"`
-	Gauge         *StringGauge        `json:"gauge,omitempty"`
 	Tension       *StringTensionInput `json:"tension,omitempty"`
 	StringingDate *time.Time          `json:"stringingDate,omitempty"`
+	BurstDate     *time.Time          `json:"burstDate,omitempty"`
+	Racket        *primitive.ObjectID `json:"racket,omitempty"`
 }
 
 type Mutation struct {
@@ -56,17 +56,16 @@ type StringTensionInput struct {
 }
 
 type TennisRacket struct {
-	ID            primitive.ObjectID `json:"id" bson:"_id"`
-	OwnerID       primitive.ObjectID `json:"ownerId"`
-	Name          string             `json:"name"`
-	Type          EquipmentType      `json:"type"`
-	CreatedAt     time.Time          `json:"createdAt"`
-	UpdatedAt     time.Time          `json:"updatedAt"`
-	Brand         *string            `json:"brand,omitempty"`
-	Model         *string            `json:"model,omitempty"`
-	HeadSize      *float64           `json:"headSize,omitempty"`
-	Weight        *float64           `json:"weight,omitempty"`
-	CurrentString *TennisString      `json:"currentString,omitempty"`
+	ID              primitive.ObjectID  `json:"id" bson:"_id"`
+	OwnerID         primitive.ObjectID  `json:"ownerId"`
+	Name            string              `json:"name"`
+	Type            EquipmentType       `json:"type"`
+	CreatedAt       time.Time           `json:"createdAt"`
+	UpdatedAt       time.Time           `json:"updatedAt"`
+	CurrentStringID *primitive.ObjectID `json:"currentStringId,omitempty"`
+	Brand           *string             `json:"brand,omitempty"`
+	Model           *string             `json:"model,omitempty"`
+	Weight          *float64            `json:"weight,omitempty"`
 }
 
 func (TennisRacket) IsEquipment()                        {}
@@ -80,17 +79,18 @@ func (this TennisRacket) GetUpdatedAt() time.Time        { return this.UpdatedAt
 func (TennisRacket) IsEntity() {}
 
 type TennisString struct {
-	ID            primitive.ObjectID `json:"id" bson:"_id"`
-	OwnerID       primitive.ObjectID `json:"ownerId"`
-	Name          string             `json:"name"`
-	Type          EquipmentType      `json:"type"`
-	CreatedAt     time.Time          `json:"createdAt"`
-	UpdatedAt     time.Time          `json:"updatedAt"`
-	Brand         *string            `json:"brand,omitempty"`
-	Model         *string            `json:"model,omitempty"`
-	Tension       *StringTension     `json:"tension,omitempty"`
-	StringingDate *time.Time         `json:"stringingDate,omitempty"`
-	BurstDate     *time.Time         `json:"burstDate,omitempty"`
+	ID            primitive.ObjectID  `json:"id" bson:"_id"`
+	OwnerID       primitive.ObjectID  `json:"ownerId"`
+	Name          string              `json:"name"`
+	Type          EquipmentType       `json:"type"`
+	CreatedAt     time.Time           `json:"createdAt"`
+	UpdatedAt     time.Time           `json:"updatedAt"`
+	Racket        *primitive.ObjectID `json:"racket,omitempty"`
+	Brand         *string             `json:"brand,omitempty"`
+	Model         *string             `json:"model,omitempty"`
+	Tension       *StringTension      `json:"tension,omitempty"`
+	StringingDate *time.Time          `json:"stringingDate,omitempty"`
+	BurstDate     *time.Time          `json:"burstDate,omitempty"`
 }
 
 func (TennisString) IsEquipment()                        {}
@@ -104,31 +104,20 @@ func (this TennisString) GetUpdatedAt() time.Time        { return this.UpdatedAt
 func (TennisString) IsEntity() {}
 
 type UpdateTennisRacketInput struct {
-	Name          *string             `json:"name,omitempty"`
-	Brand         *string             `json:"brand,omitempty"`
-	Model         *string             `json:"model,omitempty"`
-	HeadSize      *float64            `json:"headSize,omitempty"`
-	Weight        *float64            `json:"weight,omitempty"`
-	CurrentString *primitive.ObjectID `json:"currentString,omitempty"`
+	Name   *string  `json:"name,omitempty"`
+	Brand  *string  `json:"brand,omitempty"`
+	Model  *string  `json:"model,omitempty"`
+	Weight *float64 `json:"weight,omitempty"`
 }
 
 type UpdateTennisStringInput struct {
 	Name          *string             `json:"name,omitempty"`
 	Brand         *string             `json:"brand,omitempty"`
 	Model         *string             `json:"model,omitempty"`
-	Gauge         *StringGauge        `json:"gauge,omitempty"`
 	Tension       *StringTensionInput `json:"tension,omitempty"`
 	StringingDate *time.Time          `json:"stringingDate,omitempty"`
 	BurstDate     *time.Time          `json:"burstDate,omitempty"`
 }
-
-type User struct {
-	ID          primitive.ObjectID `json:"id" bson:"_id"`
-	Username    string             `json:"username"`
-	DisplayName string             `json:"displayName"`
-}
-
-func (User) IsEntity() {}
 
 type EquipmentType string
 
