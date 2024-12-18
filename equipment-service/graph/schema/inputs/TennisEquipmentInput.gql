@@ -3,6 +3,7 @@ input CreateTennisRacketInput {
     brand: String
     brandId: Int
     model: String
+    modelId: Int
     weight: Float
 
 }
@@ -12,6 +13,7 @@ input UpdateTennisRacketInput {
     brand: String
     brandId: Int
     model: String
+    modelId: Int
     weight: Float
 }
 
@@ -20,6 +22,7 @@ input CreateTennisStringInput {
     brand: String
     brandId: Int
     model: String
+    modelId: Int
     tension: StringTensionInput
     stringingDate: DateTime
     burstDate: DateTime
@@ -30,6 +33,7 @@ input UpdateTennisStringInput {
     brand: String
     brandId: Int
     model: String
+    modelId: Int
     tension: StringTensionInput
     stringingDate: DateTime
     burstDate: DateTime
