@@ -41,20 +41,6 @@ async function getIdTokenFromUid(uid) {
 
 
 async function startServer() {
-  // const testUid = 'lIS7Hyk3FGWF7C8DY3qvTCngHjH2';
-  // const testIdToken = await getIdTokenFromUid(testUid);
-
-  // // Verify the token just to see if verification is working
-  // try {
-  //   const decodedToken = await admin.auth().verifyIdToken(testIdToken);
-  //   console.log('Decoded token:', decodedToken);
-  //   if (!decodedToken.mongoId) {
-  //     throw new Error("startServer unauthorized: could not retrieve user id from context: mongoId claim is missing");
-  //   }
-  // } catch (error) {
-  //   console.error('Error verifying token:', error);
-  // }
-
   const server = new ApolloServer({
     gateway,
     introspection: config.GRAPHQL_PLAYGROUND,
