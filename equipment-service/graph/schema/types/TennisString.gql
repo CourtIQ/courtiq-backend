@@ -10,6 +10,7 @@ type TennisString implements Equipment @key(fields: "id") {
     # String-specific fields
     racket: ObjectID        # ID of the racket the string is currently in (optional)
     brand: String           # Brand of the string (optional)
+    brandId: Int            # Brand ID for the string (optional)    
     model: String           # Model of the string (optional)
     tension: StringTension  # Tension for mains and crosses (optional)
     stringingDate: DateTime # Date when the string was strung (optional)

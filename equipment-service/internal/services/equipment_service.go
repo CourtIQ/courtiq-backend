@@ -58,6 +58,7 @@ func (s *EquipmentService) CreateTennisRacket(ctx context.Context, input model.C
 		OwnerID:   ownerID,
 		Name:      input.Name,
 		Brand:     input.Brand,
+		BrandID:   input.BrandID,
 		Model:     input.Model,
 		Weight:    input.Weight,
 		CreatedAt: time.Now(),
@@ -96,6 +97,9 @@ func (s *EquipmentService) UpdateMyTennisRacket(ctx context.Context, id primitiv
 	if input.Brand != nil {
 		racket.Brand = input.Brand
 	}
+	if input.BrandID != nil {
+		racket.BrandID = input.BrandID
+	}
 	if input.Model != nil {
 		racket.Model = input.Model
 	}
@@ -130,6 +134,7 @@ func (s *EquipmentService) CreateTennisString(ctx context.Context, input model.C
 		OwnerID:       ownerID,
 		Name:          input.Name,
 		Brand:         input.Brand,
+		BrandID: 	   input.BrandID,
 		Model:         input.Model,
 		Tension:       utils.ConvertStringTensionInput(input.Tension),
 		StringingDate: input.StringingDate,
@@ -159,6 +164,9 @@ func (s *EquipmentService) UpdateMyTennisString(ctx context.Context, id primitiv
 	}
 	if input.Brand != nil {
 		strObj.Brand = input.Brand
+	}
+	if input.BrandID != nil {
+		strObj.BrandID = input.BrandID
 	}
 	if input.Model != nil {
 		strObj.Model = input.Model
