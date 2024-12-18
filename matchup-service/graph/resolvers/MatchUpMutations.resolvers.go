@@ -24,7 +24,7 @@ func (r *mutationResolver) UpdateMatchUpStatus(ctx context.Context, status model
 }
 
 // AddPointToMatchUp is the resolver for the addPointToMatchUp field.
-func (r *mutationResolver) AddPointToMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+func (r *mutationResolver) AddPointToMatchUp(ctx context.Context, matchupFormat model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	panic(fmt.Errorf("not implemented: AddPointToMatchUp - addPointToMatchUp"))
 }
 

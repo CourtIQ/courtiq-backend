@@ -14,19 +14,19 @@ import (
 // Provides structured geographical details about a user's location.
 // All fields are optional and can be omitted if unknown.
 type Location struct {
-	City      *string  `json:"city,omitempty"`
-	State     *string  `json:"state,omitempty"`
-	Country   *string  `json:"country,omitempty"`
-	Latitude  *float64 `json:"latitude,omitempty"`
-	Longitude *float64 `json:"longitude,omitempty"`
+	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
+	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
+	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
 }
 
 type LocationInput struct {
-	City      *string  `json:"city,omitempty"`
-	State     *string  `json:"state,omitempty"`
-	Country   *string  `json:"country,omitempty"`
-	Latitude  *float64 `json:"latitude,omitempty"`
-	Longitude *float64 `json:"longitude,omitempty"`
+	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
+	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
+	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
 }
 
 type Mutation struct {
@@ -36,33 +36,33 @@ type Query struct {
 }
 
 type UpdateUserInput struct {
-	Username    *string        `json:"username,omitempty"`
-	FirstName   *string        `json:"firstName,omitempty"`
-	LastName    *string        `json:"lastName,omitempty"`
-	Gender      *Gender        `json:"gender,omitempty"`
-	DateOfBirth *time.Time     `json:"dateOfBirth,omitempty"`
-	Bio         *string        `json:"bio,omitempty"`
-	Location    *LocationInput `json:"location,omitempty"`
+	Username    *string        `json:"username,omitempty" bson:"username,omitempty"`
+	FirstName   *string        `json:"firstName,omitempty" bson:"firstName,omitempty"`
+	LastName    *string        `json:"lastName,omitempty" bson:"lastName,omitempty"`
+	Gender      *Gender        `json:"gender,omitempty" bson:"gender,omitempty"`
+	DateOfBirth *time.Time     `json:"dateOfBirth,omitempty" bson:"dateOfBirth,omitempty"`
+	Bio         *string        `json:"bio,omitempty" bson:"bio,omitempty"`
+	Location    *LocationInput `json:"location,omitempty" bson:"location,omitempty"`
 }
 
 // Represents an individual user within the application.
 // Implements a federated key for cross-service references.
 type User struct {
 	ID             primitive.ObjectID `json:"id" bson:"_id"`
-	FirebaseID     string             `json:"firebaseId"`
-	Email          string             `json:"email"`
-	FirstName      *string            `json:"firstName,omitempty"`
-	LastName       *string            `json:"lastName,omitempty"`
-	DisplayName    *string            `json:"displayName,omitempty"`
-	Username       *string            `json:"username,omitempty"`
-	Gender         *Gender            `json:"gender,omitempty"`
-	ProfilePicture *string            `json:"profilePicture,omitempty"`
-	DateOfBirth    *time.Time         `json:"dateOfBirth,omitempty"`
-	Bio            *string            `json:"bio,omitempty"`
-	Location       *Location          `json:"location,omitempty"`
-	Rating         *int               `json:"rating,omitempty"`
-	CreatedAt      *time.Time         `json:"createdAt,omitempty"`
-	LastUpdated    *time.Time         `json:"lastUpdated,omitempty"`
+	FirebaseID     string             `json:"firebaseId" bson:"firebaseId"`
+	Email          string             `json:"email" bson:"email"`
+	FirstName      *string            `json:"firstName,omitempty" bson:"firstName,omitempty"`
+	LastName       *string            `json:"lastName,omitempty" bson:"lastName,omitempty"`
+	DisplayName    *string            `json:"displayName,omitempty" bson:"displayName,omitempty"`
+	Username       *string            `json:"username,omitempty" bson:"username,omitempty"`
+	Gender         *Gender            `json:"gender,omitempty" bson:"gender,omitempty"`
+	ProfilePicture *string            `json:"profilePicture,omitempty" bson:"profilePicture,omitempty"`
+	DateOfBirth    *time.Time         `json:"dateOfBirth,omitempty" bson:"dateOfBirth,omitempty"`
+	Bio            *string            `json:"bio,omitempty" bson:"bio,omitempty"`
+	Location       *Location          `json:"location,omitempty" bson:"location,omitempty"`
+	Rating         *int               `json:"rating,omitempty" bson:"rating,omitempty"`
+	CreatedAt      *time.Time         `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
+	LastUpdated    *time.Time         `json:"lastUpdated,omitempty" bson:"lastUpdated,omitempty"`
 }
 
 func (User) IsEntity() {}

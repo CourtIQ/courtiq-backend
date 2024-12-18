@@ -4,23 +4,49 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 )
 
 func main() {
-	filePath := "graph/model/models_gen.go" // Replace with your actual models file path
+	filePath := "graph/model/models_gen.go"
 
 	// Read the file
-	content, err := os.ReadFile(filePath) // Use os.ReadFile instead of ioutil.ReadFile
+	content, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v", err)
 	}
 
-	// Regex to add bson:"_id" to the id field
-	re := regexp.MustCompile(`json:"id"`)
-	updatedContent := re.ReplaceAll(content, []byte(`json:"id" bson:"_id"`))
+	// Convert content to string for easier manipulation
+	strContent := string(content)
 
-	// Write the updated file back
-	if err := os.WriteFile(filePath, updatedContent, os.ModePerm); err != nil { // Use os.WriteFile instead of ioutil.WriteFile
+	// Find all json tags
+	re := regexp.MustCompile(`json:"([^"]+?)(?:,omitempty)?"`)
+
+	// Replace each json tag with json+bson tags
+	strContent = re.ReplaceAllStringFunc(strContent, func(match string) string {
+		// Extract the field name and omitempty flag
+		fieldMatch := re.FindStringSubmatch(match)
+		if len(fieldMatch) < 2 {
+			return match
+		}
+
+		fieldName := fieldMatch[1]
+		hasOmitempty := strings.Contains(match, ",omitempty")
+
+		// Special case for "id" field
+		if fieldName == "id" {
+			return `json:"id" bson:"_id"`
+		}
+
+		// Build the new tag string for other fields
+		if hasOmitempty {
+			return `json:"` + fieldName + `,omitempty" bson:"` + fieldName + `,omitempty"`
+		}
+		return `json:"` + fieldName + `" bson:"` + fieldName + `"`
+	})
+
+	// Write the updated content back to file
+	if err := os.WriteFile(filePath, []byte(strContent), os.ModePerm); err != nil {
 		log.Fatalf("Failed to write file: %v", err)
 	}
 

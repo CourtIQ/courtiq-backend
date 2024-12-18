@@ -24,13 +24,13 @@ type Relationship interface {
 
 type Coachship struct {
 	ID           primitive.ObjectID   `json:"id" bson:"_id"`
-	Participants []primitive.ObjectID `json:"participants"`
-	Type         RelationshipType     `json:"type"`
-	Status       RelationshipStatus   `json:"status"`
-	CreatedAt    time.Time            `json:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt"`
-	CoachID      primitive.ObjectID   `json:"coachId"`
-	StudentID    primitive.ObjectID   `json:"studentId"`
+	Participants []primitive.ObjectID `json:"participants" bson:"participants"`
+	Type         RelationshipType     `json:"type" bson:"type"`
+	Status       RelationshipStatus   `json:"status" bson:"status"`
+	CreatedAt    time.Time            `json:"createdAt" bson:"createdAt"`
+	UpdatedAt    time.Time            `json:"updatedAt" bson:"updatedAt"`
+	CoachID      primitive.ObjectID   `json:"coachId" bson:"coachId"`
+	StudentID    primitive.ObjectID   `json:"studentId" bson:"studentId"`
 }
 
 func (Coachship) IsRelationship()                {}
@@ -54,13 +54,13 @@ func (Coachship) IsEntity() {}
 
 type Friendship struct {
 	ID           primitive.ObjectID   `json:"id" bson:"_id"`
-	Participants []primitive.ObjectID `json:"participants"`
-	Type         RelationshipType     `json:"type"`
-	Status       RelationshipStatus   `json:"status"`
-	CreatedAt    time.Time            `json:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt"`
-	SenderID     primitive.ObjectID   `json:"senderId"`
-	ReceiverID   primitive.ObjectID   `json:"receiverId"`
+	Participants []primitive.ObjectID `json:"participants" bson:"participants"`
+	Type         RelationshipType     `json:"type" bson:"type"`
+	Status       RelationshipStatus   `json:"status" bson:"status"`
+	CreatedAt    time.Time            `json:"createdAt" bson:"createdAt"`
+	UpdatedAt    time.Time            `json:"updatedAt" bson:"updatedAt"`
+	SenderID     primitive.ObjectID   `json:"senderId" bson:"senderId"`
+	ReceiverID   primitive.ObjectID   `json:"receiverId" bson:"receiverId"`
 }
 
 func (Friendship) IsRelationship()                {}

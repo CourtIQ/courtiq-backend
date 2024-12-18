@@ -91,6 +91,7 @@ type ComplexityRoot struct {
 		CurrentStringID func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Model           func(childComplexity int) int
+		ModelID         func(childComplexity int) int
 		Name            func(childComplexity int) int
 		OwnerID         func(childComplexity int) int
 		Type            func(childComplexity int) int
@@ -105,6 +106,7 @@ type ComplexityRoot struct {
 		CreatedAt     func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Model         func(childComplexity int) int
+		ModelID       func(childComplexity int) int
 		Name          func(childComplexity int) int
 		OwnerID       func(childComplexity int) int
 		Racket        func(childComplexity int) int
@@ -428,6 +430,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TennisRacket.Model(childComplexity), true
 
+	case "TennisRacket.modelId":
+		if e.complexity.TennisRacket.ModelID == nil {
+			break
+		}
+
+		return e.complexity.TennisRacket.ModelID(childComplexity), true
+
 	case "TennisRacket.name":
 		if e.complexity.TennisRacket.Name == nil {
 			break
@@ -504,6 +513,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TennisString.Model(childComplexity), true
+
+	case "TennisString.modelId":
+		if e.complexity.TennisString.ModelID == nil {
+			break
+		}
+
+		return e.complexity.TennisString.ModelID(childComplexity), true
 
 	case "TennisString.name":
 		if e.complexity.TennisString.Name == nil {
@@ -1459,6 +1475,8 @@ func (ec *executionContext) fieldContext_Entity_findTennisRacketByID(ctx context
 				return ec.fieldContext_TennisRacket_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisRacket_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
 			}
@@ -1538,6 +1556,8 @@ func (ec *executionContext) fieldContext_Entity_findTennisStringByID(ctx context
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -1621,6 +1641,8 @@ func (ec *executionContext) fieldContext_Mutation_createTennisRacket(ctx context
 				return ec.fieldContext_TennisRacket_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisRacket_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
 			}
@@ -1700,6 +1722,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisRacket(ctx conte
 				return ec.fieldContext_TennisRacket_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisRacket_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
 			}
@@ -1834,6 +1858,8 @@ func (ec *executionContext) fieldContext_Mutation_createTennisString(ctx context
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -1917,6 +1943,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisString(ctx conte
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2055,6 +2083,8 @@ func (ec *executionContext) fieldContext_Mutation_assignRacketToString(ctx conte
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2138,6 +2168,8 @@ func (ec *executionContext) fieldContext_Query_myTennisRackets(ctx context.Conte
 				return ec.fieldContext_TennisRacket_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisRacket_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
 			}
@@ -2214,6 +2246,8 @@ func (ec *executionContext) fieldContext_Query_myTennisRacket(ctx context.Contex
 				return ec.fieldContext_TennisRacket_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisRacket_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
 			}
@@ -2293,6 +2327,8 @@ func (ec *executionContext) fieldContext_Query_myStringHistory(ctx context.Conte
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2376,6 +2412,8 @@ func (ec *executionContext) fieldContext_Query_myTennisStrings(ctx context.Conte
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -2456,6 +2494,8 @@ func (ec *executionContext) fieldContext_Query_myTennisString(ctx context.Contex
 				return ec.fieldContext_TennisString_brandId(ctx, field)
 			case "model":
 				return ec.fieldContext_TennisString_model(ctx, field)
+			case "modelId":
+				return ec.fieldContext_TennisString_modelId(ctx, field)
 			case "tension":
 				return ec.fieldContext_TennisString_tension(ctx, field)
 			case "stringingDate":
@@ -3277,6 +3317,47 @@ func (ec *executionContext) fieldContext_TennisRacket_model(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _TennisRacket_modelId(ctx context.Context, field graphql.CollectedField, obj *model.TennisRacket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisRacket_modelId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ModelID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisRacket_modelId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisRacket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TennisRacket_weight(ctx context.Context, field graphql.CollectedField, obj *model.TennisRacket) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TennisRacket_weight(ctx, field)
 	if err != nil {
@@ -3741,6 +3822,47 @@ func (ec *executionContext) fieldContext_TennisString_model(_ context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisString_modelId(ctx context.Context, field graphql.CollectedField, obj *model.TennisString) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisString_modelId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ModelID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisString_modelId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisString",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5696,7 +5818,7 @@ func (ec *executionContext) unmarshalInputCreateTennisRacketInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "weight"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5731,6 +5853,13 @@ func (ec *executionContext) unmarshalInputCreateTennisRacketInput(ctx context.Co
 				return it, err
 			}
 			it.Model = data
+		case "modelId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelId"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModelID = data
 		case "weight":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -5751,7 +5880,7 @@ func (ec *executionContext) unmarshalInputCreateTennisStringInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "tension", "stringingDate", "burstDate"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "tension", "stringingDate", "burstDate"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5786,6 +5915,13 @@ func (ec *executionContext) unmarshalInputCreateTennisStringInput(ctx context.Co
 				return it, err
 			}
 			it.Model = data
+		case "modelId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelId"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModelID = data
 		case "tension":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tension"))
 			data, err := ec.unmarshalOStringTensionInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐStringTensionInput(ctx, v)
@@ -5854,7 +5990,7 @@ func (ec *executionContext) unmarshalInputUpdateTennisRacketInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "weight"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5889,6 +6025,13 @@ func (ec *executionContext) unmarshalInputUpdateTennisRacketInput(ctx context.Co
 				return it, err
 			}
 			it.Model = data
+		case "modelId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelId"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModelID = data
 		case "weight":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("weight"))
 			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
@@ -5909,7 +6052,7 @@ func (ec *executionContext) unmarshalInputUpdateTennisStringInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "tension", "stringingDate", "burstDate"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "tension", "stringingDate", "burstDate"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5944,6 +6087,13 @@ func (ec *executionContext) unmarshalInputUpdateTennisStringInput(ctx context.Co
 				return it, err
 			}
 			it.Model = data
+		case "modelId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modelId"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ModelID = data
 		case "tension":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tension"))
 			data, err := ec.unmarshalOStringTensionInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐStringTensionInput(ctx, v)
@@ -6531,6 +6681,8 @@ func (ec *executionContext) _TennisRacket(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TennisRacket_brandId(ctx, field, obj)
 		case "model":
 			out.Values[i] = ec._TennisRacket_model(ctx, field, obj)
+		case "modelId":
+			out.Values[i] = ec._TennisRacket_modelId(ctx, field, obj)
 		case "weight":
 			out.Values[i] = ec._TennisRacket_weight(ctx, field, obj)
 		default:
@@ -6605,6 +6757,8 @@ func (ec *executionContext) _TennisString(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TennisString_brandId(ctx, field, obj)
 		case "model":
 			out.Values[i] = ec._TennisString_model(ctx, field, obj)
+		case "modelId":
+			out.Values[i] = ec._TennisString_modelId(ctx, field, obj)
 		case "tension":
 			out.Values[i] = ec._TennisString_tension(ctx, field, obj)
 		case "stringingDate":

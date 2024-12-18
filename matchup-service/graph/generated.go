@@ -80,7 +80,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddPointToMatchUp    func(childComplexity int, matchUpID primitive.ObjectID) int
+		AddPointToMatchUp    func(childComplexity int, matchupFormat model.MatchUpFormatInput, matchUpID primitive.ObjectID) int
 		CreateMatchUp        func(childComplexity int, matchUpFormat model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) int
 		DeleteMatchUp        func(childComplexity int, matchUpID primitive.ObjectID) int
 		UndoPointFromMatchUp func(childComplexity int, matchUpID primitive.ObjectID) int
@@ -163,7 +163,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateMatchUp(ctx context.Context, matchUpFormat model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error)
 	UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	AddPointToMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	AddPointToMatchUp(ctx context.Context, matchupFormat model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
@@ -355,7 +355,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddPointToMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
+		return e.complexity.Mutation.AddPointToMatchUp(childComplexity, args["matchupFormat"].(model.MatchUpFormatInput), args["matchUpId"].(primitive.ObjectID)), true
 
 	case "Mutation.createMatchUp":
 		if e.complexity.Mutation.CreateMatchUp == nil {
@@ -941,13 +941,31 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_addPointToMatchUp_argsMatchUpID(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_addPointToMatchUp_argsMatchupFormat(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["matchUpId"] = arg0
+	args["matchupFormat"] = arg0
+	arg1, err := ec.field_Mutation_addPointToMatchUp_argsMatchUpID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["matchUpId"] = arg1
 	return args, nil
 }
+func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchupFormat(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.MatchUpFormatInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchupFormat"))
+	if tmp, ok := rawArgs["matchupFormat"]; ok {
+		return ec.unmarshalNMatchUpFormatInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatInput(ctx, tmp)
+	}
+
+	var zeroVal model.MatchUpFormatInput
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
@@ -2422,7 +2440,7 @@ func (ec *executionContext) _Mutation_addPointToMatchUp(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddPointToMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().AddPointToMatchUp(rctx, fc.Args["matchupFormat"].(model.MatchUpFormatInput), fc.Args["matchUpId"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
