@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
@@ -15,7 +14,7 @@ import (
 
 // GetMatchUp is the resolver for the getMatchUp field.
 func (r *queryResolver) GetMatchUp(ctx context.Context, id primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: GetMatchUp - getMatchUp"))
+	return r.MatchUpServiceIntf.GetMatchUp(ctx, id)
 }
 
 // Query returns graph.QueryResolver implementation.

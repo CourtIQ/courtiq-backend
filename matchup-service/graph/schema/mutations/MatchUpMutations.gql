@@ -1,6 +1,6 @@
 extend type Mutation {
     createMatchUp(
-        matchUpFormat: MatchUpFormatInput!
+        matchUpFormatInput: MatchUpFormatInput!
         matchUpType: MatchUpType!
         participants: [ObjectID!]!
     ): MatchUp!
@@ -11,7 +11,7 @@ extend type Mutation {
     ): MatchUp!
     
     addPointToMatchUp(
-        matchupFormat: MatchUpFormatInput!
+        matchUpFormatInput: MatchUpFormatInput!
         matchUpId: ObjectID!
     ): MatchUp!
     

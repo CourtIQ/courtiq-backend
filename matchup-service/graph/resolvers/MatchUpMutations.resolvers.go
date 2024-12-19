@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
@@ -14,33 +13,33 @@ import (
 )
 
 // CreateMatchUp is the resolver for the createMatchUp field.
-func (r *mutationResolver) CreateMatchUp(ctx context.Context, matchUpFormat model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error) {
-	return r.MatchUpServiceIntf.CreateMatchUp(ctx, matchUpFormat)
+func (r *mutationResolver) CreateMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error) {
+	return r.MatchUpServiceIntf.CreateMatchUp(ctx, matchUpFormatInput, matchUpType, participants)
 }
 
 // UpdateMatchUpStatus is the resolver for the updateMatchUpStatus field.
 func (r *mutationResolver) UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UpdateMatchUpStatus - updateMatchUpStatus"))
+	return r.MatchUpServiceIntf.UpdateMatchUpStatus(ctx, status, matchUpID)
 }
 
 // AddPointToMatchUp is the resolver for the addPointToMatchUp field.
-func (r *mutationResolver) AddPointToMatchUp(ctx context.Context, matchupFormat model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: AddPointToMatchUp - addPointToMatchUp"))
+func (r *mutationResolver) AddPointToMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+	return r.MatchUpServiceIntf.AddPointToMatchUp(ctx, matchUpFormatInput, matchUpID)
 }
 
 // UndoShotFromMatchUp is the resolver for the undoShotFromMatchUp field.
 func (r *mutationResolver) UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UndoShotFromMatchUp - undoShotFromMatchUp"))
+	return r.MatchUpServiceIntf.UndoShotFromMatchUp(ctx, matchUpID)
 }
 
 // UndoPointFromMatchUp is the resolver for the undoPointFromMatchUp field.
 func (r *mutationResolver) UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UndoPointFromMatchUp - undoPointFromMatchUp"))
+	return r.MatchUpServiceIntf.UndoPointFromMatchUp(ctx, matchUpID)
 }
 
 // DeleteMatchUp is the resolver for the deleteMatchUp field.
 func (r *mutationResolver) DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: DeleteMatchUp - deleteMatchUp"))
+	return r.MatchUpServiceIntf.DeleteMatchUp(ctx, matchUpID)
 }
 
 // Mutation returns graph.MutationResolver implementation.

@@ -15,4 +15,4 @@ mutation CreateMatchUp {
   ) {
     id
   }
-} 
+}
