@@ -96,6 +96,7 @@ type ComplexityRoot struct {
 		OwnerID         func(childComplexity int) int
 		Type            func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
+		Visibility      func(childComplexity int) int
 		Weight          func(childComplexity int) int
 	}
 
@@ -487,6 +488,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TennisRacket.UpdatedAt(childComplexity), true
 
+	case "TennisRacket.visibility":
+		if e.complexity.TennisRacket.Visibility == nil {
+			break
+		}
+
+		return e.complexity.TennisRacket.Visibility(childComplexity), true
+
 	case "TennisRacket.weight":
 		if e.complexity.TennisRacket.Weight == nil {
 			break
@@ -760,6 +768,12 @@ var sources = []*ast.Source{
 	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisRacket.gql", Input: sourceData("schema/types/TennisRacket.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisString.gql", Input: sourceData("schema/types/TennisString.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
+  PUBLIC
+  PRIVATE
+  FRIENDS
+  COACHES
+}`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA
@@ -1634,6 +1648,8 @@ func (ec *executionContext) fieldContext_Entity_findTennisRacketByID(ctx context
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -1863,6 +1879,8 @@ func (ec *executionContext) fieldContext_Mutation_createTennisRacket(ctx context
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -1944,6 +1962,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisRacket(ctx conte
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -2387,6 +2407,8 @@ func (ec *executionContext) fieldContext_Query_myTennisRacket(ctx context.Contex
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -3451,6 +3473,47 @@ func (ec *executionContext) fieldContext_TennisRacket_weight(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _TennisRacket_visibility(ctx context.Context, field graphql.CollectedField, obj *model.TennisRacket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisRacket_visibility(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Visibility, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Visibility)
+	fc.Result = res
+	return ec.marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisRacket_visibility(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisRacket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Visibility does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TennisString_id(ctx context.Context, field graphql.CollectedField, obj *model.TennisString) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TennisString_id(ctx, field)
 	if err != nil {
@@ -4156,6 +4219,8 @@ func (ec *executionContext) fieldContext_User_myTennisRackets(ctx context.Contex
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -6932,6 +6997,8 @@ func (ec *executionContext) _TennisRacket(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TennisRacket_modelId(ctx, field, obj)
 		case "weight":
 			out.Values[i] = ec._TennisRacket_weight(ctx, field, obj)
+		case "visibility":
+			out.Values[i] = ec._TennisRacket_visibility(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8484,6 +8551,22 @@ func (ec *executionContext) marshalOTennisString2ᚖgithubᚗcomᚋCourtIQᚋcou
 		return graphql.Null
 	}
 	return ec._TennisString(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, v interface{}) (*model.Visibility, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.Visibility)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *model.Visibility) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {

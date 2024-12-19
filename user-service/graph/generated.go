@@ -474,6 +474,12 @@ var sources = []*ast.Source{
 	{Name: "schema/mutations/UserMutations.gql", Input: sourceData("schema/mutations/UserMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/UserQueries.gql", Input: sourceData("schema/queries/UserQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/User.gql", Input: sourceData("schema/types/User.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
+  PUBLIC
+  PRIVATE
+  FRIENDS
+  COACHES
+}`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA
