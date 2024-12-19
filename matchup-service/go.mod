@@ -1,16 +1,17 @@
 module github.com/CourtIQ/courtiq-backend/matchup-service
 
-go 1.23
+go 1.23.1
 
 require (
-	github.com/99designs/gqlgen v0.17.57
+	github.com/99designs/gqlgen v0.17.60
+	github.com/CourtIQ/courtiq-backend/shared v0.0.0-00010101000000-000000000000
 	github.com/joho/godotenv v1.5.1
-	github.com/vektah/gqlparser/v2 v2.5.19
+	github.com/vektah/gqlparser/v2 v2.5.20
 	go.mongodb.org/mongo-driver v1.17.1
 )
 
 require (
-	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -28,4 +29,4 @@ require (
 	golang.org/x/text v0.19.0 // indirect
 )
 
-replace github.com/CourtIQ/courtiq-backend/matchup-service => ../matchup-service
+replace github.com/CourtIQ/courtiq-backend/shared => ../shared

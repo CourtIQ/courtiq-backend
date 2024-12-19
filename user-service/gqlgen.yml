@@ -97,4 +97,4 @@ models:
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
   ObjectID:
-    model: github.com/CourtIQ/courtiq-backend/user-service/graph/scalar.ObjectID
+    model: github.com/CourtIQ/courtiq-backend/shared/graph/scalar.ObjectID
