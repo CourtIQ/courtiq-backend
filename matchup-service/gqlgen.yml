@@ -102,4 +102,4 @@ models:
   DateTime:
     model: github.com/99designs/gqlgen/graphql.Time
   ObjectID:
-    model: github.com/CourtIQ/courtiq-backend/shared/graph/scalar.ObjectID
+    model: github.com/CourtIQ/courtiq-backend/matchup-service/graph/scalar.ObjectID

@@ -4,7 +4,6 @@ go 1.23.1
 
 require (
 	github.com/99designs/gqlgen v0.17.60
-	github.com/CourtIQ/courtiq-backend/shared v0.0.0-00010101000000-000000000000
 	github.com/joho/godotenv v1.5.1
 	github.com/vektah/gqlparser/v2 v2.5.20
 	go.mongodb.org/mongo-driver v1.17.1
