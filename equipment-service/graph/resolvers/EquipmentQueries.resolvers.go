@@ -13,11 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// MyTennisRackets is the resolver for the myTennisRackets field.
-func (r *queryResolver) MyTennisRackets(ctx context.Context, limit *int, offset *int) ([]*model.TennisRacket, error) {
-	return r.EquipmentServiceIntf.MyTennisRackets(ctx, limit, offset)
-}
-
 // MyTennisRacket is the resolver for the myTennisRacket field.
 func (r *queryResolver) MyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error) {
 	return r.EquipmentServiceIntf.FindTennisRacketByID(ctx, id)
@@ -26,11 +21,6 @@ func (r *queryResolver) MyTennisRacket(ctx context.Context, id primitive.ObjectI
 // MyStringHistory is the resolver for the myStringHistory field.
 func (r *queryResolver) MyStringHistory(ctx context.Context, racket primitive.ObjectID) ([]*model.TennisString, error) {
 	panic(fmt.Errorf("not implemented: MyStringHistory - myStringHistory"))
-}
-
-// MyTennisStrings is the resolver for the myTennisStrings field.
-func (r *queryResolver) MyTennisStrings(ctx context.Context, limit *int, offset *int) ([]*model.TennisString, error) {
-	return r.EquipmentServiceIntf.MyTennisStrings(ctx, limit, offset)
 }
 
 // MyTennisString is the resolver for the myTennisString field.
