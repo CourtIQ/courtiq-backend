@@ -14,7 +14,7 @@ type matchUpMongoRepo struct {
 	collection *mongo.Collection
 }
 
-// NewMatchUpMongoRepo creates a new TennisRacketRepository implementation
+// NewMatchUpMongoRepo creates a new NewMatchUpMongoRepository implementation
 func NewMatchUpMongoRepo(mdb *db.MongoDB) MatchUpRepository {
 	return &matchUpMongoRepo{
 		collection: mdb.GetCollection(db.MatchupsCollection),
