@@ -6,4 +6,5 @@ interface Equipment @key(fields: "id") {
     type: EquipmentType!    # Equipment type (TENNIS_STRING, TENNIS_RACKET, etc.)
     createdAt: DateTime!
     updatedAt: DateTime!
+    visibility: Visibility
 }
