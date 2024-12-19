@@ -1,0 +1,6 @@
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  FRIENDS
+  COACHES
+}

@@ -809,6 +809,12 @@ var sources = []*ast.Source{
 	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
 	{Name: "schema/types/Coachship.gql", Input: sourceData("schema/types/Coachship.gql"), BuiltIn: false},
 	{Name: "schema/types/Friendship.gql", Input: sourceData("schema/types/Friendship.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
+  PUBLIC
+  PRIVATE
+  FRIENDS
+  COACHES
+}`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA

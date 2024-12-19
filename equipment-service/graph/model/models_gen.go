@@ -71,6 +71,7 @@ type TennisRacket struct {
 	Model           *string             `json:"model,omitempty" bson:"model,omitempty"`
 	ModelID         *int                `json:"modelId,omitempty" bson:"modelId,omitempty"`
 	Weight          *float64            `json:"weight,omitempty" bson:"weight,omitempty"`
+	Visibility      *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 func (TennisRacket) IsEquipment()                        {}
@@ -227,5 +228,50 @@ func (e *StringGauge) UnmarshalGQL(v interface{}) error {
 }
 
 func (e StringGauge) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Visibility string
+
+const (
+	VisibilityPublic  Visibility = "PUBLIC"
+	VisibilityPrivate Visibility = "PRIVATE"
+	VisibilityFriends Visibility = "FRIENDS"
+	VisibilityCoaches Visibility = "COACHES"
+)
+
+var AllVisibility = []Visibility{
+	VisibilityPublic,
+	VisibilityPrivate,
+	VisibilityFriends,
+	VisibilityCoaches,
+}
+
+func (e Visibility) IsValid() bool {
+	switch e {
+	case VisibilityPublic, VisibilityPrivate, VisibilityFriends, VisibilityCoaches:
+		return true
+	}
+	return false
+}
+
+func (e Visibility) String() string {
+	return string(e)
+}
+
+func (e *Visibility) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Visibility(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Visibility", str)
+	}
+	return nil
+}
+
+func (e Visibility) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
