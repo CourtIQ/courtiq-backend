@@ -1658,6 +1658,8 @@ func (ec *executionContext) fieldContext_Entity_findTennisRacketByID(ctx context
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -1891,6 +1893,8 @@ func (ec *executionContext) fieldContext_Mutation_createTennisRacket(ctx context
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -1974,6 +1978,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisRacket(ctx conte
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -2425,6 +2431,8 @@ func (ec *executionContext) fieldContext_Query_myTennisRacket(ctx context.Contex
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -3534,6 +3542,47 @@ func (ec *executionContext) fieldContext_TennisRacket_weight(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _TennisRacket_visibility(ctx context.Context, field graphql.CollectedField, obj *model.TennisRacket) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisRacket_visibility(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Visibility, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Visibility)
+	fc.Result = res
+	return ec.marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisRacket_visibility(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisRacket",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Visibility does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _TennisString_id(ctx context.Context, field graphql.CollectedField, obj *model.TennisString) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TennisString_id(ctx, field)
 	if err != nil {
@@ -4282,6 +4331,8 @@ func (ec *executionContext) fieldContext_User_myTennisRackets(ctx context.Contex
 				return ec.fieldContext_TennisRacket_modelId(ctx, field)
 			case "weight":
 				return ec.fieldContext_TennisRacket_weight(ctx, field)
+			case "visibility":
+				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
 		},
@@ -7090,6 +7141,8 @@ func (ec *executionContext) _TennisRacket(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TennisRacket_modelId(ctx, field, obj)
 		case "weight":
 			out.Values[i] = ec._TennisRacket_weight(ctx, field, obj)
+		case "visibility":
+			out.Values[i] = ec._TennisRacket_visibility(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

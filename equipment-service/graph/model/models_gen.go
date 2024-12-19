@@ -75,6 +75,7 @@ type TennisRacket struct {
 	Model           *string             `json:"model,omitempty" bson:"model,omitempty"`
 	ModelID         *int                `json:"modelId,omitempty" bson:"modelId,omitempty"`
 	Weight          *float64            `json:"weight,omitempty" bson:"weight,omitempty"`
+	Visibility      *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 func (TennisRacket) IsEquipment()                        {}
