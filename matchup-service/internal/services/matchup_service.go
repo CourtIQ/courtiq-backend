@@ -121,51 +121,67 @@ func (s *MatchUpService) UpdateMatchUpStatus(ctx context.Context, status model.M
 
 func (s *MatchUpService) AddPointToMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
-	if err == nil {
+	if err != nil {
+		return nil, err
+	}
+	// Converting SetFormatInput -> SetFormat of SetFormat
+	setFormat := model.SetFormat{
+		NumberOfGames: matchUpFormatInput.SetFormat.NumberOfGames,
+		DeuceType:     matchUpFormatInput.SetFormat.DeuceType,
+		MustWinByTwo:  matchUpFormatInput.SetFormat.MustWinByTwo,
+	}
 
-		// Converting SetFormatInput -> SetFormat of SetFormat
-		setFormat := model.SetFormat{
-			NumberOfGames: matchUpFormatInput.SetFormat.NumberOfGames,
-			DeuceType:     matchUpFormatInput.SetFormat.DeuceType,
-			MustWinByTwo:  matchUpFormatInput.SetFormat.MustWinByTwo,
-		}
-
+	var tiebreakFormat *model.TiebreakFormat
+	var finalSetFormat *model.SetFormat
+	if matchUpFormatInput.FinalSetFormat != nil {
 		// Converting TiebreakFormatInput -> TiebreakFormat
-		tiebreakFormat := model.TiebreakFormat{
+		tiebreakFormat = &model.TiebreakFormat{
 			Points:       matchUpFormatInput.FinalSetFormat.TiebreakFormat.Points,
 			MustWinByTwo: matchUpFormatInput.FinalSetFormat.TiebreakFormat.MustWinByTwo,
 		}
-
 		// Converting SetFormatInput -> SetFormat of FinalSetFormat
-		finalSetFormat := model.SetFormat{
+		finalSetFormat = &model.SetFormat{
 			NumberOfGames:  matchUpFormatInput.FinalSetFormat.NumberOfGames,
 			DeuceType:      matchUpFormatInput.FinalSetFormat.DeuceType,
 			MustWinByTwo:   matchUpFormatInput.FinalSetFormat.MustWinByTwo,
-			TiebreakFormat: &tiebreakFormat,
+			TiebreakFormat: tiebreakFormat,
 			TiebreakAt:     matchUpFormatInput.FinalSetFormat.TiebreakAt,
 		}
-
-		matchUpFormat := model.MatchUpFormat{
-			ID:             primitive.ObjectID{},
-			Tracker:        primitive.ObjectID{},
-			NumberOfSets:   matchUpFormatInput.NumberOfSets,
-			SetFormat:      &setFormat,
-			FinalSetFormat: &finalSetFormat,
-			InitialServer:  "", // TODO where does this come from?
-		}
-		matchUp.MatchUpFormat = &matchUpFormat
-		err = s.matchUpRepo.Update(ctx, matchUp)
 	}
+	// Converting matchUpFormatInput -> matchUpFormat
+	matchUpFormat := model.MatchUpFormat{
+		ID:             primitive.NewObjectID(),
+		Tracker:        matchUpFormatInput.Tracker,
+		NumberOfSets:   matchUpFormatInput.NumberOfSets,
+		SetFormat:      &setFormat,
+		FinalSetFormat: finalSetFormat,
+		InitialServer:  "", // TODO where does this come from?
+	}
+	matchUp.MatchUpFormat = &matchUpFormat
+	err = s.matchUpRepo.Update(ctx, matchUp)
+
 	return matchUp, err
 }
 func (s *MatchUpService) UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	return nil, nil
+	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
+	if err == nil {
+		// TODO finish business logic
+		err = s.matchUpRepo.Update(ctx, matchUp)
+		return matchUp, err
+	}
+	return nil, err
 }
 func (s *MatchUpService) UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	return nil, nil
+	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
+	if err == nil {
+		// TODO finish business logic
+		err = s.matchUpRepo.Update(ctx, matchUp)
+		return matchUp, err
+	}
+	return nil, err
 }
 func (s *MatchUpService) DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	err := s.matchUpRepo.Delete(ctx, matchUpID)
 
-	return nil, err // TODO should this return matchup
+	return nil, err // TODO should this return matchup?
 }

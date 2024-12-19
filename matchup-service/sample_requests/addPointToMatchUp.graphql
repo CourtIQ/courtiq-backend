@@ -1,0 +1,21 @@
+mutation AddPointToMatchUp {
+  addPointToMatchUp(
+    matchUpId: "6764633e6de2e6247065eb33"
+    matchUpFormatInput: {
+      tracker: "507f1f77bcf86cd799439011"
+      numberOfSets:ONE
+      setFormat: {
+        numberOfGames: ONE
+        deuceType:NORMAL_DEUCE
+        mustWinByTwo:true
+        tiebreakFormat: {
+          points:FIVE
+          mustWinByTwo:true
+        }
+        tiebreakAt: 1
+      }
+    }
+  ) {
+    currentScore: pointsSequence
+  }
+} 

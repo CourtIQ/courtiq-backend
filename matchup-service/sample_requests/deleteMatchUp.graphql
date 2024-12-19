@@ -1,0 +1,6 @@
+mutation DeleteMatchUp {
+  deleteMatchUp(matchUpId: "67643c6cf1eaae6f2bebfa7a") {
+    id
+    matchUpStatus
+  }
+}
