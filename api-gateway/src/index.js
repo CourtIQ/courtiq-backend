@@ -10,36 +10,6 @@ admin.initializeApp({
   credential: admin.credential.cert(config.FIREBASE_SERVICE_ACCOUNT),
 });
 
-async function getIdTokenFromUid(uid) {
-  const apiKey = "AIzaSyCyY5VHDOCqJKhek8o-q-s6LvFJ6kMNueQ";
-  // Generate a custom token for the given UID
-  const customToken = await admin.auth().createCustomToken(uid);
-
-  // Identity Toolkit endpoint for signing in with a custom token
-  const endpoint = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${apiKey}`;
-
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      token: customToken,
-      returnSecureToken: true,
-      refreshToken: false
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to exchange custom token: ${errorText}`);
-  }
-
-  const data = await response.json();
-  console.log('Custom token exchange response:', data.idToken);
-  // data should contain an idToken field
-  return data.idToken;
-}
-
-
 async function startServer() {
   const server = new ApolloServer({
     gateway,
