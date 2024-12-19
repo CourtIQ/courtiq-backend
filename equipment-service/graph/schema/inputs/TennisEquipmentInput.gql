@@ -5,7 +5,7 @@ input CreateTennisRacketInput {
     model: String
     modelId: Int
     weight: Float
-
+    visibility: Visibility
 }
 
 input UpdateTennisRacketInput {
@@ -15,6 +15,7 @@ input UpdateTennisRacketInput {
     model: String
     modelId: Int
     weight: Float
+    visibility: Visibility
 }
 
 input CreateTennisStringInput {
@@ -26,6 +27,7 @@ input CreateTennisStringInput {
     tension: StringTensionInput
     stringingDate: DateTime
     burstDate: DateTime
+    visibility: Visibility
 }
 
 input UpdateTennisStringInput {
@@ -37,6 +39,7 @@ input UpdateTennisStringInput {
     tension: StringTensionInput
     stringingDate: DateTime
     burstDate: DateTime
+    visibility: Visibility
 }
 
 input StringTensionInput {

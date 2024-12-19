@@ -20,15 +20,17 @@ type Equipment interface {
 	GetType() EquipmentType
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
+	GetVisibility() *Visibility
 }
 
 type CreateTennisRacketInput struct {
-	Name    string   `json:"name" bson:"name"`
-	Brand   *string  `json:"brand,omitempty" bson:"brand,omitempty"`
-	BrandID *int     `json:"brandId,omitempty" bson:"brandId,omitempty"`
-	Model   *string  `json:"model,omitempty" bson:"model,omitempty"`
-	ModelID *int     `json:"modelId,omitempty" bson:"modelId,omitempty"`
-	Weight  *float64 `json:"weight,omitempty" bson:"weight,omitempty"`
+	Name       string      `json:"name" bson:"name"`
+	Brand      *string     `json:"brand,omitempty" bson:"brand,omitempty"`
+	BrandID    *int        `json:"brandId,omitempty" bson:"brandId,omitempty"`
+	Model      *string     `json:"model,omitempty" bson:"model,omitempty"`
+	ModelID    *int        `json:"modelId,omitempty" bson:"modelId,omitempty"`
+	Weight     *float64    `json:"weight,omitempty" bson:"weight,omitempty"`
+	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 type CreateTennisStringInput struct {
@@ -40,6 +42,7 @@ type CreateTennisStringInput struct {
 	Tension       *StringTensionInput `json:"tension,omitempty" bson:"tension,omitempty"`
 	StringingDate *time.Time          `json:"stringingDate,omitempty" bson:"stringingDate,omitempty"`
 	BurstDate     *time.Time          `json:"burstDate,omitempty" bson:"burstDate,omitempty"`
+	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 type Mutation struct {
@@ -65,13 +68,13 @@ type TennisRacket struct {
 	Type            EquipmentType       `json:"type" bson:"type"`
 	CreatedAt       time.Time           `json:"createdAt" bson:"createdAt"`
 	UpdatedAt       time.Time           `json:"updatedAt" bson:"updatedAt"`
+	Visibility      *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 	CurrentStringID *primitive.ObjectID `json:"currentStringId,omitempty" bson:"currentStringId,omitempty"`
 	Brand           *string             `json:"brand,omitempty" bson:"brand,omitempty"`
 	BrandID         *int                `json:"brandId,omitempty" bson:"brandId,omitempty"`
 	Model           *string             `json:"model,omitempty" bson:"model,omitempty"`
 	ModelID         *int                `json:"modelId,omitempty" bson:"modelId,omitempty"`
 	Weight          *float64            `json:"weight,omitempty" bson:"weight,omitempty"`
-	Visibility      *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 func (TennisRacket) IsEquipment()                        {}
@@ -81,6 +84,7 @@ func (this TennisRacket) GetName() string                { return this.Name }
 func (this TennisRacket) GetType() EquipmentType         { return this.Type }
 func (this TennisRacket) GetCreatedAt() time.Time        { return this.CreatedAt }
 func (this TennisRacket) GetUpdatedAt() time.Time        { return this.UpdatedAt }
+func (this TennisRacket) GetVisibility() *Visibility     { return this.Visibility }
 
 func (TennisRacket) IsEntity() {}
 
@@ -91,6 +95,7 @@ type TennisString struct {
 	Type          EquipmentType       `json:"type" bson:"type"`
 	CreatedAt     time.Time           `json:"createdAt" bson:"createdAt"`
 	UpdatedAt     time.Time           `json:"updatedAt" bson:"updatedAt"`
+	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 	Racket        *primitive.ObjectID `json:"racket,omitempty" bson:"racket,omitempty"`
 	Brand         *string             `json:"brand,omitempty" bson:"brand,omitempty"`
 	BrandID       *int                `json:"brandId,omitempty" bson:"brandId,omitempty"`
@@ -108,16 +113,18 @@ func (this TennisString) GetName() string                { return this.Name }
 func (this TennisString) GetType() EquipmentType         { return this.Type }
 func (this TennisString) GetCreatedAt() time.Time        { return this.CreatedAt }
 func (this TennisString) GetUpdatedAt() time.Time        { return this.UpdatedAt }
+func (this TennisString) GetVisibility() *Visibility     { return this.Visibility }
 
 func (TennisString) IsEntity() {}
 
 type UpdateTennisRacketInput struct {
-	Name    *string  `json:"name,omitempty" bson:"name,omitempty"`
-	Brand   *string  `json:"brand,omitempty" bson:"brand,omitempty"`
-	BrandID *int     `json:"brandId,omitempty" bson:"brandId,omitempty"`
-	Model   *string  `json:"model,omitempty" bson:"model,omitempty"`
-	ModelID *int     `json:"modelId,omitempty" bson:"modelId,omitempty"`
-	Weight  *float64 `json:"weight,omitempty" bson:"weight,omitempty"`
+	Name       *string     `json:"name,omitempty" bson:"name,omitempty"`
+	Brand      *string     `json:"brand,omitempty" bson:"brand,omitempty"`
+	BrandID    *int        `json:"brandId,omitempty" bson:"brandId,omitempty"`
+	Model      *string     `json:"model,omitempty" bson:"model,omitempty"`
+	ModelID    *int        `json:"modelId,omitempty" bson:"modelId,omitempty"`
+	Weight     *float64    `json:"weight,omitempty" bson:"weight,omitempty"`
+	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 type UpdateTennisStringInput struct {
@@ -129,6 +136,7 @@ type UpdateTennisStringInput struct {
 	Tension       *StringTensionInput `json:"tension,omitempty" bson:"tension,omitempty"`
 	StringingDate *time.Time          `json:"stringingDate,omitempty" bson:"stringingDate,omitempty"`
 	BurstDate     *time.Time          `json:"burstDate,omitempty" bson:"burstDate,omitempty"`
+	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 type User struct {

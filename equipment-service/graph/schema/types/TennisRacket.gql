@@ -6,6 +6,8 @@ type TennisRacket implements Equipment @key(fields: "id") {
     type: EquipmentType!                  # Equipment type (e.g., TENNIS_RACKET)
     createdAt: DateTime!                  # Timestamp for when the racket was created
     updatedAt: DateTime!                  # Timestamp for the last update
+    visibility: Visibility                # Visibility of the racket (PUBLIC, PRIVATE, FRIENDS)
+
 
     # Racket-specific fields
     currentStringId: ObjectID             # ID of the current string setup for the racket, optional
@@ -14,7 +16,6 @@ type TennisRacket implements Equipment @key(fields: "id") {
     model: String                         # Model of the racket (e.g., Blade 98)
     modelId: Int                          # Model ID for the racket (optional)
     weight: Float                         # Weight of the racket in grams (e.g., 305.0)
-    visibility: Visibility                # Visibility of the racket (PUBLIC, PRIVATE, FRIENDS)
 }
 
 extend type User @key(fields: "id") {
