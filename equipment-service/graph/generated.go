@@ -74,9 +74,7 @@ type ComplexityRoot struct {
 		MyEquipment        func(childComplexity int, limit *int, offset *int) int
 		MyStringHistory    func(childComplexity int, racket primitive.ObjectID) int
 		MyTennisRacket     func(childComplexity int, id primitive.ObjectID) int
-		MyTennisRackets    func(childComplexity int, limit *int, offset *int) int
 		MyTennisString     func(childComplexity int, id primitive.ObjectID) int
-		MyTennisStrings    func(childComplexity int, limit *int, offset *int) int
 		__resolve__service func(childComplexity int) int
 		__resolve_entities func(childComplexity int, representations []map[string]interface{}) int
 	}
@@ -145,10 +143,8 @@ type MutationResolver interface {
 	AssignRacketToString(ctx context.Context, racketID primitive.ObjectID, stringID primitive.ObjectID) (*model.TennisString, error)
 }
 type QueryResolver interface {
-	MyTennisRackets(ctx context.Context, limit *int, offset *int) ([]*model.TennisRacket, error)
 	MyTennisRacket(ctx context.Context, id primitive.ObjectID) (*model.TennisRacket, error)
 	MyStringHistory(ctx context.Context, racket primitive.ObjectID) ([]*model.TennisString, error)
-	MyTennisStrings(ctx context.Context, limit *int, offset *int) ([]*model.TennisString, error)
 	MyTennisString(ctx context.Context, id primitive.ObjectID) (*model.TennisString, error)
 	MyEquipment(ctx context.Context, limit *int, offset *int) ([]model.Equipment, error)
 }
@@ -369,18 +365,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.MyTennisRacket(childComplexity, args["id"].(primitive.ObjectID)), true
 
-	case "Query.myTennisRackets":
-		if e.complexity.Query.MyTennisRackets == nil {
-			break
-		}
-
-		args, err := ec.field_Query_myTennisRackets_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.MyTennisRackets(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
-
 	case "Query.myTennisString":
 		if e.complexity.Query.MyTennisString == nil {
 			break
@@ -392,18 +376,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.MyTennisString(childComplexity, args["id"].(primitive.ObjectID)), true
-
-	case "Query.myTennisStrings":
-		if e.complexity.Query.MyTennisStrings == nil {
-			break
-		}
-
-		args, err := ec.field_Query_myTennisStrings_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.MyTennisStrings(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -1307,47 +1279,6 @@ func (ec *executionContext) field_Query_myTennisRacket_argsID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_myTennisRackets_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_myTennisRackets_argsLimit(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["limit"] = arg0
-	arg1, err := ec.field_Query_myTennisRackets_argsOffset(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["offset"] = arg1
-	return args, nil
-}
-func (ec *executionContext) field_Query_myTennisRackets_argsLimit(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (*int, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-	if tmp, ok := rawArgs["limit"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
-	}
-
-	var zeroVal *int
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_myTennisRackets_argsOffset(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (*int, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-	if tmp, ok := rawArgs["offset"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
-	}
-
-	var zeroVal *int
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Query_myTennisString_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1368,47 +1299,6 @@ func (ec *executionContext) field_Query_myTennisString_argsID(
 	}
 
 	var zeroVal primitive.ObjectID
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_myTennisStrings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Query_myTennisStrings_argsLimit(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["limit"] = arg0
-	arg1, err := ec.field_Query_myTennisStrings_argsOffset(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["offset"] = arg1
-	return args, nil
-}
-func (ec *executionContext) field_Query_myTennisStrings_argsLimit(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (*int, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-	if tmp, ok := rawArgs["limit"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
-	}
-
-	var zeroVal *int
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_myTennisStrings_argsOffset(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (*int, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-	if tmp, ok := rawArgs["offset"]; ok {
-		return ec.unmarshalOInt2ᚖint(ctx, tmp)
-	}
-
-	var zeroVal *int
 	return zeroVal, nil
 }
 
@@ -2437,87 +2327,6 @@ func (ec *executionContext) fieldContext_Mutation_assignRacketToString(ctx conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_myTennisRackets(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_myTennisRackets(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MyTennisRackets(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.TennisRacket)
-	fc.Result = res
-	return ec.marshalNTennisRacket2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐTennisRacketᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_myTennisRackets(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_TennisRacket_id(ctx, field)
-			case "ownerId":
-				return ec.fieldContext_TennisRacket_ownerId(ctx, field)
-			case "name":
-				return ec.fieldContext_TennisRacket_name(ctx, field)
-			case "type":
-				return ec.fieldContext_TennisRacket_type(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_TennisRacket_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_TennisRacket_updatedAt(ctx, field)
-			case "currentStringId":
-				return ec.fieldContext_TennisRacket_currentStringId(ctx, field)
-			case "brand":
-				return ec.fieldContext_TennisRacket_brand(ctx, field)
-			case "brandId":
-				return ec.fieldContext_TennisRacket_brandId(ctx, field)
-			case "model":
-				return ec.fieldContext_TennisRacket_model(ctx, field)
-			case "modelId":
-				return ec.fieldContext_TennisRacket_modelId(ctx, field)
-			case "weight":
-				return ec.fieldContext_TennisRacket_weight(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type TennisRacket", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_myTennisRackets_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_myTennisRacket(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_myTennisRacket(ctx, field)
 	if err != nil {
@@ -2675,91 +2484,6 @@ func (ec *executionContext) fieldContext_Query_myStringHistory(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_myStringHistory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_myTennisStrings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_myTennisStrings(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MyTennisStrings(rctx, fc.Args["limit"].(*int), fc.Args["offset"].(*int))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.TennisString)
-	fc.Result = res
-	return ec.marshalNTennisString2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐTennisStringᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_myTennisStrings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_TennisString_id(ctx, field)
-			case "ownerId":
-				return ec.fieldContext_TennisString_ownerId(ctx, field)
-			case "name":
-				return ec.fieldContext_TennisString_name(ctx, field)
-			case "type":
-				return ec.fieldContext_TennisString_type(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_TennisString_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "racket":
-				return ec.fieldContext_TennisString_racket(ctx, field)
-			case "brand":
-				return ec.fieldContext_TennisString_brand(ctx, field)
-			case "brandId":
-				return ec.fieldContext_TennisString_brandId(ctx, field)
-			case "model":
-				return ec.fieldContext_TennisString_model(ctx, field)
-			case "modelId":
-				return ec.fieldContext_TennisString_modelId(ctx, field)
-			case "tension":
-				return ec.fieldContext_TennisString_tension(ctx, field)
-			case "stringingDate":
-				return ec.fieldContext_TennisString_stringingDate(ctx, field)
-			case "burstDate":
-				return ec.fieldContext_TennisString_burstDate(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type TennisString", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_myTennisStrings_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6960,28 +6684,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "myTennisRackets":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_myTennisRackets(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "myTennisRacket":
 			field := field
 
@@ -7011,28 +6713,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_myStringHistory(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "myTennisStrings":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_myTennisStrings(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
