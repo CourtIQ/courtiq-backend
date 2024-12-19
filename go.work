@@ -4,5 +4,6 @@ use (
 	./equipment-service
 	./matchup-service
 	./relationship-service
+	./shared
 	./user-service
 )
