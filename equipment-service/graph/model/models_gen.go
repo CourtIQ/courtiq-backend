@@ -130,6 +130,14 @@ type UpdateTennisStringInput struct {
 	BurstDate     *time.Time          `json:"burstDate,omitempty" bson:"burstDate,omitempty"`
 }
 
+type User struct {
+	ID              primitive.ObjectID `json:"id" bson:"_id"`
+	MyTennisRackets []*TennisRacket    `json:"myTennisRackets" bson:"myTennisRackets"`
+	MyTennisStrings []*TennisString    `json:"myTennisStrings" bson:"myTennisStrings"`
+}
+
+func (User) IsEntity() {}
+
 type EquipmentType string
 
 const (

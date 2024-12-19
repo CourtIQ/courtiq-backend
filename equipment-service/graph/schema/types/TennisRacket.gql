@@ -15,3 +15,9 @@ type TennisRacket implements Equipment @key(fields: "id") {
     modelId: Int                          # Model ID for the racket (optional)
     weight: Float                         # Weight of the racket in grams (e.g., 305.0)
 }
+
+extend type User @key(fields: "id") {
+    id: ObjectID! @external
+    myTennisRackets(limit: Int = 10, offset: Int = 0): [TennisRacket!]! @requires(fields: "id")
+    myTennisStrings(limit: Int = 10, offset: Int = 0): [TennisString!]! @requires(fields: "id")
+}

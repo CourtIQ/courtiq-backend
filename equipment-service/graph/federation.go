@@ -210,6 +210,25 @@ func (ec *executionContext) resolveEntity(
 
 			return entity, nil
 		}
+	case "User":
+		resolverName, err := entityResolverNameForUser(ctx, rep)
+		if err != nil {
+			return nil, fmt.Errorf(`finding resolver for Entity "User": %w`, err)
+		}
+		switch resolverName {
+
+		case "findUserByID":
+			id0, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, rep["id"])
+			if err != nil {
+				return nil, fmt.Errorf(`unmarshalling param 0 for findUserByID(): %w`, err)
+			}
+			entity, err := ec.resolvers.Entity().FindUserByID(ctx, id0)
+			if err != nil {
+				return nil, fmt.Errorf(`resolving Entity "User": %w`, err)
+			}
+
+			return entity, nil
+		}
 
 	}
 	return nil, fmt.Errorf("%w: %s", ErrUnknownType, typeName)
@@ -315,4 +334,31 @@ func entityResolverNameForTennisString(ctx context.Context, rep EntityRepresenta
 		return "findTennisStringByID", nil
 	}
 	return "", fmt.Errorf("%w for TennisString", ErrTypeNotFound)
+}
+
+func entityResolverNameForUser(ctx context.Context, rep EntityRepresentation) (string, error) {
+	for {
+		var (
+			m   EntityRepresentation
+			val interface{}
+			ok  bool
+		)
+		_ = val
+		// if all of the KeyFields values for this resolver are null,
+		// we shouldn't use use it
+		allNull := true
+		m = rep
+		val, ok = m["id"]
+		if !ok {
+			break
+		}
+		if allNull {
+			allNull = val == nil
+		}
+		if allNull {
+			break
+		}
+		return "findUserByID", nil
+	}
+	return "", fmt.Errorf("%w for User", ErrTypeNotFound)
 }

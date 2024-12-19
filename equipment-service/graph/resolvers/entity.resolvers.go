@@ -27,6 +27,13 @@ func (r *entityResolver) FindTennisStringByID(ctx context.Context, id primitive.
 	return r.EquipmentServiceIntf.FindTennisStringByID(ctx, id)
 }
 
+// FindUserByID is the resolver for the findUserByID field.
+func (r *entityResolver) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
+	return &model.User{
+		ID: id,
+	}, nil
+}
+
 // Entity returns graph.EntityResolver implementation.
 func (r *Resolver) Entity() graph.EntityResolver { return &entityResolver{r} }
 
