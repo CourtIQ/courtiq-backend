@@ -55,25 +55,25 @@ type ParticipantsMap struct {
 }
 
 type Point struct {
-	ID                   primitive.ObjectID `json:"id"`
-	SetIndex             int                `json:"setIndex"`
-	GameIndexWithinSet   int                `json:"gameIndexWithinSet"`
-	PointIndexWithinGame int                `json:"pointIndexWithinGame"`
-	IsTiebreak           bool               `json:"isTiebreak"`
-	TiebreakPointNumber  *int               `json:"tiebreakPointNumber,omitempty"`
-	PointWinner          primitive.ObjectID `json:"pointWinner"`
-	PointServer          primitive.ObjectID `json:"pointServer"`
-	PointWinReason       *PointWinReason    `json:"pointWinReason,omitempty"`
-	PlayingSide          PlayingSide        `json:"playingSide"`
-	CourtSide            CourtSide          `json:"courtSide"`
-	ScoreBefore          *Score             `json:"scoreBefore"`
-	ScoreAfter           *Score             `json:"scoreAfter"`
-	Shots                []*Shot            `json:"shots"`
-	IsBreakPoint         bool               `json:"isBreakPoint"`
-	IsGamePoint          bool               `json:"isGamePoint"`
-	IsSetPoint           bool               `json:"isSetPoint"`
-	IsMatchPoint         bool               `json:"isMatchPoint"`
-	PlayedAt             *time.Time         `json:"playedAt,omitempty"`
+	ID                   primitive.ObjectID `json:"id" bson:"_id"`
+	SetIndex             int                `json:"setIndex" bson:"setIndex"`
+	GameIndexWithinSet   int                `json:"gameIndexWithinSet" bson:"gameIndexWithinSet"`
+	PointIndexWithinGame int                `json:"pointIndexWithinGame" bson:"pointIndexWithinGame"`
+	IsTiebreak           bool               `json:"isTiebreak" bson:"isTiebreak"`
+	TiebreakPointNumber  *int               `json:"tiebreakPointNumber,omitempty" bson:"tiebreakPointNumber,omitempty"`
+	PointWinner          primitive.ObjectID `json:"pointWinner" bson:"pointWinner"`
+	PointServer          primitive.ObjectID `json:"pointServer" bson:"pointServer"`
+	PointWinReason       *PointWinReason    `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
+	PlayingSide          PlayingSide        `json:"playingSide" bson:"playingSide"`
+	CourtSide            CourtSide          `json:"courtSide" bson:"courtSide"`
+	ScoreBefore          *Score             `json:"scoreBefore" bson:"scoreBefore"`
+	ScoreAfter           *Score             `json:"scoreAfter" bson:"scoreAfter"`
+	Shots                []*Shot            `json:"shots" bson:"shots"`
+	IsBreakPoint         bool               `json:"isBreakPoint" bson:"isBreakPoint"`
+	IsGamePoint          bool               `json:"isGamePoint" bson:"isGamePoint"`
+	IsSetPoint           bool               `json:"isSetPoint" bson:"isSetPoint"`
+	IsMatchPoint         bool               `json:"isMatchPoint" bson:"isMatchPoint"`
+	PlayedAt             *time.Time         `json:"playedAt,omitempty" bson:"playedAt,omitempty"`
 }
 
 type Query struct {

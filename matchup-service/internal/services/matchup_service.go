@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
 	"time"
+
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 	"go.mongodb.org/mongo-driver/bson/primitive"

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/db"
 	"go.mongodb.org/mongo-driver/bson"

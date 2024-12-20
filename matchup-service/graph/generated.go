@@ -871,6 +871,7 @@ var sources = []*ast.Source{
 	{Name: "schema/types/MatchUpFormat.gql", Input: sourceData("schema/types/MatchUpFormat.gql"), BuiltIn: false},
 	{Name: "schema/types/Point.gql", Input: sourceData("schema/types/Point.gql"), BuiltIn: false},
 	{Name: "schema/types/Score.gql", Input: sourceData("schema/types/Score.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE
@@ -947,11 +948,11 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_addPointToMatchUp_argsMatchupFormat(ctx, rawArgs)
+	arg0, err := ec.field_Mutation_addPointToMatchUp_argsMatchUpFormatInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["matchupFormat"] = arg0
+	args["matchUpFormatInput"] = arg0
 	arg1, err := ec.field_Mutation_addPointToMatchUp_argsMatchUpID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -959,12 +960,12 @@ func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Co
 	args["matchUpId"] = arg1
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchupFormat(
+func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpFormatInput(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (model.MatchUpFormatInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchupFormat"))
-	if tmp, ok := rawArgs["matchupFormat"]; ok {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpFormatInput"))
+	if tmp, ok := rawArgs["matchUpFormatInput"]; ok {
 		return ec.unmarshalNMatchUpFormatInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatInput(ctx, tmp)
 	}
 
