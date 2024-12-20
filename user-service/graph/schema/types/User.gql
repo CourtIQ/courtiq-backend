@@ -1,4 +1,3 @@
-scalar Time
 scalar ObjectID
 
 """
@@ -15,12 +14,12 @@ type User @key(fields: "id") {
   username: String
   gender: Gender
   profilePicture: String
-  dateOfBirth: Time
+  dateOfBirth: DateTime
   bio: String
   location: Location
   rating: Int
-  createdAt: Time
-  lastUpdated: Time
+  createdAt: DateTime
+  lastUpdated: DateTime
 }
 
 """

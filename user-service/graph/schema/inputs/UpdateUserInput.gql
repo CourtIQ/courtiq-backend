@@ -4,7 +4,7 @@ input UpdateUserInput {
   firstName: String
   lastName: String
   gender: Gender
-  dateOfBirth: Time
+  dateOfBirth: DateTime
   bio: String
   location: LocationInput
 }

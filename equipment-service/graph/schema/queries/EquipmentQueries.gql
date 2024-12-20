@@ -1,14 +1,11 @@
 extend type Query {
     # Racket Queries
-    # Optional limit and offset parameters for pagination
     myTennisRacket(id: ObjectID!): TennisRacket
     myStringHistory(racket: ObjectID!): [TennisString!]!
 
     # String Queries
-    # Optional limit and offset parameters for pagination
     myTennisString(id: ObjectID!): TennisString
 
     # Combined Equipment Query
-    # Optional limit and offset parameters for pagination
     myEquipment(limit: Int = 10, offset: Int = 0): [Equipment!]!
 }

@@ -474,6 +474,7 @@ var sources = []*ast.Source{
 	{Name: "schema/mutations/UserMutations.gql", Input: sourceData("schema/mutations/UserMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/UserQueries.gql", Input: sourceData("schema/queries/UserQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/User.gql", Input: sourceData("schema/types/User.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE
@@ -1971,7 +1972,7 @@ func (ec *executionContext) _User_dateOfBirth(ctx context.Context, field graphql
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_dateOfBirth(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1981,7 +1982,7 @@ func (ec *executionContext) fieldContext_User_dateOfBirth(_ context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type DateTime does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2147,7 +2148,7 @@ func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2157,7 +2158,7 @@ func (ec *executionContext) fieldContext_User_createdAt(_ context.Context, field
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type DateTime does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2188,7 +2189,7 @@ func (ec *executionContext) _User_lastUpdated(ctx context.Context, field graphql
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_lastUpdated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2198,7 +2199,7 @@ func (ec *executionContext) fieldContext_User_lastUpdated(_ context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type DateTime does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4117,7 +4118,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 			it.Gender = data
 		case "dateOfBirth":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dateOfBirth"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5520,6 +5521,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODateTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalTime(*v)
+	return res
+}
+
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
 	if v == nil {
 		return nil, nil
@@ -5644,22 +5661,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	res := graphql.MarshalString(*v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalTime(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalTime(*v)
 	return res
 }
 
