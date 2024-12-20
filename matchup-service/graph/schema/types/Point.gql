@@ -11,32 +11,37 @@ type Shot {
 type Point {
   id: ObjectID!
 
-  setIndex: Int!            # Index of the set this point belongs to (0-based or 1-based)
+  setIndex: Int!                     # Index of the set this point belongs to (0-based or 1-based)
   gameIndexWithinSet: Int!           # Index of the game within the set
   pointIndexWithinGame: Int!         # Order of the point within the game
 
   isTiebreak: Boolean!
-  tiebreakPointNumber: Int  # If in a tiebreak, the order of the point in the tiebreak
+  tiebreakPointNumber: Int           # If in a tiebreak, the order of the point in the tiebreak
 
-  pointWinner: ObjectID!    # ID of the player who won the point
+  pointWinner: ObjectID!             # ID of the player who won the point
   pointServer: ObjectID!
   pointWinReason: PointWinReason
 
-  playingSide: PlayingSide! # Side of the court where the point was played
-  courtSide: CourtSide!     # Side of the court where the point was played
+  playingSide: PlayingSide!          # Side of the court where the point was played
+  courtSide: CourtSide!              # Side of the court where the point was played
   
-  scoreBefore: Score!           # Score before the point was played
-  scoreAfter: Score!            # Score after the point was played
+  scoreBefore: Score!                # Score before the point was played
+  scoreAfter: Score!                 # Score after the point was played
 
-  shots: [Shot!]!           # Sequence of shots played in this point
+  shots: [Shot!]!                    # Sequence of shots played in this point
 
   # Contextual flags:
-  isBreakPoint: Boolean!    # True if this point represented a break opportunity for the receiver
-  isGamePoint: Boolean!     # True if winning this point would win the current game
-  isSetPoint: Boolean!      # True if winning this point would win the current set
-  isMatchPoint: Boolean!    # True if winning this point would win the match
+  isBreakPoint: Boolean!             # True if this point represented a break opportunity for the receiver
+  isGamePoint: Boolean!              # True if winning this point would win the current game
+  isSetPoint: Boolean!               # True if winning this point would win the current set
+  isMatchPoint: Boolean!             # True if winning this point would win the match
 
   # Additional optional fields:
   playedAt: DateTime       # Timestamp when the point was played
 }
 
+# Pranav is on Side A for the the first game when the match starts
+# After the first ganme is over players, switch sides
+# Moving forwards every 2 games players switch side
+# Every odd game is played on Side A
+# Every even game is played on Side B

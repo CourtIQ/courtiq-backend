@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
@@ -25,6 +26,11 @@ func (r *mutationResolver) UpdateMatchUpStatus(ctx context.Context, status model
 // AddPointToMatchUp is the resolver for the addPointToMatchUp field.
 func (r *mutationResolver) AddPointToMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	return r.MatchUpServiceIntf.AddPointToMatchUp(ctx, matchUpFormatInput, matchUpID)
+}
+
+// AddShotToMatchUp is the resolver for the addShotToMatchUp field.
+func (r *mutationResolver) AddShotToMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+	panic(fmt.Errorf("not implemented: AddShotToMatchUp - addShotToMatchUp"))
 }
 
 // UndoShotFromMatchUp is the resolver for the undoShotFromMatchUp field.

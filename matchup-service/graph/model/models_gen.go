@@ -23,6 +23,7 @@ type MatchUp struct {
 	CurrentPointIndexWithinGame *int                 `json:"currentPointIndexWithinGame,omitempty" bson:"currentPointIndexWithinGame,omitempty"`
 	CurrentScore                *Score               `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
 	CurrentServer               primitive.ObjectID   `json:"currentServer" bson:"currentServer"`
+	InitalServer                primitive.ObjectID   `json:"initalServer" bson:"initalServer"`
 	PointsSequence              []primitive.ObjectID `json:"pointsSequence" bson:"pointsSequence"`
 	StartTime                   time.Time            `json:"startTime" bson:"startTime"`
 	EndTime                     *time.Time           `json:"endTime,omitempty" bson:"endTime,omitempty"`
@@ -74,6 +75,11 @@ type Point struct {
 	IsSetPoint           bool               `json:"isSetPoint" bson:"isSetPoint"`
 	IsMatchPoint         bool               `json:"isMatchPoint" bson:"isMatchPoint"`
 	PlayedAt             *time.Time         `json:"playedAt,omitempty" bson:"playedAt,omitempty"`
+}
+
+type PointInput struct {
+	Winner primitive.ObjectID `json:"winner" bson:"winner"`
+	Loser  primitive.ObjectID `json:"loser" bson:"loser"`
 }
 
 type Query struct {

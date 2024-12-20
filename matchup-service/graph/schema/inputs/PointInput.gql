@@ -1,0 +1,8 @@
+
+input PointInput {
+    winner: ObjectID!
+    loser: ObjectID!
+    # shot: ShotInput!
+}
+# TODO: Add more fields to the PointInput
+# Use point type to understand what fields required.

@@ -12,6 +12,10 @@ type MatchUp {
     currentPointIndexWithinGame: Int
     currentScore: Score
     currentServer: ObjectID!
+    initalServer: ObjectID!
+    # In tennis the server in singles changes after every game
+    # In doubles, if i start serving i will server after 3 games,
+    # Every fourth game i will server if i am inital server.
 
     pointsSequence: [ObjectID!]!
 

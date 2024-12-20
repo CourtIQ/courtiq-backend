@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 		CurrentSetIndex             func(childComplexity int) int
 		EndTime                     func(childComplexity int) int
 		ID                          func(childComplexity int) int
+		InitalServer                func(childComplexity int) int
 		MatchUpFormat               func(childComplexity int) int
 		MatchUpStatus               func(childComplexity int) int
 		MatchUpType                 func(childComplexity int) int
@@ -81,6 +82,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		AddPointToMatchUp    func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) int
+		AddShotToMatchUp     func(childComplexity int, matchUpID primitive.ObjectID) int
 		CreateMatchUp        func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) int
 		DeleteMatchUp        func(childComplexity int, matchUpID primitive.ObjectID) int
 		UndoPointFromMatchUp func(childComplexity int, matchUpID primitive.ObjectID) int
@@ -164,6 +166,7 @@ type MutationResolver interface {
 	CreateMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error)
 	UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	AddPointToMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	AddShotToMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
@@ -246,6 +249,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MatchUp.ID(childComplexity), true
+
+	case "MatchUp.initalServer":
+		if e.complexity.MatchUp.InitalServer == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.InitalServer(childComplexity), true
 
 	case "MatchUp.matchUpFormat":
 		if e.complexity.MatchUp.MatchUpFormat == nil {
@@ -356,6 +366,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.AddPointToMatchUp(childComplexity, args["matchUpFormatInput"].(model.MatchUpFormatInput), args["matchUpId"].(primitive.ObjectID)), true
+
+	case "Mutation.addShotToMatchUp":
+		if e.complexity.Mutation.AddShotToMatchUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addShotToMatchUp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddShotToMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
 
 	case "Mutation.createMatchUp":
 		if e.complexity.Mutation.CreateMatchUp == nil {
@@ -739,6 +761,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputMatchUpFormatInput,
+		ec.unmarshalInputPointInput,
 		ec.unmarshalInputSetFormatInput,
 		ec.unmarshalInputTiebreakFormatInput,
 	)
@@ -837,7 +860,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql"
+//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/PointInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -864,6 +887,7 @@ var sources = []*ast.Source{
 	{Name: "schema/enums/ShotType.gql", Input: sourceData("schema/enums/ShotType.gql"), BuiltIn: false},
 	{Name: "schema/enums/TiebreakPoints.gql", Input: sourceData("schema/enums/TiebreakPoints.gql"), BuiltIn: false},
 	{Name: "schema/inputs/MatchUpFormatInput.gql", Input: sourceData("schema/inputs/MatchUpFormatInput.gql"), BuiltIn: false},
+	{Name: "schema/inputs/PointInput.gql", Input: sourceData("schema/inputs/PointInput.gql"), BuiltIn: false},
 	{Name: "schema/mutations/MatchUpMutations.gql", Input: sourceData("schema/mutations/MatchUpMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/MatchUpFormatQueries.gql", Input: sourceData("schema/queries/MatchUpFormatQueries.gql"), BuiltIn: false},
 	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
@@ -974,6 +998,29 @@ func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpFormatIn
 }
 
 func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
+	if tmp, ok := rawArgs["matchUpId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_addShotToMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_addShotToMatchUp_argsMatchUpID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["matchUpId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_addShotToMatchUp_argsMatchUpID(
 	ctx context.Context,
 	rawArgs map[string]interface{},
 ) (primitive.ObjectID, error) {
@@ -1753,6 +1800,50 @@ func (ec *executionContext) fieldContext_MatchUp_currentServer(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _MatchUp_initalServer(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_initalServer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InitalServer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	fc.Result = res
+	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_initalServer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ObjectID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MatchUp_pointsSequence(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 	if err != nil {
@@ -2316,6 +2407,8 @@ func (ec *executionContext) fieldContext_Mutation_createMatchUp(ctx context.Cont
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2405,6 +2498,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMatchUpStatus(ctx contex
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2494,6 +2589,8 @@ func (ec *executionContext) fieldContext_Mutation_addPointToMatchUp(ctx context.
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2516,6 +2613,97 @@ func (ec *executionContext) fieldContext_Mutation_addPointToMatchUp(ctx context.
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addPointToMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addShotToMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addShotToMatchUp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddShotToMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MatchUp)
+	fc.Result = res
+	return ec.marshalNMatchUp2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUp(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addShotToMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MatchUp_id(ctx, field)
+			case "matchUpFormat":
+				return ec.fieldContext_MatchUp_matchUpFormat(ctx, field)
+			case "matchUpStatus":
+				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
+			case "matchUpType":
+				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
+			case "participantIds":
+				return ec.fieldContext_MatchUp_participantIds(ctx, field)
+			case "participants":
+				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "currentSetIndex":
+				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
+			case "currentGameIndexWithinSet":
+				return ec.fieldContext_MatchUp_currentGameIndexWithinSet(ctx, field)
+			case "currentPointIndexWithinGame":
+				return ec.fieldContext_MatchUp_currentPointIndexWithinGame(ctx, field)
+			case "currentScore":
+				return ec.fieldContext_MatchUp_currentScore(ctx, field)
+			case "currentServer":
+				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "pointsSequence":
+				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
+			case "startTime":
+				return ec.fieldContext_MatchUp_startTime(ctx, field)
+			case "endTime":
+				return ec.fieldContext_MatchUp_endTime(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_MatchUp_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_MatchUp_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUp", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addShotToMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2583,6 +2771,8 @@ func (ec *executionContext) fieldContext_Mutation_undoShotFromMatchUp(ctx contex
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2672,6 +2862,8 @@ func (ec *executionContext) fieldContext_Mutation_undoPointFromMatchUp(ctx conte
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2761,6 +2953,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteMatchUp(ctx context.Cont
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -3791,6 +3985,8 @@ func (ec *executionContext) fieldContext_Query_getMatchUp(ctx context.Context, f
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "initalServer":
+				return ec.fieldContext_MatchUp_initalServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -6747,6 +6943,40 @@ func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPointInput(ctx context.Context, obj interface{}) (model.PointInput, error) {
+	var it model.PointInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"winner", "loser"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "winner":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("winner"))
+			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Winner = data
+		case "loser":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loser"))
+			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Loser = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, obj interface{}) (model.SetFormatInput, error) {
 	var it model.SetFormatInput
 	asMap := map[string]interface{}{}
@@ -6898,6 +7128,11 @@ func (ec *executionContext) _MatchUp(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "initalServer":
+			out.Values[i] = ec._MatchUp_initalServer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "pointsSequence":
 			out.Values[i] = ec._MatchUp_pointsSequence(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7040,6 +7275,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "addPointToMatchUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addPointToMatchUp(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addShotToMatchUp":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addShotToMatchUp(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
