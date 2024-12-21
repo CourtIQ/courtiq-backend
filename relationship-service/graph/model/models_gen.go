@@ -96,16 +96,18 @@ const (
 	RelationshipStatusPending RelationshipStatus = "PENDING"
 	// The relationship is active, meaning the request has been accepted and the relationship is established.
 	RelationshipStatusActive RelationshipStatus = "ACTIVE"
+	RelationshipStatusNone   RelationshipStatus = "NONE"
 )
 
 var AllRelationshipStatus = []RelationshipStatus{
 	RelationshipStatusPending,
 	RelationshipStatusActive,
+	RelationshipStatusNone,
 }
 
 func (e RelationshipStatus) IsValid() bool {
 	switch e {
-	case RelationshipStatusPending, RelationshipStatusActive:
+	case RelationshipStatusPending, RelationshipStatusActive, RelationshipStatusNone:
 		return true
 	}
 	return false

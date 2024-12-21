@@ -11,4 +11,6 @@ enum RelationshipStatus {
   The relationship is active, meaning the request has been accepted and the relationship is established.
   """
   ACTIVE
+
+  NONE
 }
