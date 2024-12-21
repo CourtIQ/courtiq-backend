@@ -38,7 +38,7 @@ func (r *queryResolver) SentFriendRequests(ctx context.Context) ([]*model.Friend
 }
 
 // FriendshipStatus is the resolver for the friendshipStatus field.
-func (r *queryResolver) FriendshipStatus(ctx context.Context, otherUserID primitive.ObjectID) (*model.RelationshipStatus, error) {
+func (r *queryResolver) FriendshipStatus(ctx context.Context, otherUserID primitive.ObjectID) (model.RelationshipStatus, error) {
 	return r.RelationshipService.FriendshipStatus(ctx, otherUserID)
 }
 
@@ -78,12 +78,12 @@ func (r *queryResolver) SentStudentRequests(ctx context.Context) ([]*model.Coach
 }
 
 // IsStudent is the resolver for the isStudent field.
-func (r *queryResolver) IsStudent(ctx context.Context, studentID primitive.ObjectID) (*model.RelationshipStatus, error) {
+func (r *queryResolver) IsStudent(ctx context.Context, studentID primitive.ObjectID) (model.RelationshipStatus, error) {
 	return r.RelationshipService.IsStudent(ctx, studentID)
 }
 
 // IsCoach is the resolver for the isCoach field.
-func (r *queryResolver) IsCoach(ctx context.Context, coachID primitive.ObjectID) (*model.RelationshipStatus, error) {
+func (r *queryResolver) IsCoach(ctx context.Context, coachID primitive.ObjectID) (model.RelationshipStatus, error) {
 	return r.RelationshipService.IsCoach(ctx, coachID)
 }
 

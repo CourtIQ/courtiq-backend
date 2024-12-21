@@ -21,7 +21,7 @@ extend type Query {
   sentFriendRequests: [Friendship!]!
 
   # Check the friendship status between the current user and another user
-  friendshipStatus(otherUserId: ObjectID!): RelationshipStatus
+  friendshipStatus(otherUserId: ObjectID!): RelationshipStatus!
 
 
   # Coachship Queries
@@ -48,8 +48,8 @@ extend type Query {
   sentStudentRequests: [Coachship!]!
 
   # Check if a given user (studentId) is a student of the current user
-  isStudent(studentId: ObjectID!): RelationshipStatus
+  isStudent(studentId: ObjectID!): RelationshipStatus!
 
   # Check if a given user (coachId) is a coach of the current user
-  isCoach(coachId: ObjectID!): RelationshipStatus
+  isCoach(coachId: ObjectID!): RelationshipStatus!
 }
