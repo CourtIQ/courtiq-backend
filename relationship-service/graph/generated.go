@@ -151,7 +151,7 @@ type QueryResolver interface {
 	Friends(ctx context.Context, ofUserID primitive.ObjectID, limit *int, offset *int) ([]*model.Friendship, error)
 	MyFriendRequests(ctx context.Context) ([]*model.Friendship, error)
 	SentFriendRequests(ctx context.Context) ([]*model.Friendship, error)
-	FriendshipStatus(ctx context.Context, otherUserID primitive.ObjectID) (*model.RelationshipStatus, error)
+	FriendshipStatus(ctx context.Context, otherUserID primitive.ObjectID) (model.RelationshipStatus, error)
 	Coachship(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error)
 	MyCoaches(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
 	MyStudents(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
@@ -159,8 +159,8 @@ type QueryResolver interface {
 	MyCoachRequests(ctx context.Context) ([]*model.Coachship, error)
 	SentCoachRequests(ctx context.Context) ([]*model.Coachship, error)
 	SentStudentRequests(ctx context.Context) ([]*model.Coachship, error)
-	IsStudent(ctx context.Context, studentID primitive.ObjectID) (*model.RelationshipStatus, error)
-	IsCoach(ctx context.Context, coachID primitive.ObjectID) (*model.RelationshipStatus, error)
+	IsStudent(ctx context.Context, studentID primitive.ObjectID) (model.RelationshipStatus, error)
+	IsCoach(ctx context.Context, coachID primitive.ObjectID) (model.RelationshipStatus, error)
 }
 
 type executableSchema struct {
@@ -4066,11 +4066,14 @@ func (ec *executionContext) _Query_friendshipStatus(ctx context.Context, field g
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.RelationshipStatus)
+	res := resTmp.(model.RelationshipStatus)
 	fc.Result = res
-	return ec.marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
+	return ec.marshalNRelationshipStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_friendshipStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4582,11 +4585,14 @@ func (ec *executionContext) _Query_isStudent(ctx context.Context, field graphql.
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.RelationshipStatus)
+	res := resTmp.(model.RelationshipStatus)
 	fc.Result = res
-	return ec.marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
+	return ec.marshalNRelationshipStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_isStudent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4634,11 +4640,14 @@ func (ec *executionContext) _Query_isCoach(ctx context.Context, field graphql.Co
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.RelationshipStatus)
+	res := resTmp.(model.RelationshipStatus)
 	fc.Result = res
-	return ec.marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
+	return ec.marshalNRelationshipStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_isCoach(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7297,13 +7306,16 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "friendshipStatus":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_friendshipStatus(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -7467,13 +7479,16 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "isStudent":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_isStudent(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -7486,13 +7501,16 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "isCoach":
 			field := field
 
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_isCoach(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -8752,22 +8770,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx context.Context, v interface{}) (*model.RelationshipStatus, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(model.RelationshipStatus)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalORelationshipStatus2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐRelationshipStatus(ctx context.Context, sel ast.SelectionSet, v *model.RelationshipStatus) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
