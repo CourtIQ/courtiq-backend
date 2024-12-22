@@ -4,7 +4,7 @@ input MatchUpFormatInput {
     # This does not hold true for createMatchUp mutation
     numberOfSets: NumberOfSets!
     setFormat: SetFormatInput!
-    finalSetFormat: SetFormatInput
+    finalSetFormat: SetFormatInput  # TODO Why is passing FinaSetFormat is necessary when creating a match up?
 }
 
 input SetFormatInput {
@@ -18,4 +18,9 @@ input SetFormatInput {
 input TiebreakFormatInput {
     points: TiebreakPoints!
     mustWinByTwo: Boolean!
+}
+
+input ParticipantsMapInput {
+    A: [ObjectID!]!
+    B: [ObjectID!]!
 }

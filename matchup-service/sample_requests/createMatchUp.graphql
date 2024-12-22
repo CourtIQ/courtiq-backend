@@ -11,7 +11,7 @@ mutation CreateMatchUp {
     },
 
     matchUpType: SINGLES
-    participants: ["00e04c3ace9d00e04c3ace9d", "00e04c5a76f900e04c5a76f9"],
+    participantsMapInput: {A: ["00e04c3ace9d00e04c3ace9d"], B: ["00e04c5a76f900e04c5a76f9"]}
   ) {
     id
   }

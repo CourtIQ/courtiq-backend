@@ -12,125 +12,148 @@ import (
 )
 
 type MatchUp struct {
-	ID                          primitive.ObjectID   `json:"id" bson:"_id"`
-	MatchUpFormat               *MatchUpFormat       `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpStatus               MatchUpStatus        `json:"matchUpStatus" bson:"matchUpStatus"`
-	MatchUpType                 MatchUpType          `json:"matchUpType" bson:"matchUpType"`
-	ParticipantIds              []primitive.ObjectID `json:"participantIds" bson:"participantIds"`
-	Participants                *ParticipantsMap     `json:"participants" bson:"participants"`
-	CurrentSetIndex             *int                 `json:"currentSetIndex,omitempty" bson:"currentSetIndex,omitempty"`
-	CurrentGameIndexWithinSet   *int                 `json:"currentGameIndexWithinSet,omitempty" bson:"currentGameIndexWithinSet,omitempty"`
-	CurrentPointIndexWithinGame *int                 `json:"currentPointIndexWithinGame,omitempty" bson:"currentPointIndexWithinGame,omitempty"`
-	CurrentScore                *Score               `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
-	CurrentServer               primitive.ObjectID   `json:"currentServer" bson:"currentServer"`
-	InitalServer                primitive.ObjectID   `json:"initalServer" bson:"initalServer"`
-	PointsSequence              []primitive.ObjectID `json:"pointsSequence" bson:"pointsSequence"`
-	StartTime                   time.Time            `json:"startTime" bson:"startTime"`
-	EndTime                     *time.Time           `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt                   time.Time            `json:"createdAt" bson:"createdAt"`
-	UpdatedAt                   time.Time            `json:"updatedAt" bson:"updatedAt"`
+	ID                          primitive.ObjectID `json:"id"`
+	MatchUpFormat               *MatchUpFormat     `json:"matchUpFormat"`
+	MatchUpStatus               MatchUpStatus      `json:"matchUpStatus"`
+	MatchUpType                 MatchUpType        `json:"matchUpType"`
+	ParticipantsMap             *ParticipantsMap   `json:"participantsMap"`
+	CurrentSetIndex             *int               `json:"currentSetIndex,omitempty"`
+	CurrentGameIndexWithinSet   *int               `json:"currentGameIndexWithinSet,omitempty"`
+	CurrentPointIndexWithinGame *int               `json:"currentPointIndexWithinGame,omitempty"`
+	CurrentScore                *Score             `json:"currentScore,omitempty"`
+	CurrentServer               primitive.ObjectID `json:"currentServer"`
+	InitialServer               primitive.ObjectID `json:"initialServer"`
+	PointsSequence              []*Point           `bson:"pointsSequence"`
+	StartTime                   time.Time          `json:"startTime"`
+	EndTime                     *time.Time         `json:"endTime,omitempty"`
+	CreatedAt                   time.Time          `json:"createdAt"`
+	UpdatedAt                   time.Time          `json:"updatedAt"`
 }
 
 type MatchUpFormat struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id"`
-	Tracker        primitive.ObjectID `json:"tracker" bson:"tracker"`
-	NumberOfSets   NumberOfSets       `json:"numberOfSets" bson:"numberOfSets"`
-	SetFormat      *SetFormat         `json:"setFormat" bson:"setFormat"`
-	FinalSetFormat *SetFormat         `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
-	InitialServer  PlayingSide        `json:"initialServer" bson:"initialServer"`
+	ID             primitive.ObjectID `json:"id"`
+	Tracker        primitive.ObjectID `json:"tracker"`
+	NumberOfSets   NumberOfSets       `json:"numberOfSets"`
+	SetFormat      *SetFormat         `json:"setFormat"`
+	FinalSetFormat *SetFormat         `json:"finalSetFormat,omitempty"`
+	InitialServer  PlayingSide        `json:"initialServer"`
 }
 
 type MatchUpFormatInput struct {
-	Tracker        primitive.ObjectID `json:"tracker" bson:"tracker"`
-	NumberOfSets   NumberOfSets       `json:"numberOfSets" bson:"numberOfSets"`
-	SetFormat      *SetFormatInput    `json:"setFormat" bson:"setFormat"`
-	FinalSetFormat *SetFormatInput    `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
+	Tracker        primitive.ObjectID `json:"tracker"`
+	NumberOfSets   NumberOfSets       `json:"numberOfSets"`
+	SetFormat      *SetFormatInput    `json:"setFormat"`
+	FinalSetFormat *SetFormatInput    `json:"finalSetFormat,omitempty"`
 }
 
 type Mutation struct {
 }
 
 type ParticipantsMap struct {
-	A primitive.ObjectID `json:"A" bson:"A"`
-	B primitive.ObjectID `json:"B" bson:"B"`
+	A []*primitive.ObjectID `json:"A"`
+	B []*primitive.ObjectID `json:"B"`
+}
+
+type ParticipantsMapInput struct {
+	A []primitive.ObjectID `json:"A"`
+	B []primitive.ObjectID `json:"B"`
 }
 
 type Point struct {
-	ID                   primitive.ObjectID `json:"id" bson:"_id"`
-	SetIndex             int                `json:"setIndex" bson:"setIndex"`
-	GameIndexWithinSet   int                `json:"gameIndexWithinSet" bson:"gameIndexWithinSet"`
-	PointIndexWithinGame int                `json:"pointIndexWithinGame" bson:"pointIndexWithinGame"`
-	IsTiebreak           bool               `json:"isTiebreak" bson:"isTiebreak"`
-	TiebreakPointNumber  *int               `json:"tiebreakPointNumber,omitempty" bson:"tiebreakPointNumber,omitempty"`
-	PointWinner          primitive.ObjectID `json:"pointWinner" bson:"pointWinner"`
-	PointServer          primitive.ObjectID `json:"pointServer" bson:"pointServer"`
-	PointWinReason       *PointWinReason    `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
-	PlayingSide          PlayingSide        `json:"playingSide" bson:"playingSide"`
-	CourtSide            CourtSide          `json:"courtSide" bson:"courtSide"`
-	ScoreBefore          *Score             `json:"scoreBefore" bson:"scoreBefore"`
-	ScoreAfter           *Score             `json:"scoreAfter" bson:"scoreAfter"`
-	Shots                []*Shot            `json:"shots" bson:"shots"`
-	IsBreakPoint         bool               `json:"isBreakPoint" bson:"isBreakPoint"`
-	IsGamePoint          bool               `json:"isGamePoint" bson:"isGamePoint"`
-	IsSetPoint           bool               `json:"isSetPoint" bson:"isSetPoint"`
-	IsMatchPoint         bool               `json:"isMatchPoint" bson:"isMatchPoint"`
-	PlayedAt             *time.Time         `json:"playedAt,omitempty" bson:"playedAt,omitempty"`
+	ID                  primitive.ObjectID `json:"id"`
+	SetIndex            int                `json:"setIndex"`
+	GameIndexWithinSet  int                `json:"gameIndexWithinSet"`
+	IsTiebreak          bool               `json:"isTiebreak"`
+	TiebreakPointNumber *int               `json:"tiebreakPointNumber,omitempty"`
+	PointWinner         primitive.ObjectID `json:"pointWinner"`
+	PointServer         primitive.ObjectID `json:"pointServer"`
+	PointWinReason      *PointWinReason    `json:"pointWinReason,omitempty"`
+	PlayingSide         PlayingSide        `json:"playingSide"`
+	CourtSide           CourtSide          `json:"courtSide"`
+	Shots               []*Shot            `json:"shots"`
+	IsBreakPoint        bool               `json:"isBreakPoint"`
+	IsGamePoint         bool               `json:"isGamePoint"`
+	IsSetPoint          bool               `json:"isSetPoint"`
+	IsMatchPoint        bool               `json:"isMatchPoint"`
+	PlayedAt            *time.Time         `json:"playedAt,omitempty"`
 }
 
 type PointInput struct {
-	Winner primitive.ObjectID `json:"winner" bson:"winner"`
-	Loser  primitive.ObjectID `json:"loser" bson:"loser"`
+	SetIndex            int                `json:"setIndex"`
+	GameIndexWithinSet  int                `json:"gameIndexWithinSet"`
+	IsTiebreak          bool               `json:"isTiebreak"`
+	TiebreakPointNumber *int               `json:"tiebreakPointNumber,omitempty"`
+	PointWinner         primitive.ObjectID `json:"pointWinner"`
+	PointServer         primitive.ObjectID `json:"pointServer"`
+	PointWinReason      *PointWinReason    `json:"pointWinReason,omitempty"`
+	PlayingSide         PlayingSide        `json:"playingSide"`
+	CourtSide           CourtSide          `json:"courtSide"`
+	ShotsInput          []*ShotInput       `json:"shotsInput,omitempty"`
+	IsBreakPoint        bool               `json:"isBreakPoint"`
+	IsGamePoint         bool               `json:"isGamePoint"`
+	IsSetPoint          bool               `json:"isSetPoint"`
+	IsMatchPoint        bool               `json:"isMatchPoint"`
+	PlayedAt            *time.Time         `json:"playedAt,omitempty"`
 }
 
 type Query struct {
 }
 
 type Score struct {
-	A *SideScore `json:"a" bson:"a"`
-	B *SideScore `json:"b" bson:"b"`
+	A *SideScore `json:"a"`
+	B *SideScore `json:"b"`
 }
 
 type SetFormat struct {
-	NumberOfGames  NumberOfGames   `json:"numberOfGames" bson:"numberOfGames"`
-	DeuceType      DeuceType       `json:"deuceType" bson:"deuceType"`
-	MustWinByTwo   bool            `json:"mustWinByTwo" bson:"mustWinByTwo"`
-	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
-	TiebreakAt     *int            `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+	NumberOfGames  NumberOfGames   `json:"numberOfGames"`
+	DeuceType      DeuceType       `json:"deuceType"`
+	MustWinByTwo   bool            `json:"mustWinByTwo"`
+	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty"`
+	TiebreakAt     *int            `json:"tiebreakAt,omitempty"`
 }
 
 type SetFormatInput struct {
-	NumberOfGames  NumberOfGames        `json:"numberOfGames" bson:"numberOfGames"`
-	DeuceType      DeuceType            `json:"deuceType" bson:"deuceType"`
-	MustWinByTwo   bool                 `json:"mustWinByTwo" bson:"mustWinByTwo"`
-	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
-	TiebreakAt     *int                 `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+	NumberOfGames  NumberOfGames        `json:"numberOfGames"`
+	DeuceType      DeuceType            `json:"deuceType"`
+	MustWinByTwo   bool                 `json:"mustWinByTwo"`
+	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty"`
+	TiebreakAt     *int                 `json:"tiebreakAt,omitempty"`
 }
 
 type Shot struct {
-	PlayerID          primitive.ObjectID `json:"playerId" bson:"playerId"`
-	ShotType          ShotType           `json:"shotType" bson:"shotType"`
-	ServeStyle        *ServeStyle        `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
-	GroundStrokeType  *GroundStrokeType  `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
-	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
-	PlayedAt          *time.Time         `json:"playedAt,omitempty" bson:"playedAt,omitempty"`
+	PlayerID          primitive.ObjectID `json:"playerId"`
+	ShotType          ShotType           `json:"shotType"`
+	ServeStyle        *ServeStyle        `json:"serveStyle,omitempty"`
+	GroundStrokeType  *GroundStrokeType  `json:"groundStrokeType,omitempty"`
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty"`
+	PlayedAt          *time.Time         `json:"playedAt,omitempty"`
+}
+
+type ShotInput struct {
+	PlayerID          primitive.ObjectID `json:"playerId"`
+	ShotType          ShotType           `json:"shotType"`
+	ServeStyle        *ServeStyle        `json:"serveStyle,omitempty"`
+	GroundStrokeType  *GroundStrokeType  `json:"groundStrokeType,omitempty"`
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty"`
+	PlayedAt          *time.Time         `json:"playedAt,omitempty"`
 }
 
 type SideScore struct {
-	Player               primitive.ObjectID `json:"player" bson:"player"`
-	CurrentPointScore    GameScore          `json:"currentPointScore" bson:"currentPointScore"`
-	CurrentGameScore     int                `json:"currentGameScore" bson:"currentGameScore"`
-	CurrentSetScore      int                `json:"currentSetScore" bson:"currentSetScore"`
-	CurrentTiebreakScore *int               `json:"currentTiebreakScore,omitempty" bson:"currentTiebreakScore,omitempty"`
+	Player               primitive.ObjectID `json:"player"`
+	CurrentPointScore    GameScore          `json:"currentPointScore"`
+	CurrentGameScore     int                `json:"currentGameScore"`
+	CurrentSetScore      int                `json:"currentSetScore"`
+	CurrentTiebreakScore *int               `json:"currentTiebreakScore,omitempty"`
 }
 
 type TiebreakFormat struct {
-	Points       TiebreakPoints `json:"points" bson:"points"`
-	MustWinByTwo bool           `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	Points       TiebreakPoints `json:"points"`
+	MustWinByTwo bool           `json:"mustWinByTwo"`
 }
 
 type TiebreakFormatInput struct {
-	Points       TiebreakPoints `json:"points" bson:"points"`
-	MustWinByTwo bool           `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	Points       TiebreakPoints `json:"points"`
+	MustWinByTwo bool           `json:"mustWinByTwo"`
 }
 
 type CourtSide string
@@ -157,7 +180,7 @@ func (e CourtSide) String() string {
 	return string(e)
 }
 
-func (e *CourtSide) UnmarshalGQL(v interface{}) error {
+func (e *CourtSide) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -200,7 +223,7 @@ func (e DeuceType) String() string {
 	return string(e)
 }
 
-func (e *DeuceType) UnmarshalGQL(v interface{}) error {
+func (e *DeuceType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -247,7 +270,7 @@ func (e GameScore) String() string {
 	return string(e)
 }
 
-func (e *GameScore) UnmarshalGQL(v interface{}) error {
+func (e *GameScore) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -300,7 +323,7 @@ func (e GroundStrokeStyle) String() string {
 	return string(e)
 }
 
-func (e *GroundStrokeStyle) UnmarshalGQL(v interface{}) error {
+func (e *GroundStrokeStyle) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -341,7 +364,7 @@ func (e GroundStrokeType) String() string {
 	return string(e)
 }
 
-func (e *GroundStrokeType) UnmarshalGQL(v interface{}) error {
+func (e *GroundStrokeType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -394,7 +417,7 @@ func (e MatchUpStatus) String() string {
 	return string(e)
 }
 
-func (e *MatchUpStatus) UnmarshalGQL(v interface{}) error {
+func (e *MatchUpStatus) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -435,7 +458,7 @@ func (e MatchUpType) String() string {
 	return string(e)
 }
 
-func (e *MatchUpType) UnmarshalGQL(v interface{}) error {
+func (e *MatchUpType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -484,7 +507,7 @@ func (e NumberOfGames) String() string {
 	return string(e)
 }
 
-func (e *NumberOfGames) UnmarshalGQL(v interface{}) error {
+func (e *NumberOfGames) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -527,7 +550,7 @@ func (e NumberOfSets) String() string {
 	return string(e)
 }
 
-func (e *NumberOfSets) UnmarshalGQL(v interface{}) error {
+func (e *NumberOfSets) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -568,7 +591,7 @@ func (e PlayingSide) String() string {
 	return string(e)
 }
 
-func (e *PlayingSide) UnmarshalGQL(v interface{}) error {
+func (e *PlayingSide) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -615,7 +638,7 @@ func (e PointWinReason) String() string {
 	return string(e)
 }
 
-func (e *PointWinReason) UnmarshalGQL(v interface{}) error {
+func (e *PointWinReason) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -660,7 +683,7 @@ func (e ServeStyle) String() string {
 	return string(e)
 }
 
-func (e *ServeStyle) UnmarshalGQL(v interface{}) error {
+func (e *ServeStyle) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -703,7 +726,7 @@ func (e ShotType) String() string {
 	return string(e)
 }
 
-func (e *ShotType) UnmarshalGQL(v interface{}) error {
+func (e *ShotType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -752,7 +775,7 @@ func (e TiebreakPoints) String() string {
 	return string(e)
 }
 
-func (e *TiebreakPoints) UnmarshalGQL(v interface{}) error {
+func (e *TiebreakPoints) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -797,7 +820,7 @@ func (e Visibility) String() string {
 	return string(e)
 }
 
-func (e *Visibility) UnmarshalGQL(v interface{}) error {
+func (e *Visibility) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

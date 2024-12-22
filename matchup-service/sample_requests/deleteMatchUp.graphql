@@ -1,6 +1,5 @@
 mutation DeleteMatchUp {
-  deleteMatchUp(matchUpId: "67643c6cf1eaae6f2bebfa7a") {
+  deleteMatchUp(matchUpId: "6767f6cc4c0d2c4eb8958857") {
     id
-    matchUpStatus
   }
 }

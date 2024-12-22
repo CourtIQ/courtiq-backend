@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/CourtIQ/courtiq-backend/shared/services/utils"
 	"time"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
@@ -13,11 +14,11 @@ import (
 // MatchUpServiceIntf defines the interface for matchup operations
 type MatchUpServiceIntf interface {
 	GetMatchUp(ctx context.Context, id primitive.ObjectID) (*model.MatchUp, error)
-	CreateMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error)
+	CreateMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participantsMapInput model.ParticipantsMapInput) (*model.MatchUp, error)
 	UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	AddPointToMatchUp(ctx context.Context, matchUpFormat model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	AddPointToMatchUp(ctx context.Context, pointInput model.PointInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	UndoLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	UndoLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 }
 
@@ -39,69 +40,84 @@ func (s *MatchUpService) CreateMatchUp(
 	ctx context.Context,
 	matchUpFormatInput model.MatchUpFormatInput,
 	matchUpType model.MatchUpType,
-	participants []primitive.ObjectID) (*model.MatchUp, error) {
+	participantsMapInput model.ParticipantsMapInput) (*model.MatchUp, error) {
 
-	// Converting TiebreakFormatInput -> TiebreakFormat
-	//tiebreakFormat := model.TiebreakFormat{
-	//	Points:       matchUpFormatInput.SetFormat.TiebreakFormat.Points,
-	//	MustWinByTwo: matchUpFormatInput.SetFormat.TiebreakFormat.MustWinByTwo,
-	//}
+	//Converting TiebreakFormatInput -> TiebreakFormat
+	var tiebreakFormat *model.TiebreakFormat
+	if matchUpFormatInput.SetFormat.TiebreakFormat != nil {
+		tiebreakFormat = &model.TiebreakFormat{
+			Points:       matchUpFormatInput.SetFormat.TiebreakFormat.Points,
+			MustWinByTwo: matchUpFormatInput.SetFormat.TiebreakFormat.MustWinByTwo,
+		}
+	}
 
 	// Converting SetFormatInput -> SetFormat
 	setFormat := model.SetFormat{
-		NumberOfGames: matchUpFormatInput.SetFormat.NumberOfGames,
-		DeuceType:     matchUpFormatInput.SetFormat.DeuceType,
-		MustWinByTwo:  matchUpFormatInput.SetFormat.MustWinByTwo,
-		//TiebreakFormat: &tiebreakFormat,
-		TiebreakFormat: nil,
+		NumberOfGames:  matchUpFormatInput.SetFormat.NumberOfGames,
+		DeuceType:      matchUpFormatInput.SetFormat.DeuceType,
+		MustWinByTwo:   matchUpFormatInput.SetFormat.MustWinByTwo,
+		TiebreakFormat: tiebreakFormat,
 		TiebreakAt:     matchUpFormatInput.SetFormat.TiebreakAt,
 	}
 
+	// Converting SetFormatInput -> SetFormat of FinalSetFormat
+	var finalSetFormat *model.SetFormat
+	//if matchUpFormatInput.FinalSetFormat != nil {
+	//	finalSetFormat = &model.SetFormat{
+	//		NumberOfGames:  matchUpFormatInput.FinalSetFormat.NumberOfGames,
+	//		DeuceType:      matchUpFormatInput.FinalSetFormat.DeuceType,
+	//		MustWinByTwo:   matchUpFormatInput.FinalSetFormat.MustWinByTwo,
+	//		TiebreakFormat: tiebreakFormat,
+	//		TiebreakAt:     matchUpFormatInput.FinalSetFormat.TiebreakAt,
+	//	}
+	//}
+
 	// Converting MatchUpFormatInput -> MatchUpFormat
-	matchupFormat := model.MatchUpFormat{
+	matchUpFormat := model.MatchUpFormat{
 		Tracker:        matchUpFormatInput.Tracker,
 		NumberOfSets:   matchUpFormatInput.NumberOfSets,
 		SetFormat:      &setFormat,
-		FinalSetFormat: nil,
+		FinalSetFormat: finalSetFormat,
 		InitialServer:  "",
 	}
 
 	// Setting initial score object
 	score := model.Score{
 		A: &model.SideScore{
-			Player:               participants[0],
+			Player:               participantsMapInput.A[0],
 			CurrentPointScore:    model.GameScoreLove,
 			CurrentGameScore:     0,
 			CurrentSetScore:      0,
 			CurrentTiebreakScore: nil,
 		},
 		B: &model.SideScore{
-			Player:               participants[1],
+			Player:               participantsMapInput.B[0],
 			CurrentPointScore:    model.GameScoreLove,
 			CurrentGameScore:     0,
 			CurrentSetScore:      0,
 			CurrentTiebreakScore: nil,
 		},
 	}
+	// Converting ParticipantsMapInput -> ParticipantsMap
+	participantsMap := model.ParticipantsMap{
+		A: utils.ConvertListOfObjectsToListOfPointers(&participantsMapInput.A),
+		B: utils.ConvertListOfObjectsToListOfPointers(&participantsMapInput.B),
+	}
 
 	timeNow := time.Now()
 
 	matchUp := &model.MatchUp{
-		ID:             primitive.NewObjectID(),
-		MatchUpFormat:  &matchupFormat,
-		MatchUpStatus:  model.MatchUpStatusRequested,
-		MatchUpType:    matchUpType,
-		ParticipantIds: participants,
-		Participants: &model.ParticipantsMap{
-			A: participants[0],
-			B: participants[1],
-		},
-		CurrentScore:   &score,
-		CurrentServer:  participants[0], // TODO assuming 0
-		PointsSequence: nil,
-		StartTime:      timeNow,
-		CreatedAt:      timeNow,
-		UpdatedAt:      timeNow,
+		ID:              primitive.NewObjectID(),
+		MatchUpFormat:   &matchUpFormat,
+		MatchUpStatus:   model.MatchUpStatusRequested,
+		MatchUpType:     matchUpType,
+		ParticipantsMap: &participantsMap,
+		CurrentScore:    &score,
+		CurrentServer:   participantsMapInput.A[0], // TODO assuming 0
+		PointsSequence:  make([]*model.Point, 0),
+		StartTime:       timeNow,
+		CreatedAt:       timeNow,
+		UpdatedAt:       timeNow,
 	}
 
 	if err := s.matchUpRepo.Insert(ctx, matchUp); err != nil {
@@ -120,69 +136,74 @@ func (s *MatchUpService) UpdateMatchUpStatus(ctx context.Context, status model.M
 	return matchUp, err
 }
 
-func (s *MatchUpService) AddPointToMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+func (s *MatchUpService) AddPointToMatchUp(ctx context.Context, pointInput model.PointInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
-	if err != nil {
+	if matchUp == nil || err != nil {
 		return nil, err
 	}
-	// Converting SetFormatInput -> SetFormat of SetFormat
-	setFormat := model.SetFormat{
-		NumberOfGames: matchUpFormatInput.SetFormat.NumberOfGames,
-		DeuceType:     matchUpFormatInput.SetFormat.DeuceType,
-		MustWinByTwo:  matchUpFormatInput.SetFormat.MustWinByTwo,
+
+	var shots []*model.Shot
+	// Converting ShotsInput -> Shots
+	if pointInput.ShotsInput != nil {
+		for _, shotInput := range pointInput.ShotsInput {
+			shot := model.Shot{
+				PlayerID:          shotInput.PlayerID,
+				ShotType:          shotInput.ShotType,
+				ServeStyle:        shotInput.ServeStyle,
+				GroundStrokeType:  shotInput.GroundStrokeType,
+				GroundStrokeStyle: shotInput.GroundStrokeStyle,
+				PlayedAt:          shotInput.PlayedAt,
+			}
+			shots = append(shots, &shot)
+		}
+	}
+	// Converting PointInput -> Point
+	point := model.Point{
+		SetIndex:            pointInput.SetIndex,
+		GameIndexWithinSet:  pointInput.GameIndexWithinSet,
+		IsTiebreak:          pointInput.IsTiebreak,
+		TiebreakPointNumber: pointInput.TiebreakPointNumber,
+		PointWinner:         pointInput.PointWinner,
+		PointServer:         pointInput.PointServer,
+		PointWinReason:      pointInput.PointWinReason,
+		PlayingSide:         pointInput.PlayingSide,
+		CourtSide:           pointInput.CourtSide,
+		Shots:               shots,
+		IsBreakPoint:        pointInput.IsBreakPoint,
+		IsGamePoint:         pointInput.IsGamePoint,
+		IsSetPoint:          pointInput.IsSetPoint,
+		IsMatchPoint:        pointInput.IsMatchPoint,
+		PlayedAt:            pointInput.PlayedAt,
 	}
 
-	var tiebreakFormat *model.TiebreakFormat
-	var finalSetFormat *model.SetFormat
-	if matchUpFormatInput.FinalSetFormat != nil {
-		// Converting TiebreakFormatInput -> TiebreakFormat
-		tiebreakFormat = &model.TiebreakFormat{
-			Points:       matchUpFormatInput.FinalSetFormat.TiebreakFormat.Points,
-			MustWinByTwo: matchUpFormatInput.FinalSetFormat.TiebreakFormat.MustWinByTwo,
-		}
-		// Converting SetFormatInput -> SetFormat of FinalSetFormat
-		finalSetFormat = &model.SetFormat{
-			NumberOfGames:  matchUpFormatInput.FinalSetFormat.NumberOfGames,
-			DeuceType:      matchUpFormatInput.FinalSetFormat.DeuceType,
-			MustWinByTwo:   matchUpFormatInput.FinalSetFormat.MustWinByTwo,
-			TiebreakFormat: tiebreakFormat,
-			TiebreakAt:     matchUpFormatInput.FinalSetFormat.TiebreakAt,
-		}
-	}
-	// Converting matchUpFormatInput -> matchUpFormat
-	matchUpFormat := model.MatchUpFormat{
-		ID:             primitive.NewObjectID(),
-		Tracker:        matchUpFormatInput.Tracker,
-		NumberOfSets:   matchUpFormatInput.NumberOfSets,
-		SetFormat:      &setFormat,
-		FinalSetFormat: finalSetFormat,
-		InitialServer:  "", // TODO where does this come from?
-	}
-	matchUp.MatchUpFormat = &matchUpFormat
+	matchUp.PointsSequence = append(matchUp.PointsSequence, &point)
+
 	err = s.matchUpRepo.Update(ctx, matchUp)
 
 	return matchUp, err
 }
-func (s *MatchUpService) UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+func (s *MatchUpService) UndoLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
-	if err == nil {
+	if matchUp != nil && err == nil {
 		// TODO finish business logic
 		err = s.matchUpRepo.Update(ctx, matchUp)
 		return matchUp, err
 	}
 	return nil, err
 }
-func (s *MatchUpService) UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+func (s *MatchUpService) UndoLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
-	if err == nil {
-		// TODO finish business logic
+	if matchUp != nil && err == nil {
+		matchUp.PointsSequence = matchUp.PointsSequence[:len(matchUp.PointsSequence)-1]
 		err = s.matchUpRepo.Update(ctx, matchUp)
 		return matchUp, err
 	}
 	return nil, err
 }
 func (s *MatchUpService) DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	err := s.matchUpRepo.Delete(ctx, matchUpID)
-
-	return nil, err // TODO should this return matchup?
+	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
+	if matchUp != nil && err == nil {
+		err = s.matchUpRepo.Delete(ctx, matchUpID)
+	}
+	return matchUp, err
 }

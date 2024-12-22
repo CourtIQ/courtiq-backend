@@ -60,12 +60,11 @@ type ComplexityRoot struct {
 		CurrentSetIndex             func(childComplexity int) int
 		EndTime                     func(childComplexity int) int
 		ID                          func(childComplexity int) int
-		InitalServer                func(childComplexity int) int
+		InitialServer               func(childComplexity int) int
 		MatchUpFormat               func(childComplexity int) int
 		MatchUpStatus               func(childComplexity int) int
 		MatchUpType                 func(childComplexity int) int
-		ParticipantIds              func(childComplexity int) int
-		Participants                func(childComplexity int) int
+		ParticipantsMap             func(childComplexity int) int
 		PointsSequence              func(childComplexity int) int
 		StartTime                   func(childComplexity int) int
 		UpdatedAt                   func(childComplexity int) int
@@ -81,13 +80,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddPointToMatchUp    func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) int
-		AddShotToMatchUp     func(childComplexity int, matchUpID primitive.ObjectID) int
-		CreateMatchUp        func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) int
-		DeleteMatchUp        func(childComplexity int, matchUpID primitive.ObjectID) int
-		UndoPointFromMatchUp func(childComplexity int, matchUpID primitive.ObjectID) int
-		UndoShotFromMatchUp  func(childComplexity int, matchUpID primitive.ObjectID) int
-		UpdateMatchUpStatus  func(childComplexity int, status model.MatchUpStatus, matchUpID primitive.ObjectID) int
+		AddPointToMatchUp          func(childComplexity int, pointInput model.PointInput, matchUpID primitive.ObjectID) int
+		AddShotToMatchUp           func(childComplexity int, matchUpID primitive.ObjectID, shotInput model.ShotInput) int
+		CreateMatchUp              func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participantsMapInput model.ParticipantsMapInput) int
+		DeleteLastPointFromMatchUp func(childComplexity int, matchUpID primitive.ObjectID) int
+		DeleteLastShotFromMatchUp  func(childComplexity int, matchUpID primitive.ObjectID) int
+		DeleteMatchUp              func(childComplexity int, matchUpID primitive.ObjectID) int
+		UpdateMatchUpStatus        func(childComplexity int, status model.MatchUpStatus, matchUpID primitive.ObjectID) int
 	}
 
 	ParticipantsMap struct {
@@ -96,25 +95,22 @@ type ComplexityRoot struct {
 	}
 
 	Point struct {
-		CourtSide            func(childComplexity int) int
-		GameIndexWithinSet   func(childComplexity int) int
-		ID                   func(childComplexity int) int
-		IsBreakPoint         func(childComplexity int) int
-		IsGamePoint          func(childComplexity int) int
-		IsMatchPoint         func(childComplexity int) int
-		IsSetPoint           func(childComplexity int) int
-		IsTiebreak           func(childComplexity int) int
-		PlayedAt             func(childComplexity int) int
-		PlayingSide          func(childComplexity int) int
-		PointIndexWithinGame func(childComplexity int) int
-		PointServer          func(childComplexity int) int
-		PointWinReason       func(childComplexity int) int
-		PointWinner          func(childComplexity int) int
-		ScoreAfter           func(childComplexity int) int
-		ScoreBefore          func(childComplexity int) int
-		SetIndex             func(childComplexity int) int
-		Shots                func(childComplexity int) int
-		TiebreakPointNumber  func(childComplexity int) int
+		CourtSide           func(childComplexity int) int
+		GameIndexWithinSet  func(childComplexity int) int
+		ID                  func(childComplexity int) int
+		IsBreakPoint        func(childComplexity int) int
+		IsGamePoint         func(childComplexity int) int
+		IsMatchPoint        func(childComplexity int) int
+		IsSetPoint          func(childComplexity int) int
+		IsTiebreak          func(childComplexity int) int
+		PlayedAt            func(childComplexity int) int
+		PlayingSide         func(childComplexity int) int
+		PointServer         func(childComplexity int) int
+		PointWinReason      func(childComplexity int) int
+		PointWinner         func(childComplexity int) int
+		SetIndex            func(childComplexity int) int
+		Shots               func(childComplexity int) int
+		TiebreakPointNumber func(childComplexity int) int
 	}
 
 	Query struct {
@@ -163,12 +159,12 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error)
+	CreateMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participantsMapInput model.ParticipantsMapInput) (*model.MatchUp, error)
 	UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	AddPointToMatchUp(ctx context.Context, matchUpFormatInput model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	AddShotToMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	AddPointToMatchUp(ctx context.Context, pointInput model.PointInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	AddShotToMatchUp(ctx context.Context, matchUpID primitive.ObjectID, shotInput model.ShotInput) (*model.MatchUp, error)
+	DeleteLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	DeleteLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 }
 type QueryResolver interface {
@@ -189,7 +185,7 @@ func (e *executableSchema) Schema() *ast.Schema {
 	return parsedSchema
 }
 
-func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]interface{}) (int, bool) {
+func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]any) (int, bool) {
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
@@ -250,12 +246,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUp.ID(childComplexity), true
 
-	case "MatchUp.initalServer":
-		if e.complexity.MatchUp.InitalServer == nil {
+	case "MatchUp.initialServer":
+		if e.complexity.MatchUp.InitialServer == nil {
 			break
 		}
 
-		return e.complexity.MatchUp.InitalServer(childComplexity), true
+		return e.complexity.MatchUp.InitialServer(childComplexity), true
 
 	case "MatchUp.matchUpFormat":
 		if e.complexity.MatchUp.MatchUpFormat == nil {
@@ -278,19 +274,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUp.MatchUpType(childComplexity), true
 
-	case "MatchUp.participantIds":
-		if e.complexity.MatchUp.ParticipantIds == nil {
+	case "MatchUp.participantsMap":
+		if e.complexity.MatchUp.ParticipantsMap == nil {
 			break
 		}
 
-		return e.complexity.MatchUp.ParticipantIds(childComplexity), true
-
-	case "MatchUp.participants":
-		if e.complexity.MatchUp.Participants == nil {
-			break
-		}
-
-		return e.complexity.MatchUp.Participants(childComplexity), true
+		return e.complexity.MatchUp.ParticipantsMap(childComplexity), true
 
 	case "MatchUp.pointsSequence":
 		if e.complexity.MatchUp.PointsSequence == nil {
@@ -365,7 +354,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddPointToMatchUp(childComplexity, args["matchUpFormatInput"].(model.MatchUpFormatInput), args["matchUpId"].(primitive.ObjectID)), true
+		return e.complexity.Mutation.AddPointToMatchUp(childComplexity, args["pointInput"].(model.PointInput), args["matchUpId"].(primitive.ObjectID)), true
 
 	case "Mutation.addShotToMatchUp":
 		if e.complexity.Mutation.AddShotToMatchUp == nil {
@@ -377,7 +366,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddShotToMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
+		return e.complexity.Mutation.AddShotToMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID), args["shotInput"].(model.ShotInput)), true
 
 	case "Mutation.createMatchUp":
 		if e.complexity.Mutation.CreateMatchUp == nil {
@@ -389,7 +378,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateMatchUp(childComplexity, args["matchUpFormatInput"].(model.MatchUpFormatInput), args["matchUpType"].(model.MatchUpType), args["participants"].([]primitive.ObjectID)), true
+		return e.complexity.Mutation.CreateMatchUp(childComplexity, args["matchUpFormatInput"].(model.MatchUpFormatInput), args["matchUpType"].(model.MatchUpType), args["participantsMapInput"].(model.ParticipantsMapInput)), true
+
+	case "Mutation.UndoLastPointFromMatchUp":
+		if e.complexity.Mutation.DeleteLastPointFromMatchUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_DeleteLastPointFromMatchUp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteLastPointFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
+
+	case "Mutation.UndoLastShotFromMatchUp":
+		if e.complexity.Mutation.DeleteLastShotFromMatchUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_DeleteLastShotFromMatchUp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteLastShotFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
 
 	case "Mutation.deleteMatchUp":
 		if e.complexity.Mutation.DeleteMatchUp == nil {
@@ -402,30 +415,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
-
-	case "Mutation.undoPointFromMatchUp":
-		if e.complexity.Mutation.UndoPointFromMatchUp == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_undoPointFromMatchUp_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UndoPointFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
-
-	case "Mutation.undoShotFromMatchUp":
-		if e.complexity.Mutation.UndoShotFromMatchUp == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_undoShotFromMatchUp_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UndoShotFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
 
 	case "Mutation.updateMatchUpStatus":
 		if e.complexity.Mutation.UpdateMatchUpStatus == nil {
@@ -523,13 +512,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Point.PlayingSide(childComplexity), true
 
-	case "Point.pointIndexWithinGame":
-		if e.complexity.Point.PointIndexWithinGame == nil {
-			break
-		}
-
-		return e.complexity.Point.PointIndexWithinGame(childComplexity), true
-
 	case "Point.pointServer":
 		if e.complexity.Point.PointServer == nil {
 			break
@@ -550,20 +532,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Point.PointWinner(childComplexity), true
-
-	case "Point.scoreAfter":
-		if e.complexity.Point.ScoreAfter == nil {
-			break
-		}
-
-		return e.complexity.Point.ScoreAfter(childComplexity), true
-
-	case "Point.scoreBefore":
-		if e.complexity.Point.ScoreBefore == nil {
-			break
-		}
-
-		return e.complexity.Point.ScoreBefore(childComplexity), true
 
 	case "Point.setIndex":
 		if e.complexity.Point.SetIndex == nil {
@@ -761,8 +729,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputMatchUpFormatInput,
+		ec.unmarshalInputParticipantsMapInput,
 		ec.unmarshalInputPointInput,
 		ec.unmarshalInputSetFormatInput,
+		ec.unmarshalInputShotInput,
 		ec.unmarshalInputTiebreakFormatInput,
 	)
 	first := true
@@ -860,7 +830,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/PointInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql"
+//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/PointInput.gql" "schema/inputs/ShotInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql" "schema/types/Shot.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -888,6 +858,7 @@ var sources = []*ast.Source{
 	{Name: "schema/enums/TiebreakPoints.gql", Input: sourceData("schema/enums/TiebreakPoints.gql"), BuiltIn: false},
 	{Name: "schema/inputs/MatchUpFormatInput.gql", Input: sourceData("schema/inputs/MatchUpFormatInput.gql"), BuiltIn: false},
 	{Name: "schema/inputs/PointInput.gql", Input: sourceData("schema/inputs/PointInput.gql"), BuiltIn: false},
+	{Name: "schema/inputs/ShotInput.gql", Input: sourceData("schema/inputs/ShotInput.gql"), BuiltIn: false},
 	{Name: "schema/mutations/MatchUpMutations.gql", Input: sourceData("schema/mutations/MatchUpMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/MatchUpFormatQueries.gql", Input: sourceData("schema/queries/MatchUpFormatQueries.gql"), BuiltIn: false},
 	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
@@ -895,6 +866,7 @@ var sources = []*ast.Source{
 	{Name: "schema/types/MatchUpFormat.gql", Input: sourceData("schema/types/MatchUpFormat.gql"), BuiltIn: false},
 	{Name: "schema/types/Point.gql", Input: sourceData("schema/types/Point.gql"), BuiltIn: false},
 	{Name: "schema/types/Score.gql", Input: sourceData("schema/types/Score.gql"), BuiltIn: false},
+	{Name: "schema/types/Shot.gql", Input: sourceData("schema/types/Shot.gql"), BuiltIn: false},
 	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
@@ -969,14 +941,60 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_DeleteLastPointFromMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_addPointToMatchUp_argsMatchUpFormatInput(ctx, rawArgs)
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_DeleteLastPointFromMatchUp_argsMatchUpID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["matchUpFormatInput"] = arg0
+	args["matchUpId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_DeleteLastPointFromMatchUp_argsMatchUpID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
+	if tmp, ok := rawArgs["matchUpId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_DeleteLastShotFromMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_DeleteLastShotFromMatchUp_argsMatchUpID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["matchUpId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_DeleteLastShotFromMatchUp_argsMatchUpID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
+	if tmp, ok := rawArgs["matchUpId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_addPointToMatchUp_argsPointInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["pointInput"] = arg0
 	arg1, err := ec.field_Mutation_addPointToMatchUp_argsMatchUpID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -984,22 +1002,22 @@ func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Co
 	args["matchUpId"] = arg1
 	return args, nil
 }
-func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpFormatInput(
+func (ec *executionContext) field_Mutation_addPointToMatchUp_argsPointInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
-) (model.MatchUpFormatInput, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpFormatInput"))
-	if tmp, ok := rawArgs["matchUpFormatInput"]; ok {
-		return ec.unmarshalNMatchUpFormatInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatInput(ctx, tmp)
+	rawArgs map[string]any,
+) (model.PointInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("pointInput"))
+	if tmp, ok := rawArgs["pointInput"]; ok {
+		return ec.unmarshalNPointInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointInput(ctx, tmp)
 	}
 
-	var zeroVal model.MatchUpFormatInput
+	var zeroVal model.PointInput
 	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpID(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (primitive.ObjectID, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
 	if tmp, ok := rawArgs["matchUpId"]; ok {
@@ -1010,19 +1028,24 @@ func (ec *executionContext) field_Mutation_addPointToMatchUp_argsMatchUpID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_addShotToMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_addShotToMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Mutation_addShotToMatchUp_argsMatchUpID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
 	args["matchUpId"] = arg0
+	arg1, err := ec.field_Mutation_addShotToMatchUp_argsShotInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["shotInput"] = arg1
 	return args, nil
 }
 func (ec *executionContext) field_Mutation_addShotToMatchUp_argsMatchUpID(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (primitive.ObjectID, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
 	if tmp, ok := rawArgs["matchUpId"]; ok {
@@ -1033,9 +1056,22 @@ func (ec *executionContext) field_Mutation_addShotToMatchUp_argsMatchUpID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_createMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_addShotToMatchUp_argsShotInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.ShotInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("shotInput"))
+	if tmp, ok := rawArgs["shotInput"]; ok {
+		return ec.unmarshalNShotInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotInput(ctx, tmp)
+	}
+
+	var zeroVal model.ShotInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_createMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Mutation_createMatchUp_argsMatchUpFormatInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1046,16 +1082,16 @@ func (ec *executionContext) field_Mutation_createMatchUp_args(ctx context.Contex
 		return nil, err
 	}
 	args["matchUpType"] = arg1
-	arg2, err := ec.field_Mutation_createMatchUp_argsParticipants(ctx, rawArgs)
+	arg2, err := ec.field_Mutation_createMatchUp_argsParticipantsMapInput(ctx, rawArgs)
 	if err != nil {
 		return nil, err
 	}
-	args["participants"] = arg2
+	args["participantsMapInput"] = arg2
 	return args, nil
 }
 func (ec *executionContext) field_Mutation_createMatchUp_argsMatchUpFormatInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (model.MatchUpFormatInput, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpFormatInput"))
 	if tmp, ok := rawArgs["matchUpFormatInput"]; ok {
@@ -1068,7 +1104,7 @@ func (ec *executionContext) field_Mutation_createMatchUp_argsMatchUpFormatInput(
 
 func (ec *executionContext) field_Mutation_createMatchUp_argsMatchUpType(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (model.MatchUpType, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpType"))
 	if tmp, ok := rawArgs["matchUpType"]; ok {
@@ -1079,22 +1115,22 @@ func (ec *executionContext) field_Mutation_createMatchUp_argsMatchUpType(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_createMatchUp_argsParticipants(
+func (ec *executionContext) field_Mutation_createMatchUp_argsParticipantsMapInput(
 	ctx context.Context,
-	rawArgs map[string]interface{},
-) ([]primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("participants"))
-	if tmp, ok := rawArgs["participants"]; ok {
-		return ec.unmarshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx, tmp)
+	rawArgs map[string]any,
+) (model.ParticipantsMapInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("participantsMapInput"))
+	if tmp, ok := rawArgs["participantsMapInput"]; ok {
+		return ec.unmarshalNParticipantsMapInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐParticipantsMapInput(ctx, tmp)
 	}
 
-	var zeroVal []primitive.ObjectID
+	var zeroVal model.ParticipantsMapInput
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_deleteMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_deleteMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Mutation_deleteMatchUp_argsMatchUpID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1104,7 +1140,7 @@ func (ec *executionContext) field_Mutation_deleteMatchUp_args(ctx context.Contex
 }
 func (ec *executionContext) field_Mutation_deleteMatchUp_argsMatchUpID(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (primitive.ObjectID, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
 	if tmp, ok := rawArgs["matchUpId"]; ok {
@@ -1115,55 +1151,9 @@ func (ec *executionContext) field_Mutation_deleteMatchUp_argsMatchUpID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Mutation_undoPointFromMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_updateMatchUpStatus_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_undoPointFromMatchUp_argsMatchUpID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["matchUpId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_undoPointFromMatchUp_argsMatchUpID(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
-	if tmp, ok := rawArgs["matchUpId"]; ok {
-		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-	}
-
-	var zeroVal primitive.ObjectID
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_undoShotFromMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	arg0, err := ec.field_Mutation_undoShotFromMatchUp_argsMatchUpID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["matchUpId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_undoShotFromMatchUp_argsMatchUpID(
-	ctx context.Context,
-	rawArgs map[string]interface{},
-) (primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
-	if tmp, ok := rawArgs["matchUpId"]; ok {
-		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-	}
-
-	var zeroVal primitive.ObjectID
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_updateMatchUpStatus_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Mutation_updateMatchUpStatus_argsStatus(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1178,7 +1168,7 @@ func (ec *executionContext) field_Mutation_updateMatchUpStatus_args(ctx context.
 }
 func (ec *executionContext) field_Mutation_updateMatchUpStatus_argsStatus(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (model.MatchUpStatus, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
 	if tmp, ok := rawArgs["status"]; ok {
@@ -1191,7 +1181,7 @@ func (ec *executionContext) field_Mutation_updateMatchUpStatus_argsStatus(
 
 func (ec *executionContext) field_Mutation_updateMatchUpStatus_argsMatchUpID(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (primitive.ObjectID, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
 	if tmp, ok := rawArgs["matchUpId"]; ok {
@@ -1202,9 +1192,9 @@ func (ec *executionContext) field_Mutation_updateMatchUpStatus_argsMatchUpID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Query___type_argsName(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1214,7 +1204,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 func (ec *executionContext) field_Query___type_argsName(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (string, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 	if tmp, ok := rawArgs["name"]; ok {
@@ -1225,9 +1215,9 @@ func (ec *executionContext) field_Query___type_argsName(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_getMatchUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field_Query_getMatchUp_argsID(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1237,7 +1227,7 @@ func (ec *executionContext) field_Query_getMatchUp_args(ctx context.Context, raw
 }
 func (ec *executionContext) field_Query_getMatchUp_argsID(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (primitive.ObjectID, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 	if tmp, ok := rawArgs["id"]; ok {
@@ -1248,9 +1238,9 @@ func (ec *executionContext) field_Query_getMatchUp_argsID(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field___Type_enumValues_argsIncludeDeprecated(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1260,7 +1250,7 @@ func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, ra
 }
 func (ec *executionContext) field___Type_enumValues_argsIncludeDeprecated(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (bool, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
 	if tmp, ok := rawArgs["includeDeprecated"]; ok {
@@ -1271,9 +1261,9 @@ func (ec *executionContext) field___Type_enumValues_argsIncludeDeprecated(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
-	args := map[string]interface{}{}
+	args := map[string]any{}
 	arg0, err := ec.field___Type_fields_argsIncludeDeprecated(ctx, rawArgs)
 	if err != nil {
 		return nil, err
@@ -1283,7 +1273,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 }
 func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 	ctx context.Context,
-	rawArgs map[string]interface{},
+	rawArgs map[string]any,
 ) (bool, error) {
 	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
 	if tmp, ok := rawArgs["includeDeprecated"]; ok {
@@ -1314,7 +1304,7 @@ func (ec *executionContext) _MatchUp_id(ctx context.Context, field graphql.Colle
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -1358,7 +1348,7 @@ func (ec *executionContext) _MatchUp_matchUpFormat(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MatchUpFormat, nil
 	})
@@ -1416,7 +1406,7 @@ func (ec *executionContext) _MatchUp_matchUpStatus(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MatchUpStatus, nil
 	})
@@ -1460,7 +1450,7 @@ func (ec *executionContext) _MatchUp_matchUpType(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MatchUpType, nil
 	})
@@ -1492,8 +1482,8 @@ func (ec *executionContext) fieldContext_MatchUp_matchUpType(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _MatchUp_participantIds(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MatchUp_participantIds(ctx, field)
+func (ec *executionContext) _MatchUp_participantsMap(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_participantsMap(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1504,53 +1494,9 @@ func (ec *executionContext) _MatchUp_participantIds(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ParticipantIds, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]primitive.ObjectID)
-	fc.Result = res
-	return ec.marshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MatchUp_participantIds(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MatchUp",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ObjectID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MatchUp_participants(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MatchUp_participants(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Participants, nil
+		return obj.ParticipantsMap, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1567,7 +1513,7 @@ func (ec *executionContext) _MatchUp_participants(ctx context.Context, field gra
 	return ec.marshalNParticipantsMap2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐParticipantsMap(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MatchUp_participants(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MatchUp_participantsMap(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MatchUp",
 		Field:      field,
@@ -1598,7 +1544,7 @@ func (ec *executionContext) _MatchUp_currentSetIndex(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentSetIndex, nil
 	})
@@ -1639,7 +1585,7 @@ func (ec *executionContext) _MatchUp_currentGameIndexWithinSet(ctx context.Conte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentGameIndexWithinSet, nil
 	})
@@ -1680,7 +1626,7 @@ func (ec *executionContext) _MatchUp_currentPointIndexWithinGame(ctx context.Con
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentPointIndexWithinGame, nil
 	})
@@ -1721,7 +1667,7 @@ func (ec *executionContext) _MatchUp_currentScore(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentScore, nil
 	})
@@ -1768,7 +1714,7 @@ func (ec *executionContext) _MatchUp_currentServer(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentServer, nil
 	})
@@ -1800,8 +1746,8 @@ func (ec *executionContext) fieldContext_MatchUp_currentServer(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _MatchUp_initalServer(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MatchUp_initalServer(ctx, field)
+func (ec *executionContext) _MatchUp_initialServer(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_initialServer(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1812,9 +1758,9 @@ func (ec *executionContext) _MatchUp_initalServer(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.InitalServer, nil
+		return obj.InitialServer, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1831,7 +1777,7 @@ func (ec *executionContext) _MatchUp_initalServer(ctx context.Context, field gra
 	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MatchUp_initalServer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MatchUp_initialServer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MatchUp",
 		Field:      field,
@@ -1856,7 +1802,7 @@ func (ec *executionContext) _MatchUp_pointsSequence(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PointsSequence, nil
 	})
@@ -1870,9 +1816,9 @@ func (ec *executionContext) _MatchUp_pointsSequence(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]primitive.ObjectID)
+	res := resTmp.([]*model.Point)
 	fc.Result = res
-	return ec.marshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx, field.Selections, res)
+	return ec.marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUp_pointsSequence(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1882,7 +1828,41 @@ func (ec *executionContext) fieldContext_MatchUp_pointsSequence(_ context.Contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ObjectID does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Point_id(ctx, field)
+			case "setIndex":
+				return ec.fieldContext_Point_setIndex(ctx, field)
+			case "gameIndexWithinSet":
+				return ec.fieldContext_Point_gameIndexWithinSet(ctx, field)
+			case "isTiebreak":
+				return ec.fieldContext_Point_isTiebreak(ctx, field)
+			case "tiebreakPointNumber":
+				return ec.fieldContext_Point_tiebreakPointNumber(ctx, field)
+			case "pointWinner":
+				return ec.fieldContext_Point_pointWinner(ctx, field)
+			case "pointServer":
+				return ec.fieldContext_Point_pointServer(ctx, field)
+			case "pointWinReason":
+				return ec.fieldContext_Point_pointWinReason(ctx, field)
+			case "playingSide":
+				return ec.fieldContext_Point_playingSide(ctx, field)
+			case "courtSide":
+				return ec.fieldContext_Point_courtSide(ctx, field)
+			case "shots":
+				return ec.fieldContext_Point_shots(ctx, field)
+			case "isBreakPoint":
+				return ec.fieldContext_Point_isBreakPoint(ctx, field)
+			case "isGamePoint":
+				return ec.fieldContext_Point_isGamePoint(ctx, field)
+			case "isSetPoint":
+				return ec.fieldContext_Point_isSetPoint(ctx, field)
+			case "isMatchPoint":
+				return ec.fieldContext_Point_isMatchPoint(ctx, field)
+			case "playedAt":
+				return ec.fieldContext_Point_playedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Point", field.Name)
 		},
 	}
 	return fc, nil
@@ -1900,7 +1880,7 @@ func (ec *executionContext) _MatchUp_startTime(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.StartTime, nil
 	})
@@ -1944,7 +1924,7 @@ func (ec *executionContext) _MatchUp_endTime(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.EndTime, nil
 	})
@@ -1985,7 +1965,7 @@ func (ec *executionContext) _MatchUp_createdAt(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CreatedAt, nil
 	})
@@ -2029,7 +2009,7 @@ func (ec *executionContext) _MatchUp_updatedAt(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UpdatedAt, nil
 	})
@@ -2073,7 +2053,7 @@ func (ec *executionContext) _MatchUpFormat_id(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -2117,7 +2097,7 @@ func (ec *executionContext) _MatchUpFormat_tracker(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Tracker, nil
 	})
@@ -2161,7 +2141,7 @@ func (ec *executionContext) _MatchUpFormat_numberOfSets(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.NumberOfSets, nil
 	})
@@ -2205,7 +2185,7 @@ func (ec *executionContext) _MatchUpFormat_setFormat(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SetFormat, nil
 	})
@@ -2261,7 +2241,7 @@ func (ec *executionContext) _MatchUpFormat_finalSetFormat(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.FinalSetFormat, nil
 	})
@@ -2314,7 +2294,7 @@ func (ec *executionContext) _MatchUpFormat_initialServer(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.InitialServer, nil
 	})
@@ -2358,9 +2338,9 @@ func (ec *executionContext) _Mutation_createMatchUp(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateMatchUp(rctx, fc.Args["matchUpFormatInput"].(model.MatchUpFormatInput), fc.Args["matchUpType"].(model.MatchUpType), fc.Args["participants"].([]primitive.ObjectID))
+		return ec.resolvers.Mutation().CreateMatchUp(rctx, fc.Args["matchUpFormatInput"].(model.MatchUpFormatInput), fc.Args["matchUpType"].(model.MatchUpType), fc.Args["participantsMapInput"].(model.ParticipantsMapInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2393,10 +2373,8 @@ func (ec *executionContext) fieldContext_Mutation_createMatchUp(ctx context.Cont
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2407,8 +2385,8 @@ func (ec *executionContext) fieldContext_Mutation_createMatchUp(ctx context.Cont
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2449,7 +2427,7 @@ func (ec *executionContext) _Mutation_updateMatchUpStatus(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().UpdateMatchUpStatus(rctx, fc.Args["status"].(model.MatchUpStatus), fc.Args["matchUpId"].(primitive.ObjectID))
 	})
@@ -2484,10 +2462,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMatchUpStatus(ctx contex
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2498,8 +2474,8 @@ func (ec *executionContext) fieldContext_Mutation_updateMatchUpStatus(ctx contex
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2540,9 +2516,9 @@ func (ec *executionContext) _Mutation_addPointToMatchUp(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddPointToMatchUp(rctx, fc.Args["matchUpFormatInput"].(model.MatchUpFormatInput), fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().AddPointToMatchUp(rctx, fc.Args["pointInput"].(model.PointInput), fc.Args["matchUpId"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2575,10 +2551,8 @@ func (ec *executionContext) fieldContext_Mutation_addPointToMatchUp(ctx context.
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2589,8 +2563,8 @@ func (ec *executionContext) fieldContext_Mutation_addPointToMatchUp(ctx context.
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2631,9 +2605,9 @@ func (ec *executionContext) _Mutation_addShotToMatchUp(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddShotToMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().AddShotToMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID), fc.Args["shotInput"].(model.ShotInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2666,10 +2640,8 @@ func (ec *executionContext) fieldContext_Mutation_addShotToMatchUp(ctx context.C
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2680,8 +2652,8 @@ func (ec *executionContext) fieldContext_Mutation_addShotToMatchUp(ctx context.C
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2710,8 +2682,8 @@ func (ec *executionContext) fieldContext_Mutation_addShotToMatchUp(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_undoShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_undoShotFromMatchUp(ctx, field)
+func (ec *executionContext) _Mutation_DeleteLastShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_DeleteLastShotFromMatchUp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2722,9 +2694,9 @@ func (ec *executionContext) _Mutation_undoShotFromMatchUp(ctx context.Context, f
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UndoShotFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().DeleteLastShotFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2741,7 +2713,7 @@ func (ec *executionContext) _Mutation_undoShotFromMatchUp(ctx context.Context, f
 	return ec.marshalNMatchUp2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUp(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_undoShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_DeleteLastShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2757,10 +2729,8 @@ func (ec *executionContext) fieldContext_Mutation_undoShotFromMatchUp(ctx contex
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2771,8 +2741,8 @@ func (ec *executionContext) fieldContext_Mutation_undoShotFromMatchUp(ctx contex
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2794,15 +2764,15 @@ func (ec *executionContext) fieldContext_Mutation_undoShotFromMatchUp(ctx contex
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_undoShotFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_DeleteLastShotFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_undoPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_undoPointFromMatchUp(ctx, field)
+func (ec *executionContext) _Mutation_DeleteLastPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_DeleteLastPointFromMatchUp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2813,9 +2783,9 @@ func (ec *executionContext) _Mutation_undoPointFromMatchUp(ctx context.Context, 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UndoPointFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().DeleteLastPointFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2832,7 +2802,7 @@ func (ec *executionContext) _Mutation_undoPointFromMatchUp(ctx context.Context, 
 	return ec.marshalNMatchUp2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUp(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_undoPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_DeleteLastPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2848,10 +2818,8 @@ func (ec *executionContext) fieldContext_Mutation_undoPointFromMatchUp(ctx conte
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2862,8 +2830,8 @@ func (ec *executionContext) fieldContext_Mutation_undoPointFromMatchUp(ctx conte
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2885,7 +2853,7 @@ func (ec *executionContext) fieldContext_Mutation_undoPointFromMatchUp(ctx conte
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_undoPointFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_DeleteLastPointFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2904,7 +2872,7 @@ func (ec *executionContext) _Mutation_deleteMatchUp(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().DeleteMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
 	})
@@ -2939,10 +2907,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteMatchUp(ctx context.Cont
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -2953,8 +2919,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteMatchUp(ctx context.Cont
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -2995,7 +2961,7 @@ func (ec *executionContext) _ParticipantsMap_A(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.A, nil
 	})
@@ -3009,9 +2975,9 @@ func (ec *executionContext) _ParticipantsMap_A(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(primitive.ObjectID)
+	res := resTmp.([]*primitive.ObjectID)
 	fc.Result = res
-	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+	return ec.marshalNObjectID2ᚕᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ParticipantsMap_A(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3039,7 +3005,7 @@ func (ec *executionContext) _ParticipantsMap_B(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.B, nil
 	})
@@ -3053,9 +3019,9 @@ func (ec *executionContext) _ParticipantsMap_B(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(primitive.ObjectID)
+	res := resTmp.([]*primitive.ObjectID)
 	fc.Result = res
-	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+	return ec.marshalNObjectID2ᚕᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ParticipantsMap_B(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3083,7 +3049,7 @@ func (ec *executionContext) _Point_id(ctx context.Context, field graphql.Collect
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ID, nil
 	})
@@ -3127,7 +3093,7 @@ func (ec *executionContext) _Point_setIndex(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SetIndex, nil
 	})
@@ -3171,7 +3137,7 @@ func (ec *executionContext) _Point_gameIndexWithinSet(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.GameIndexWithinSet, nil
 	})
@@ -3203,50 +3169,6 @@ func (ec *executionContext) fieldContext_Point_gameIndexWithinSet(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Point_pointIndexWithinGame(ctx context.Context, field graphql.CollectedField, obj *model.Point) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Point_pointIndexWithinGame(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PointIndexWithinGame, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Point_pointIndexWithinGame(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Point",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Point_isTiebreak(ctx context.Context, field graphql.CollectedField, obj *model.Point) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Point_isTiebreak(ctx, field)
 	if err != nil {
@@ -3259,7 +3181,7 @@ func (ec *executionContext) _Point_isTiebreak(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsTiebreak, nil
 	})
@@ -3303,7 +3225,7 @@ func (ec *executionContext) _Point_tiebreakPointNumber(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TiebreakPointNumber, nil
 	})
@@ -3344,7 +3266,7 @@ func (ec *executionContext) _Point_pointWinner(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PointWinner, nil
 	})
@@ -3388,7 +3310,7 @@ func (ec *executionContext) _Point_pointServer(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PointServer, nil
 	})
@@ -3432,7 +3354,7 @@ func (ec *executionContext) _Point_pointWinReason(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PointWinReason, nil
 	})
@@ -3473,7 +3395,7 @@ func (ec *executionContext) _Point_playingSide(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PlayingSide, nil
 	})
@@ -3517,7 +3439,7 @@ func (ec *executionContext) _Point_courtSide(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CourtSide, nil
 	})
@@ -3549,106 +3471,6 @@ func (ec *executionContext) fieldContext_Point_courtSide(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Point_scoreBefore(ctx context.Context, field graphql.CollectedField, obj *model.Point) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Point_scoreBefore(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ScoreBefore, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Score)
-	fc.Result = res
-	return ec.marshalNScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Point_scoreBefore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Point",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "a":
-				return ec.fieldContext_Score_a(ctx, field)
-			case "b":
-				return ec.fieldContext_Score_b(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Score", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Point_scoreAfter(ctx context.Context, field graphql.CollectedField, obj *model.Point) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Point_scoreAfter(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ScoreAfter, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*model.Score)
-	fc.Result = res
-	return ec.marshalNScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Point_scoreAfter(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Point",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "a":
-				return ec.fieldContext_Score_a(ctx, field)
-			case "b":
-				return ec.fieldContext_Score_b(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Score", field.Name)
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Point_shots(ctx context.Context, field graphql.CollectedField, obj *model.Point) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Point_shots(ctx, field)
 	if err != nil {
@@ -3661,7 +3483,7 @@ func (ec *executionContext) _Point_shots(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Shots, nil
 	})
@@ -3719,7 +3541,7 @@ func (ec *executionContext) _Point_isBreakPoint(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsBreakPoint, nil
 	})
@@ -3763,7 +3585,7 @@ func (ec *executionContext) _Point_isGamePoint(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsGamePoint, nil
 	})
@@ -3807,7 +3629,7 @@ func (ec *executionContext) _Point_isSetPoint(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsSetPoint, nil
 	})
@@ -3851,7 +3673,7 @@ func (ec *executionContext) _Point_isMatchPoint(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsMatchPoint, nil
 	})
@@ -3895,7 +3717,7 @@ func (ec *executionContext) _Point_playedAt(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PlayedAt, nil
 	})
@@ -3936,7 +3758,7 @@ func (ec *executionContext) _Query_getMatchUp(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().GetMatchUp(rctx, fc.Args["id"].(primitive.ObjectID))
 	})
@@ -3971,10 +3793,8 @@ func (ec *executionContext) fieldContext_Query_getMatchUp(ctx context.Context, f
 				return ec.fieldContext_MatchUp_matchUpStatus(ctx, field)
 			case "matchUpType":
 				return ec.fieldContext_MatchUp_matchUpType(ctx, field)
-			case "participantIds":
-				return ec.fieldContext_MatchUp_participantIds(ctx, field)
-			case "participants":
-				return ec.fieldContext_MatchUp_participants(ctx, field)
+			case "participantsMap":
+				return ec.fieldContext_MatchUp_participantsMap(ctx, field)
 			case "currentSetIndex":
 				return ec.fieldContext_MatchUp_currentSetIndex(ctx, field)
 			case "currentGameIndexWithinSet":
@@ -3985,8 +3805,8 @@ func (ec *executionContext) fieldContext_Query_getMatchUp(ctx context.Context, f
 				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "currentServer":
 				return ec.fieldContext_MatchUp_currentServer(ctx, field)
-			case "initalServer":
-				return ec.fieldContext_MatchUp_initalServer(ctx, field)
+			case "initialServer":
+				return ec.fieldContext_MatchUp_initialServer(ctx, field)
 			case "pointsSequence":
 				return ec.fieldContext_MatchUp_pointsSequence(ctx, field)
 			case "startTime":
@@ -4027,7 +3847,7 @@ func (ec *executionContext) _Query__service(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.__resolve__service(ctx)
 	})
@@ -4075,7 +3895,7 @@ func (ec *executionContext) _Query___type(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.introspectType(fc.Args["name"].(string))
 	})
@@ -4149,7 +3969,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.introspectSchema()
 	})
@@ -4204,7 +4024,7 @@ func (ec *executionContext) _Score_a(ctx context.Context, field graphql.Collecte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.A, nil
 	})
@@ -4260,7 +4080,7 @@ func (ec *executionContext) _Score_b(ctx context.Context, field graphql.Collecte
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.B, nil
 	})
@@ -4316,7 +4136,7 @@ func (ec *executionContext) _SetFormat_numberOfGames(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.NumberOfGames, nil
 	})
@@ -4360,7 +4180,7 @@ func (ec *executionContext) _SetFormat_deuceType(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DeuceType, nil
 	})
@@ -4404,7 +4224,7 @@ func (ec *executionContext) _SetFormat_mustWinByTwo(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MustWinByTwo, nil
 	})
@@ -4448,7 +4268,7 @@ func (ec *executionContext) _SetFormat_tiebreakFormat(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TiebreakFormat, nil
 	})
@@ -4495,7 +4315,7 @@ func (ec *executionContext) _SetFormat_tiebreakAt(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.TiebreakAt, nil
 	})
@@ -4536,7 +4356,7 @@ func (ec *executionContext) _Shot_playerId(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PlayerID, nil
 	})
@@ -4580,7 +4400,7 @@ func (ec *executionContext) _Shot_shotType(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ShotType, nil
 	})
@@ -4624,7 +4444,7 @@ func (ec *executionContext) _Shot_serveStyle(ctx context.Context, field graphql.
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.ServeStyle, nil
 	})
@@ -4665,7 +4485,7 @@ func (ec *executionContext) _Shot_groundStrokeType(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.GroundStrokeType, nil
 	})
@@ -4706,7 +4526,7 @@ func (ec *executionContext) _Shot_groundStrokeStyle(ctx context.Context, field g
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.GroundStrokeStyle, nil
 	})
@@ -4747,7 +4567,7 @@ func (ec *executionContext) _Shot_playedAt(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PlayedAt, nil
 	})
@@ -4788,7 +4608,7 @@ func (ec *executionContext) _SideScore_player(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Player, nil
 	})
@@ -4832,7 +4652,7 @@ func (ec *executionContext) _SideScore_currentPointScore(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentPointScore, nil
 	})
@@ -4876,7 +4696,7 @@ func (ec *executionContext) _SideScore_currentGameScore(ctx context.Context, fie
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentGameScore, nil
 	})
@@ -4920,7 +4740,7 @@ func (ec *executionContext) _SideScore_currentSetScore(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentSetScore, nil
 	})
@@ -4964,7 +4784,7 @@ func (ec *executionContext) _SideScore_currentTiebreakScore(ctx context.Context,
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.CurrentTiebreakScore, nil
 	})
@@ -5005,7 +4825,7 @@ func (ec *executionContext) _TiebreakFormat_points(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Points, nil
 	})
@@ -5049,7 +4869,7 @@ func (ec *executionContext) _TiebreakFormat_mustWinByTwo(ctx context.Context, fi
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MustWinByTwo, nil
 	})
@@ -5093,7 +4913,7 @@ func (ec *executionContext) __Service_sdl(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SDL, nil
 	})
@@ -5134,7 +4954,7 @@ func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -5178,7 +4998,7 @@ func (ec *executionContext) ___Directive_description(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -5219,7 +5039,7 @@ func (ec *executionContext) ___Directive_locations(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Locations, nil
 	})
@@ -5263,7 +5083,7 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Args, nil
 	})
@@ -5317,7 +5137,7 @@ func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsRepeatable, nil
 	})
@@ -5361,7 +5181,7 @@ func (ec *executionContext) ___EnumValue_name(ctx context.Context, field graphql
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -5405,7 +5225,7 @@ func (ec *executionContext) ___EnumValue_description(ctx context.Context, field 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -5446,7 +5266,7 @@ func (ec *executionContext) ___EnumValue_isDeprecated(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsDeprecated(), nil
 	})
@@ -5490,7 +5310,7 @@ func (ec *executionContext) ___EnumValue_deprecationReason(ctx context.Context, 
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DeprecationReason(), nil
 	})
@@ -5531,7 +5351,7 @@ func (ec *executionContext) ___Field_name(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -5575,7 +5395,7 @@ func (ec *executionContext) ___Field_description(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -5616,7 +5436,7 @@ func (ec *executionContext) ___Field_args(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Args, nil
 	})
@@ -5670,7 +5490,7 @@ func (ec *executionContext) ___Field_type(ctx context.Context, field graphql.Col
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Type, nil
 	})
@@ -5736,7 +5556,7 @@ func (ec *executionContext) ___Field_isDeprecated(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.IsDeprecated(), nil
 	})
@@ -5780,7 +5600,7 @@ func (ec *executionContext) ___Field_deprecationReason(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DeprecationReason(), nil
 	})
@@ -5821,7 +5641,7 @@ func (ec *executionContext) ___InputValue_name(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name, nil
 	})
@@ -5865,7 +5685,7 @@ func (ec *executionContext) ___InputValue_description(ctx context.Context, field
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -5906,7 +5726,7 @@ func (ec *executionContext) ___InputValue_type(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Type, nil
 	})
@@ -5972,7 +5792,7 @@ func (ec *executionContext) ___InputValue_defaultValue(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.DefaultValue, nil
 	})
@@ -6013,7 +5833,7 @@ func (ec *executionContext) ___Schema_description(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -6054,7 +5874,7 @@ func (ec *executionContext) ___Schema_types(ctx context.Context, field graphql.C
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Types(), nil
 	})
@@ -6120,7 +5940,7 @@ func (ec *executionContext) ___Schema_queryType(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.QueryType(), nil
 	})
@@ -6186,7 +6006,7 @@ func (ec *executionContext) ___Schema_mutationType(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.MutationType(), nil
 	})
@@ -6249,7 +6069,7 @@ func (ec *executionContext) ___Schema_subscriptionType(ctx context.Context, fiel
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SubscriptionType(), nil
 	})
@@ -6312,7 +6132,7 @@ func (ec *executionContext) ___Schema_directives(ctx context.Context, field grap
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Directives(), nil
 	})
@@ -6368,7 +6188,7 @@ func (ec *executionContext) ___Type_kind(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Kind(), nil
 	})
@@ -6412,7 +6232,7 @@ func (ec *executionContext) ___Type_name(ctx context.Context, field graphql.Coll
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Name(), nil
 	})
@@ -6453,7 +6273,7 @@ func (ec *executionContext) ___Type_description(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Description(), nil
 	})
@@ -6494,7 +6314,7 @@ func (ec *executionContext) ___Type_fields(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Fields(fc.Args["includeDeprecated"].(bool)), nil
 	})
@@ -6560,7 +6380,7 @@ func (ec *executionContext) ___Type_interfaces(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.Interfaces(), nil
 	})
@@ -6623,7 +6443,7 @@ func (ec *executionContext) ___Type_possibleTypes(ctx context.Context, field gra
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.PossibleTypes(), nil
 	})
@@ -6686,7 +6506,7 @@ func (ec *executionContext) ___Type_enumValues(ctx context.Context, field graphq
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.EnumValues(fc.Args["includeDeprecated"].(bool)), nil
 	})
@@ -6748,7 +6568,7 @@ func (ec *executionContext) ___Type_inputFields(ctx context.Context, field graph
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.InputFields(), nil
 	})
@@ -6799,7 +6619,7 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.OfType(), nil
 	})
@@ -6862,7 +6682,7 @@ func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field gr
 			ret = graphql.Null
 		}
 	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.SpecifiedByURL(), nil
 	})
@@ -6895,10 +6715,10 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context, obj interface{}) (model.MatchUpFormatInput, error) {
+func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context, obj any) (model.MatchUpFormatInput, error) {
 	var it model.MatchUpFormatInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -6943,44 +6763,169 @@ func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPointInput(ctx context.Context, obj interface{}) (model.PointInput, error) {
-	var it model.PointInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+func (ec *executionContext) unmarshalInputParticipantsMapInput(ctx context.Context, obj any) (model.ParticipantsMapInput, error) {
+	var it model.ParticipantsMapInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"winner", "loser"}
+	fieldsInOrder := [...]string{"A", "B"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "winner":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("winner"))
-			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+		case "A":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("A"))
+			data, err := ec.unmarshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Winner = data
-		case "loser":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loser"))
-			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			it.A = data
+		case "B":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("B"))
+			data, err := ec.unmarshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Loser = data
+			it.B = data
 		}
 	}
 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, obj interface{}) (model.SetFormatInput, error) {
+func (ec *executionContext) unmarshalInputPointInput(ctx context.Context, obj any) (model.PointInput, error) {
+	var it model.PointInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"setIndex", "gameIndexWithinSet", "isTiebreak", "tiebreakPointNumber", "pointWinner", "pointServer", "pointWinReason", "playingSide", "courtSide", "shotsInput", "isBreakPoint", "isGamePoint", "isSetPoint", "isMatchPoint", "playedAt"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "setIndex":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("setIndex"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SetIndex = data
+		case "gameIndexWithinSet":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gameIndexWithinSet"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GameIndexWithinSet = data
+		case "isTiebreak":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isTiebreak"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsTiebreak = data
+		case "tiebreakPointNumber":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tiebreakPointNumber"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TiebreakPointNumber = data
+		case "pointWinner":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pointWinner"))
+			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PointWinner = data
+		case "pointServer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pointServer"))
+			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PointServer = data
+		case "pointWinReason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pointWinReason"))
+			data, err := ec.unmarshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PointWinReason = data
+		case "playingSide":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playingSide"))
+			data, err := ec.unmarshalNPlayingSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPlayingSide(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PlayingSide = data
+		case "courtSide":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("courtSide"))
+			data, err := ec.unmarshalNCourtSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐCourtSide(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CourtSide = data
+		case "shotsInput":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shotsInput"))
+			data, err := ec.unmarshalOShotInput2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShotsInput = data
+		case "isBreakPoint":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isBreakPoint"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsBreakPoint = data
+		case "isGamePoint":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isGamePoint"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsGamePoint = data
+		case "isSetPoint":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isSetPoint"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsSetPoint = data
+		case "isMatchPoint":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isMatchPoint"))
+			data, err := ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsMatchPoint = data
+		case "playedAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playedAt"))
+			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PlayedAt = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, obj any) (model.SetFormatInput, error) {
 	var it model.SetFormatInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -7032,10 +6977,72 @@ func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, ob
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputTiebreakFormatInput(ctx context.Context, obj interface{}) (model.TiebreakFormatInput, error) {
+func (ec *executionContext) unmarshalInputShotInput(ctx context.Context, obj any) (model.ShotInput, error) {
+	var it model.ShotInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"playerId", "shotType", "serveStyle", "groundStrokeType", "groundStrokeStyle", "playedAt"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "playerId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playerId"))
+			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PlayerID = data
+		case "shotType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shotType"))
+			data, err := ec.unmarshalNShotType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShotType = data
+		case "serveStyle":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serveStyle"))
+			data, err := ec.unmarshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ServeStyle = data
+		case "groundStrokeType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groundStrokeType"))
+			data, err := ec.unmarshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GroundStrokeType = data
+		case "groundStrokeStyle":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groundStrokeStyle"))
+			data, err := ec.unmarshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GroundStrokeStyle = data
+		case "playedAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("playedAt"))
+			data, err := ec.unmarshalODateTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PlayedAt = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTiebreakFormatInput(ctx context.Context, obj any) (model.TiebreakFormatInput, error) {
 	var it model.TiebreakFormatInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
 		asMap[k] = v
 	}
 
@@ -7105,13 +7112,8 @@ func (ec *executionContext) _MatchUp(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "participantIds":
-			out.Values[i] = ec._MatchUp_participantIds(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "participants":
-			out.Values[i] = ec._MatchUp_participants(ctx, field, obj)
+		case "participantsMap":
+			out.Values[i] = ec._MatchUp_participantsMap(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7128,8 +7130,8 @@ func (ec *executionContext) _MatchUp(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "initalServer":
-			out.Values[i] = ec._MatchUp_initalServer(ctx, field, obj)
+		case "initialServer":
+			out.Values[i] = ec._MatchUp_initialServer(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -7286,16 +7288,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "undoShotFromMatchUp":
+		case "UndoLastShotFromMatchUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_undoShotFromMatchUp(ctx, field)
+				return ec._Mutation_DeleteLastShotFromMatchUp(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "undoPointFromMatchUp":
+		case "UndoLastPointFromMatchUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_undoPointFromMatchUp(ctx, field)
+				return ec._Mutation_DeleteLastPointFromMatchUp(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -7400,11 +7402,6 @@ func (ec *executionContext) _Point(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "pointIndexWithinGame":
-			out.Values[i] = ec._Point_pointIndexWithinGame(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "isTiebreak":
 			out.Values[i] = ec._Point_isTiebreak(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7431,16 +7428,6 @@ func (ec *executionContext) _Point(ctx context.Context, sel ast.SelectionSet, ob
 			}
 		case "courtSide":
 			out.Values[i] = ec._Point_courtSide(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "scoreBefore":
-			out.Values[i] = ec._Point_scoreBefore(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "scoreAfter":
-			out.Values[i] = ec._Point_scoreAfter(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8199,7 +8186,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
+func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8214,7 +8201,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCourtSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐCourtSide(ctx context.Context, v interface{}) (model.CourtSide, error) {
+func (ec *executionContext) unmarshalNCourtSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐCourtSide(ctx context.Context, v any) (model.CourtSide, error) {
 	var res model.CourtSide
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8224,7 +8211,7 @@ func (ec *executionContext) marshalNCourtSide2githubᚗcomᚋCourtIQᚋcourtiq�
 	return v
 }
 
-func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, v any) (time.Time, error) {
 	res, err := graphql.UnmarshalTime(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8239,7 +8226,7 @@ func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, v interface{}) (model.DeuceType, error) {
+func (ec *executionContext) unmarshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐDeuceType(ctx context.Context, v any) (model.DeuceType, error) {
 	var res model.DeuceType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8249,7 +8236,7 @@ func (ec *executionContext) marshalNDeuceType2githubᚗcomᚋCourtIQᚋcourtiq�
 	return v
 }
 
-func (ec *executionContext) unmarshalNFieldSet2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalNFieldSet2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8264,7 +8251,7 @@ func (ec *executionContext) marshalNFieldSet2string(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalNGameScore2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGameScore(ctx context.Context, v interface{}) (model.GameScore, error) {
+func (ec *executionContext) unmarshalNGameScore2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGameScore(ctx context.Context, v any) (model.GameScore, error) {
 	var res model.GameScore
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8274,7 +8261,7 @@ func (ec *executionContext) marshalNGameScore2githubᚗcomᚋCourtIQᚋcourtiq�
 	return v
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v any) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8313,12 +8300,12 @@ func (ec *executionContext) marshalNMatchUpFormat2ᚖgithubᚗcomᚋCourtIQᚋco
 	return ec._MatchUpFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNMatchUpFormatInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatInput(ctx context.Context, v interface{}) (model.MatchUpFormatInput, error) {
+func (ec *executionContext) unmarshalNMatchUpFormatInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatInput(ctx context.Context, v any) (model.MatchUpFormatInput, error) {
 	res, err := ec.unmarshalInputMatchUpFormatInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNMatchUpStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpStatus(ctx context.Context, v interface{}) (model.MatchUpStatus, error) {
+func (ec *executionContext) unmarshalNMatchUpStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpStatus(ctx context.Context, v any) (model.MatchUpStatus, error) {
 	var res model.MatchUpStatus
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8328,7 +8315,7 @@ func (ec *executionContext) marshalNMatchUpStatus2githubᚗcomᚋCourtIQᚋcourt
 	return v
 }
 
-func (ec *executionContext) unmarshalNMatchUpType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpType(ctx context.Context, v interface{}) (model.MatchUpType, error) {
+func (ec *executionContext) unmarshalNMatchUpType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpType(ctx context.Context, v any) (model.MatchUpType, error) {
 	var res model.MatchUpType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8338,7 +8325,7 @@ func (ec *executionContext) marshalNMatchUpType2githubᚗcomᚋCourtIQᚋcourtiq
 	return v
 }
 
-func (ec *executionContext) unmarshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, v interface{}) (model.NumberOfGames, error) {
+func (ec *executionContext) unmarshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfGames(ctx context.Context, v any) (model.NumberOfGames, error) {
 	var res model.NumberOfGames
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8348,7 +8335,7 @@ func (ec *executionContext) marshalNNumberOfGames2githubᚗcomᚋCourtIQᚋcourt
 	return v
 }
 
-func (ec *executionContext) unmarshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, v interface{}) (model.NumberOfSets, error) {
+func (ec *executionContext) unmarshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx context.Context, v any) (model.NumberOfSets, error) {
 	var res model.NumberOfSets
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8358,7 +8345,7 @@ func (ec *executionContext) marshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourti
 	return v
 }
 
-func (ec *executionContext) unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v interface{}) (primitive.ObjectID, error) {
+func (ec *executionContext) unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v any) (primitive.ObjectID, error) {
 	res, err := scalar.UnmarshalObjectID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8373,8 +8360,8 @@ func (ec *executionContext) marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriver
 	return res
 }
 
-func (ec *executionContext) unmarshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx context.Context, v interface{}) ([]primitive.ObjectID, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectIDᚄ(ctx context.Context, v any) ([]primitive.ObjectID, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -8405,6 +8392,32 @@ func (ec *executionContext) marshalNObjectID2ᚕgoᚗmongodbᚗorgᚋmongoᚑdri
 	return ret
 }
 
+func (ec *executionContext) unmarshalNObjectID2ᚕᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v any) ([]*primitive.ObjectID, error) {
+	var vSlice []any
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*primitive.ObjectID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNObjectID2ᚕᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, sel ast.SelectionSet, v []*primitive.ObjectID) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
 func (ec *executionContext) marshalNParticipantsMap2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐParticipantsMap(ctx context.Context, sel ast.SelectionSet, v *model.ParticipantsMap) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -8415,7 +8428,12 @@ func (ec *executionContext) marshalNParticipantsMap2ᚖgithubᚗcomᚋCourtIQᚋ
 	return ec._ParticipantsMap(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNPlayingSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPlayingSide(ctx context.Context, v interface{}) (model.PlayingSide, error) {
+func (ec *executionContext) unmarshalNParticipantsMapInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐParticipantsMapInput(ctx context.Context, v any) (model.ParticipantsMapInput, error) {
+	res, err := ec.unmarshalInputParticipantsMapInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNPlayingSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPlayingSide(ctx context.Context, v any) (model.PlayingSide, error) {
 	var res model.PlayingSide
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8425,14 +8443,47 @@ func (ec *executionContext) marshalNPlayingSide2githubᚗcomᚋCourtIQᚋcourtiq
 	return v
 }
 
-func (ec *executionContext) marshalNScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v *model.Score) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
+func (ec *executionContext) marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx context.Context, sel ast.SelectionSet, v []*model.Point) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
 	}
-	return ec._Score(ctx, sel, v)
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalNPointInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointInput(ctx context.Context, v any) (model.PointInput, error) {
+	res, err := ec.unmarshalInputPointInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
@@ -8445,7 +8496,7 @@ func (ec *executionContext) marshalNSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourti
 	return ec._SetFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
+func (ec *executionContext) unmarshalNSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v any) (*model.SetFormatInput, error) {
 	res, err := ec.unmarshalInputSetFormatInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8504,7 +8555,12 @@ func (ec *executionContext) marshalNShot2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑb
 	return ec._Shot(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNShotType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotType(ctx context.Context, v interface{}) (model.ShotType, error) {
+func (ec *executionContext) unmarshalNShotInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotInput(ctx context.Context, v any) (model.ShotInput, error) {
+	res, err := ec.unmarshalInputShotInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNShotType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotType(ctx context.Context, v any) (model.ShotType, error) {
 	var res model.ShotType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8524,7 +8580,7 @@ func (ec *executionContext) marshalNSideScore2ᚖgithubᚗcomᚋCourtIQᚋcourti
 	return ec._SideScore(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalNString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8539,7 +8595,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNTiebreakPoints2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, v interface{}) (model.TiebreakPoints, error) {
+func (ec *executionContext) unmarshalNTiebreakPoints2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakPoints(ctx context.Context, v any) (model.TiebreakPoints, error) {
 	var res model.TiebreakPoints
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8601,7 +8657,7 @@ func (ec *executionContext) marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgq
 	return ret
 }
 
-func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8616,8 +8672,8 @@ func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Conte
 	return res
 }
 
-func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -8791,7 +8847,7 @@ func (ec *executionContext) marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 	return ec.___Type(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8806,7 +8862,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) unmarshalNfederation__Policy2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalNfederation__Policy2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8821,8 +8877,8 @@ func (ec *executionContext) marshalNfederation__Policy2string(ctx context.Contex
 	return res
 }
 
-func (ec *executionContext) unmarshalNfederation__Policy2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNfederation__Policy2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -8853,8 +8909,8 @@ func (ec *executionContext) marshalNfederation__Policy2ᚕstringᚄ(ctx context.
 	return ret
 }
 
-func (ec *executionContext) unmarshalNfederation__Policy2ᚕᚕstringᚄ(ctx context.Context, v interface{}) ([][]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNfederation__Policy2ᚕᚕstringᚄ(ctx context.Context, v any) ([][]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -8885,7 +8941,7 @@ func (ec *executionContext) marshalNfederation__Policy2ᚕᚕstringᚄ(ctx conte
 	return ret
 }
 
-func (ec *executionContext) unmarshalNfederation__Scope2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalNfederation__Scope2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8900,8 +8956,8 @@ func (ec *executionContext) marshalNfederation__Scope2string(ctx context.Context
 	return res
 }
 
-func (ec *executionContext) unmarshalNfederation__Scope2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNfederation__Scope2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -8932,8 +8988,8 @@ func (ec *executionContext) marshalNfederation__Scope2ᚕstringᚄ(ctx context.C
 	return ret
 }
 
-func (ec *executionContext) unmarshalNfederation__Scope2ᚕᚕstringᚄ(ctx context.Context, v interface{}) ([][]string, error) {
-	var vSlice []interface{}
+func (ec *executionContext) unmarshalNfederation__Scope2ᚕᚕstringᚄ(ctx context.Context, v any) ([][]string, error) {
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -8964,7 +9020,7 @@ func (ec *executionContext) marshalNfederation__Scope2ᚕᚕstringᚄ(ctx contex
 	return ret
 }
 
-func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
+func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -8974,7 +9030,7 @@ func (ec *executionContext) marshalOBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalOBoolean2ᚖbool(ctx context.Context, v interface{}) (*bool, error) {
+func (ec *executionContext) unmarshalOBoolean2ᚖbool(ctx context.Context, v any) (*bool, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -8990,7 +9046,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v any) (*time.Time, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9006,7 +9062,7 @@ func (ec *executionContext) marshalODateTime2ᚖtimeᚐTime(ctx context.Context,
 	return res
 }
 
-func (ec *executionContext) unmarshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx context.Context, v interface{}) (*model.GroundStrokeStyle, error) {
+func (ec *executionContext) unmarshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx context.Context, v any) (*model.GroundStrokeStyle, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9022,7 +9078,7 @@ func (ec *executionContext) marshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQ�
 	return v
 }
 
-func (ec *executionContext) unmarshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx context.Context, v interface{}) (*model.GroundStrokeType, error) {
+func (ec *executionContext) unmarshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx context.Context, v any) (*model.GroundStrokeType, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9038,7 +9094,7 @@ func (ec *executionContext) marshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQ�
 	return v
 }
 
-func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9054,7 +9110,30 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) unmarshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx context.Context, v interface{}) (*model.PointWinReason, error) {
+func (ec *executionContext) unmarshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v any) (*primitive.ObjectID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := scalar.UnmarshalObjectID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, sel ast.SelectionSet, v *primitive.ObjectID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := scalar.MarshalObjectID(*v)
+	return res
+}
+
+func (ec *executionContext) marshalOPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx context.Context, sel ast.SelectionSet, v *model.Point) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Point(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx context.Context, v any) (*model.PointWinReason, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9077,7 +9156,7 @@ func (ec *executionContext) marshalOScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑ
 	return ec._Score(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx context.Context, v interface{}) (*model.ServeStyle, error) {
+func (ec *executionContext) unmarshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx context.Context, v any) (*model.ServeStyle, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9100,7 +9179,7 @@ func (ec *executionContext) marshalOSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourti
 	return ec._SetFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v interface{}) (*model.SetFormatInput, error) {
+func (ec *executionContext) unmarshalOSetFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormatInput(ctx context.Context, v any) (*model.SetFormatInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9108,7 +9187,35 @@ func (ec *executionContext) unmarshalOSetFormatInput2ᚖgithubᚗcomᚋCourtIQ�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+func (ec *executionContext) unmarshalOShotInput2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotInput(ctx context.Context, v any) ([]*model.ShotInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.ShotInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOShotInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOShotInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotInput(ctx context.Context, v any) (*model.ShotInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputShotInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -9118,11 +9225,11 @@ func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
 	if v == nil {
 		return nil, nil
 	}
-	var vSlice []interface{}
+	var vSlice []any
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
@@ -9156,7 +9263,7 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -9179,7 +9286,7 @@ func (ec *executionContext) marshalOTiebreakFormat2ᚖgithubᚗcomᚋCourtIQᚋc
 	return ec._TiebreakFormat(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOTiebreakFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx context.Context, v interface{}) (*model.TiebreakFormatInput, error) {
+func (ec *executionContext) unmarshalOTiebreakFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormatInput(ctx context.Context, v any) (*model.TiebreakFormatInput, error) {
 	if v == nil {
 		return nil, nil
 	}

@@ -1,19 +1,8 @@
-
-type Shot {
-    playerId: ObjectID!
-    shotType: ShotType!
-    serveStyle: ServeStyle
-    groundStrokeType: GroundStrokeType
-    groundStrokeStyle: GroundStrokeStyle
-    playedAt: DateTime       # Timestamp when the point was played
-}
-
 type Point {
   id: ObjectID!
 
   setIndex: Int!                     # Index of the set this point belongs to (0-based or 1-based)
   gameIndexWithinSet: Int!           # Index of the game within the set
-  pointIndexWithinGame: Int!         # Order of the point within the game
 
   isTiebreak: Boolean!
   tiebreakPointNumber: Int           # If in a tiebreak, the order of the point in the tiebreak
@@ -24,9 +13,6 @@ type Point {
 
   playingSide: PlayingSide!          # Side of the court where the point was played
   courtSide: CourtSide!              # Side of the court where the point was played
-  
-  scoreBefore: Score!                # Score before the point was played
-  scoreAfter: Score!                 # Score after the point was played
 
   shots: [Shot!]!                    # Sequence of shots played in this point
 

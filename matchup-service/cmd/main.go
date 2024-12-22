@@ -13,6 +13,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
+	_ "github.com/urfave/cli/v2"  //  prevent removal by go mod tidy
+	_ "github.com/xrash/smetrics" // prevent removal by go mod tidy
 
 	configs "github.com/CourtIQ/courtiq-backend/matchup-service/internal/config"
 )

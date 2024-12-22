@@ -2,7 +2,7 @@ extend type Mutation {
     createMatchUp(
         matchUpFormatInput: MatchUpFormatInput!
         matchUpType: MatchUpType!
-        participants: [ObjectID!]!
+        participantsMapInput: ParticipantsMapInput!
     ): MatchUp!
 
     # Information needed to create a match up
@@ -29,21 +29,21 @@ extend type Mutation {
 
     
     addPointToMatchUp(
-        matchUpFormatInput: MatchUpFormatInput!
+        pointInput: PointInput!
         matchUpId: ObjectID!
     ): MatchUp!
     
     
     addShotToMatchUp(
         matchUpId: ObjectID!
-        # shot: ShotInput!
+         shotInput: ShotInput!
     ): MatchUp!
 
-    undoShotFromMatchUp(
+    DeleteLastShotFromMatchUp(
         matchUpId: ObjectID!
     ): MatchUp!
 
-    undoPointFromMatchUp(
+    DeleteLastPointFromMatchUp(
         matchUpId: ObjectID!
     ): MatchUp!
 
