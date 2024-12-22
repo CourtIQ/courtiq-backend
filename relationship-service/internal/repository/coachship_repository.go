@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"time"
+	"errors"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
@@ -10,169 +10,155 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type coachshipRepository struct {
-	coll *mongo.Collection
+	collection *mongo.Collection
 }
 
-// NewCoachshipRepository creates a new NewCoachshipRepository implementation
+// NewCoachshipRepository returns an implementation of CoachshipRepository backed by MongoDB.
 func NewCoachshipRepository(mdb *db.MongoDB) CoachshipRepository {
 	return &coachshipRepository{
-		coll: mdb.GetCollection(db.CoachshipsCollection),
+		collection: mdb.GetCollection(db.CoachshipsCollection),
 	}
 }
 
-func (r *coachshipRepository) GetByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error) {
+// FindByID looks up a coachship by its ObjectID. If not found, returns ErrCoachshipNotFound.
+func (r *coachshipRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error) {
+	filter := bson.M{"_id": id}
+
 	var coachship model.Coachship
-	err := r.coll.FindOne(ctx, bson.M{"_id": id}).Decode(&coachship)
-	if err == mongo.ErrNoDocuments {
-		return nil, nil
-	}
+	err := r.collection.FindOne(ctx, filter).Decode(&coachship)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			// Return a user-friendly error
+			return nil, utils.ErrCoachshipNotFound
+		}
+		return nil, err // Some other DB error
+	}
+	return &coachship, nil
+}
+
+// Insert creates a new coachship document and returns the inserted record.
+func (r *coachshipRepository) Insert(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error) {
+	if coachship.ID.IsZero() {
+		coachship.ID = primitive.NewObjectID()
+	}
+
+	// Insert the document
+	res, err := r.collection.InsertOne(ctx, coachship)
+	if err != nil {
+		return nil, err
+	}
+
+	// Retrieve the newly inserted document to return
+	var insertedCoachship model.Coachship
+	if err := r.collection.FindOne(ctx, bson.M{"_id": res.InsertedID}).Decode(&insertedCoachship); err != nil {
+		return nil, err
+	}
+
+	return &insertedCoachship, nil
+}
+
+// Update modifies an existing coachship document, returning the updated record.
+// If ID is missing, returns ErrMissingCoachshipID; if not found, returns ErrCoachshipNotFound.
+func (r *coachshipRepository) Update(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error) {
+	if coachship.ID.IsZero() {
+		return nil, utils.ErrMissingCoachshipID
+	}
+
+	filter := bson.M{"_id": coachship.ID}
+	update := bson.M{"$set": coachship}
+
+	// Return the updated document
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	var updatedCoachship model.Coachship
+	err := r.collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedCoachship)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, utils.ErrCoachshipNotFound
+		}
+		return nil, err
+	}
+
+	return &updatedCoachship, nil
+}
+
+// Delete removes a coachship by its ObjectID, returning the deleted document.
+// If no document was deleted, returns ErrCoachshipNotFound.
+func (r *coachshipRepository) Delete(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error) {
+	filter := bson.M{"_id": id}
+
+	// Find and delete in one step
+	var deletedCoachship model.Coachship
+	err := r.collection.FindOneAndDelete(ctx, filter).Decode(&deletedCoachship)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, utils.ErrCoachshipNotFound
+		}
+		return nil, err
+	}
+
+	return &deletedCoachship, nil
+}
+
+// Find returns an array of coachships matching the provided filter.
+// If none found, it returns an empty slice (and no error).
+func (r *coachshipRepository) Find(ctx context.Context, filter interface{}, limit *int, offset *int) ([]*model.Coachship, error) {
+	findOpts := utils.BuildFindOptions(limit, offset)
+
+	cursor, err := r.collection.Find(ctx, filter, findOpts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var coachships []*model.Coachship
+	if err := cursor.All(ctx, &coachships); err != nil {
+		return nil, err
+	}
+	return coachships, nil
+}
+func (r *coachshipRepository) FindOne(ctx context.Context, filter interface{}) (*model.Coachship, error) {
+	var coachship model.Coachship
+	err := r.collection.FindOne(ctx, filter).Decode(&coachship)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &coachship, nil
 }
 
-func (r *coachshipRepository) GetMyCoaches(ctx context.Context, userID string, limit *int, offset *int) ([]*model.Coachship, error) {
-	// User is a student, getting ACTIVE coachships where this user is the student
-	filter := bson.M{
-		"studentId": userID,
-		"status":    "ACTIVE",
-	}
-	findOpts := utils.BuildFindOptions(limit, offset)
-	cursor, err := r.coll.Find(ctx, filter, findOpts)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
+// FindOneAndUpdate finds a single Friendship that matches `filter`, applies `update`,
+func (r *coachshipRepository) FindOneAndUpdate(ctx context.Context, filter interface{}, update interface{}) (*model.Coachship, error) {
 
-	var coachships []*model.Coachship
-	if err := cursor.All(ctx, &coachships); err != nil {
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	var updatedCoachship model.Coachship
+	err := r.collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedCoachship)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, utils.ErrCoachshipNotFound
+		}
 		return nil, err
 	}
-	return coachships, nil
+
+	return &updatedCoachship, nil
 }
 
-func (r *coachshipRepository) GetMyStudents(ctx context.Context, userID string, limit *int, offset *int) ([]*model.Coachship, error) {
-	// User is a coach, getting ACTIVE coachships where this user is the coach
-	filter := bson.M{
-		"coachId": userID,
-		"status":  "ACTIVE",
-	}
-	findOpts := utils.BuildFindOptions(limit, offset)
-	cursor, err := r.coll.Find(ctx, filter, findOpts)
+// FindOneAndDelete finds a single Friendship matching `filter`, deletes it,
+func (r *coachshipRepository) FindOneAndDelete(ctx context.Context, filter interface{}) (*model.Coachship, error) {
+	var deletedCoachship model.Coachship
+	err := r.collection.FindOneAndDelete(ctx, filter).Decode(&deletedCoachship)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, utils.ErrCoachshipNotFound
+		}
 		return nil, err
 	}
-	defer cursor.Close(ctx)
-
-	var coachships []*model.Coachship
-	if err := cursor.All(ctx, &coachships); err != nil {
-		return nil, err
-	}
-	return coachships, nil
-}
-
-func (r *coachshipRepository) GetMyStudentRequests(ctx context.Context, userID string) ([]*model.Coachship, error) {
-	// User is a coach, these are PENDING requests from students
-	filter := bson.M{
-		"coachId": userID,
-		"status":  "PENDING",
-	}
-	cursor, err := r.coll.Find(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var coachships []*model.Coachship
-	if err := cursor.All(ctx, &coachships); err != nil {
-		return nil, err
-	}
-	return coachships, nil
-}
-
-func (r *coachshipRepository) GetMyCoachRequests(ctx context.Context, userID string) ([]*model.Coachship, error) {
-	// User is a student, these are PENDING requests from coaches
-	filter := bson.M{
-		"studentId": userID,
-		"status":    "PENDING",
-	}
-	cursor, err := r.coll.Find(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var coachships []*model.Coachship
-	if err := cursor.All(ctx, &coachships); err != nil {
-		return nil, err
-	}
-	return coachships, nil
-}
-
-func (r *coachshipRepository) GetSentCoachRequests(ctx context.Context, userID string) ([]*model.Coachship, error) {
-	// Requests sent by this user as a coach (coachId = userID and status = PENDING)
-	filter := bson.M{
-		"coachId": userID,
-		"status":  "PENDING",
-	}
-	cursor, err := r.coll.Find(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var coachships []*model.Coachship
-	if err := cursor.All(ctx, &coachships); err != nil {
-		return nil, err
-	}
-	return coachships, nil
-}
-
-func (r *coachshipRepository) GetSentStudentRequests(ctx context.Context, userID string) ([]*model.Coachship, error) {
-	// Requests sent by this user as a student (studentId = userID and status = PENDING)
-	filter := bson.M{
-		"studentId": userID,
-		"status":    "PENDING",
-	}
-	cursor, err := r.coll.Find(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var coachships []*model.Coachship
-	if err := cursor.All(ctx, &coachships); err != nil {
-		return nil, err
-	}
-	return coachships, nil
-}
-
-func (r *coachshipRepository) Insert(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error) {
-	coachship.ID = primitive.NewObjectID()
-	now := time.Now()
-	coachship.CreatedAt = now
-	coachship.UpdatedAt = now
-	_, err := r.coll.InsertOne(ctx, coachship)
-	if err != nil {
-		return nil, err
-	}
-	return coachship, nil
-}
-
-func (r *coachshipRepository) Update(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error) {
-	coachship.UpdatedAt = time.Now()
-	_, err := r.coll.UpdateOne(ctx, bson.M{"_id": coachship.ID}, bson.M{"$set": coachship})
-	if err != nil {
-		return nil, err
-	}
-	return coachship, nil
-}
-
-func (r *coachshipRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
-	_, err := r.coll.DeleteOne(ctx, bson.M{"_id": id})
-	return err
+	return &deletedCoachship, nil
 }

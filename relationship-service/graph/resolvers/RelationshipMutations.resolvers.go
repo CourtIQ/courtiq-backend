@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"log"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
@@ -14,77 +15,78 @@ import (
 
 // SendFriendRequest is the resolver for the sendFriendRequest field.
 func (r *mutationResolver) SendFriendRequest(ctx context.Context, receiverID primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.SendFriendRequest(ctx, receiverID)
+	log.Println("SendFriendRequest")
+	return r.RelationshipServiceIntf.SendFriendRequest(ctx, receiverID)
 }
 
 // AcceptFriendRequest is the resolver for the acceptFriendRequest field.
 func (r *mutationResolver) AcceptFriendRequest(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.AcceptFriendRequest(ctx, friendshipID)
+	return r.RelationshipServiceIntf.AcceptFriendRequest(ctx, friendshipID)
 }
 
 // RejectFriendRequest is the resolver for the rejectFriendRequest field.
 func (r *mutationResolver) RejectFriendRequest(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.RejectFriendRequest(ctx, friendshipID)
+	return r.RelationshipServiceIntf.RejectFriendRequest(ctx, friendshipID)
 }
 
 // CancelFriendRequest is the resolver for the cancelFriendRequest field.
 func (r *mutationResolver) CancelFriendRequest(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.CancelFriendRequest(ctx, friendshipID)
+	return r.RelationshipServiceIntf.CancelFriendRequest(ctx, friendshipID)
 }
 
 // EndFriendship is the resolver for the endFriendship field.
 func (r *mutationResolver) EndFriendship(ctx context.Context, friendshipID primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.EndFriendship(ctx, friendshipID)
+	return r.RelationshipServiceIntf.EndFriendship(ctx, friendshipID)
 }
 
 // RequestToBeStudent is the resolver for the requestToBeStudent field.
 func (r *mutationResolver) RequestToBeStudent(ctx context.Context, ofUserID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.RequestToBeStudent(ctx, ofUserID)
+	return r.RelationshipServiceIntf.RequestToBeStudent(ctx, ofUserID)
 }
 
 // AcceptStudentRequest is the resolver for the acceptStudentRequest field.
 func (r *mutationResolver) AcceptStudentRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.AcceptStudentRequest(ctx, coachshipID)
+	return r.RelationshipServiceIntf.AcceptStudentRequest(ctx, coachshipID)
 }
 
 // RejectStudentRequest is the resolver for the rejectStudentRequest field.
 func (r *mutationResolver) RejectStudentRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.RejectStudentRequest(ctx, coachshipID)
+	return r.RelationshipServiceIntf.RejectStudentRequest(ctx, coachshipID)
 }
 
 // CancelRequestToBeStudent is the resolver for the cancelRequestToBeStudent field.
 func (r *mutationResolver) CancelRequestToBeStudent(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.CancelRequestToBeStudent(ctx, coachshipID)
+	return r.RelationshipServiceIntf.CancelRequestToBeStudent(ctx, coachshipID)
 }
 
 // RemoveStudent is the resolver for the removeStudent field.
 func (r *mutationResolver) RemoveStudent(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.RemoveStudent(ctx, coachshipID)
+	return r.RelationshipServiceIntf.RemoveStudent(ctx, coachshipID)
 }
 
 // RequestToBeCoach is the resolver for the requestToBeCoach field.
 func (r *mutationResolver) RequestToBeCoach(ctx context.Context, ofUserID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.RequestToBeCoach(ctx, ofUserID)
+	return r.RelationshipServiceIntf.RequestToBeCoach(ctx, ofUserID)
 }
 
 // AcceptCoachRequest is the resolver for the acceptCoachRequest field.
 func (r *mutationResolver) AcceptCoachRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.AcceptCoachRequest(ctx, coachshipID)
+	return r.RelationshipServiceIntf.AcceptCoachRequest(ctx, coachshipID)
 }
 
 // RejectCoachRequest is the resolver for the rejectCoachRequest field.
 func (r *mutationResolver) RejectCoachRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.RejectCoachRequest(ctx, coachshipID)
+	return r.RelationshipServiceIntf.RejectCoachRequest(ctx, coachshipID)
 }
 
 // CancelCoachRequest is the resolver for the cancelCoachRequest field.
 func (r *mutationResolver) CancelCoachRequest(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.CancelCoachRequest(ctx, coachshipID)
+	return r.RelationshipServiceIntf.CancelCoachRequest(ctx, coachshipID)
 }
 
 // RemoveCoach is the resolver for the removeCoach field.
 func (r *mutationResolver) RemoveCoach(ctx context.Context, coachshipID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.RemoveCoach(ctx, coachshipID)
+	return r.RelationshipServiceIntf.RemoveCoach(ctx, coachshipID)
 }
 
 // Mutation returns graph.MutationResolver implementation.

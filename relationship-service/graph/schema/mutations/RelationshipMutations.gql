@@ -6,50 +6,51 @@ extend type Mutation {
   # Friendship Mutations
   
   # Send a friend request to another user (receiverId)
-  sendFriendRequest(receiverId: ObjectID!): Friendship!
+  # Returns a nullable Friendship if the request fails or not found.
+  sendFriendRequest(receiverId: ObjectID!): Friendship
 
   # Accept a received friend request by its friendshipId
-  acceptFriendRequest(friendshipId: ObjectID!): Friendship!
+  acceptFriendRequest(friendshipId: ObjectID!): Friendship
 
   # Reject a received friend request by its friendshipId
-  rejectFriendRequest(friendshipId: ObjectID!): Friendship!
+  rejectFriendRequest(friendshipId: ObjectID!): Friendship
 
   # Cancel a sent friend request by its friendshipId
-  cancelFriendRequest(friendshipId: ObjectID!): Friendship!
+  cancelFriendRequest(friendshipId: ObjectID!): Friendship
 
   # End an existing friendship by its friendshipId
-  endFriendship(friendshipId: ObjectID!): Friendship!
+  endFriendship(friendshipId: ObjectID!): Friendship
 
 
   # Coachship Mutations
   
   # Request to become a student of another user (ofUserId)
-  requestToBeStudent(ofUserId: ObjectID!): Coachship!
+  requestToBeStudent(ofUserId: ObjectID!): Coachship
 
   # Accept a received student request by its coachshipId
-  acceptStudentRequest(coachshipId: ObjectID!): Coachship!
+  acceptStudentRequest(coachshipId: ObjectID!): Coachship
 
   # Reject a received student request by its coachshipId
-  rejectStudentRequest(coachshipId: ObjectID!): Coachship!
+  rejectStudentRequest(coachshipId: ObjectID!): Coachship
 
   # Cancel a sent request to become a student by its coachshipId
-  cancelRequestToBeStudent(coachshipId: ObjectID!): Coachship!
+  cancelRequestToBeStudent(coachshipId: ObjectID!): Coachship
 
   # Remove a student from the current user's student list by its coachshipId
-  removeStudent(coachshipId: ObjectID!): Coachship!
+  removeStudent(coachshipId: ObjectID!): Coachship
 
   # Request to become a coach of another user (ofUserId)
-  requestToBeCoach(ofUserId: ObjectID!): Coachship!
+  requestToBeCoach(ofUserId: ObjectID!): Coachship
 
   # Accept a received coach request by its coachshipId
-  acceptCoachRequest(coachshipId: ObjectID!): Coachship!
+  acceptCoachRequest(coachshipId: ObjectID!): Coachship
 
   # Reject a received coach request by its coachshipId
-  rejectCoachRequest(coachshipId: ObjectID!): Coachship!
+  rejectCoachRequest(coachshipId: ObjectID!): Coachship
 
   # Cancel a sent coach request by its coachshipId
-  cancelCoachRequest(coachshipId: ObjectID!): Coachship!
+  cancelCoachRequest(coachshipId: ObjectID!): Coachship
 
   # Remove a coach from the current user's coach list by its coachshipId
-  removeCoach(coachshipId: ObjectID!): Coachship!
+  removeCoach(coachshipId: ObjectID!): Coachship
 }

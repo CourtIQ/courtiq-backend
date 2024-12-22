@@ -474,7 +474,8 @@ var sources = []*ast.Source{
 	{Name: "schema/mutations/UserMutations.gql", Input: sourceData("schema/mutations/UserMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/UserQueries.gql", Input: sourceData("schema/queries/UserQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/User.gql", Input: sourceData("schema/types/User.gql"), BuiltIn: false},
-	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime`, BuiltIn: false},
+	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE

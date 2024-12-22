@@ -1,7 +1,7 @@
 github.com/99designs/gqlgen v0.17.60 h1:xxl7kQDCNw79itzWQtCUSXgkovCyq9r+ogSXfZpKPYM=
 github.com/99designs/gqlgen v0.17.60/go.mod h1:vQJzWXyGya2TYL7cig1G4OaCQzyck031MgYBlUwaI9I=
-github.com/CourtIQ/courtiq-backend/equipment-service v0.0.0-20241209194043-02d71d1ba865 h1:CEpJOtdKeup9cIun0QWeehrrvEGku5LnBjXgM1VGFvk=
-github.com/CourtIQ/courtiq-backend/equipment-service v0.0.0-20241209194043-02d71d1ba865/go.mod h1:67Uf5hWtRJ0z7v8fzSwWvkDzXj/ORZTKDgDiktQt9U0=
+github.com/CourtIQ/courtiq-backend/equipment-service v0.0.0-20241216152259-78280c3f33ae h1:4mlTqQecEyopnLZTQFCj4qUudYwaS1WwaaNlYYelYSo=
+github.com/CourtIQ/courtiq-backend/equipment-service v0.0.0-20241216152259-78280c3f33ae/go.mod h1:9JNoiFLQs+LSgQ0NuYD3lEPecRf0yq2DIlUcz/8ZVls=
 github.com/PuerkitoBio/goquery v1.9.3 h1:mpJr/ikUA9/GNJB/DBZcGeFDXUtosHRyRrwh7KGdTG0=
 github.com/PuerkitoBio/goquery v1.9.3/go.mod h1:1ndLHPdTz+DyQPICCWYlYQMPl0oXZj0G6D4LCYA6u4U=
 github.com/agnivade/levenshtein v1.2.0 h1:U9L4IOT0Y3i0TIlUIDJ7rVUziKi/zPbrJGaFrtYH3SY=

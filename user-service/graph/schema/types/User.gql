@@ -1,5 +1,3 @@
-scalar ObjectID
-
 """
 Represents an individual user within the application.
 Implements a federated key for cross-service references.
