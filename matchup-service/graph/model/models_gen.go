@@ -36,7 +36,7 @@ type MatchUpFormat struct {
 	NumberOfSets   NumberOfSets       `json:"numberOfSets" bson:"numberOfSets"`
 	SetFormat      *SetFormat         `json:"setFormat" bson:"setFormat"`
 	FinalSetFormat *SetFormat         `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
-	InitialServer  PlayingSide        `json:"initialServer" bson:"initialServer"`
+	InitialServer  primitive.ObjectID `json:"initialServer" bson:"initialServer"`
 }
 
 type MatchUpFormatInput struct {
@@ -257,11 +257,12 @@ var AllGameScore = []GameScore{
 	GameScoreThirty,
 	GameScoreForty,
 	GameScoreAdvantage,
+	GameScoreGame,
 }
 
 func (e GameScore) IsValid() bool {
 	switch e {
-	case GameScoreLove, GameScoreFifteen, GameScoreThirty, GameScoreForty, GameScoreAdvantage:
+	case GameScoreLove, GameScoreFifteen, GameScoreThirty, GameScoreForty, GameScoreAdvantage, GameScoreGame:
 		return true
 	}
 	return false

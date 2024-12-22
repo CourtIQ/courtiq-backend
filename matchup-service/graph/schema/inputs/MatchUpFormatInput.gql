@@ -1,5 +1,6 @@
 input MatchUpFormatInput {
     tracker: ObjectID!
+    initialServer: ObjectID!
     # The id of the tracker should always be the same as `GetMongoID`
     # This does not hold true for createMatchUp mutation
     numberOfSets: NumberOfSets!

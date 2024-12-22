@@ -2308,9 +2308,9 @@ func (ec *executionContext) _MatchUpFormat_initialServer(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model.PlayingSide)
+	res := resTmp.(primitive.ObjectID)
 	fc.Result = res
-	return ec.marshalNPlayingSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPlayingSide(ctx, field.Selections, res)
+	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUpFormat_initialServer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2320,7 +2320,7 @@ func (ec *executionContext) fieldContext_MatchUpFormat_initialServer(_ context.C
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type PlayingSide does not have child fields")
+			return nil, errors.New("field of type ObjectID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6722,7 +6722,7 @@ func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"tracker", "numberOfSets", "setFormat", "finalSetFormat"}
+	fieldsInOrder := [...]string{"tracker", "initialServer", "numberOfSets", "setFormat", "finalSetFormat"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6736,6 +6736,13 @@ func (ec *executionContext) unmarshalInputMatchUpFormatInput(ctx context.Context
 				return it, err
 			}
 			it.Tracker = data
+		case "initialServer":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("initialServer"))
+			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.InitialServer = data
 		case "numberOfSets":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("numberOfSets"))
 			data, err := ec.unmarshalNNumberOfSets2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐNumberOfSets(ctx, v)

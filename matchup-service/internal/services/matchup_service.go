@@ -78,7 +78,7 @@ func (s *MatchUpService) CreateMatchUp(
 		NumberOfSets:   matchUpFormatInput.NumberOfSets,
 		SetFormat:      &setFormat,
 		FinalSetFormat: finalSetFormat,
-		InitialServer:  "",
+		InitialServer:  matchUpFormatInput.InitialServer,
 	}
 
 	// Setting initial score object
