@@ -80,13 +80,13 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddPointToMatchUp          func(childComplexity int, pointInput model.PointInput, matchUpID primitive.ObjectID) int
-		AddShotToMatchUp           func(childComplexity int, matchUpID primitive.ObjectID, shotInput model.ShotInput) int
-		CreateMatchUp              func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participantsMapInput model.ParticipantsMapInput) int
-		DeleteLastPointFromMatchUp func(childComplexity int, matchUpID primitive.ObjectID) int
-		DeleteLastShotFromMatchUp  func(childComplexity int, matchUpID primitive.ObjectID) int
-		DeleteMatchUp              func(childComplexity int, matchUpID primitive.ObjectID) int
-		UpdateMatchUpStatus        func(childComplexity int, status model.MatchUpStatus, matchUpID primitive.ObjectID) int
+		AddPointToMatchUp        func(childComplexity int, pointInput model.PointInput, matchUpID primitive.ObjectID) int
+		AddShotToMatchUp         func(childComplexity int, matchUpID primitive.ObjectID, shotInput model.ShotInput) int
+		CreateMatchUp            func(childComplexity int, matchUpFormatInput model.MatchUpFormatInput, matchUpType model.MatchUpType, participantsMapInput model.ParticipantsMapInput) int
+		DeleteMatchUp            func(childComplexity int, matchUpID primitive.ObjectID) int
+		UndoLastPointFromMatchUp func(childComplexity int, matchUpID primitive.ObjectID) int
+		UndoLastShotFromMatchUp  func(childComplexity int, matchUpID primitive.ObjectID) int
+		UpdateMatchUpStatus      func(childComplexity int, status model.MatchUpStatus, matchUpID primitive.ObjectID) int
 	}
 
 	ParticipantsMap struct {
@@ -163,8 +163,8 @@ type MutationResolver interface {
 	UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	AddPointToMatchUp(ctx context.Context, pointInput model.PointInput, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	AddShotToMatchUp(ctx context.Context, matchUpID primitive.ObjectID, shotInput model.ShotInput) (*model.MatchUp, error)
-	DeleteLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
-	DeleteLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	UndoLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
+	UndoLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 	DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error)
 }
 type QueryResolver interface {
@@ -380,30 +380,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateMatchUp(childComplexity, args["matchUpFormatInput"].(model.MatchUpFormatInput), args["matchUpType"].(model.MatchUpType), args["participantsMapInput"].(model.ParticipantsMapInput)), true
 
-	case "Mutation.UndoLastPointFromMatchUp":
-		if e.complexity.Mutation.DeleteLastPointFromMatchUp == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_DeleteLastPointFromMatchUp_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteLastPointFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
-
-	case "Mutation.UndoLastShotFromMatchUp":
-		if e.complexity.Mutation.DeleteLastShotFromMatchUp == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_DeleteLastShotFromMatchUp_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteLastShotFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
-
 	case "Mutation.deleteMatchUp":
 		if e.complexity.Mutation.DeleteMatchUp == nil {
 			break
@@ -415,6 +391,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
+
+	case "Mutation.undoLastPointFromMatchUp":
+		if e.complexity.Mutation.UndoLastPointFromMatchUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_undoLastPointFromMatchUp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UndoLastPointFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
+
+	case "Mutation.undoLastShotFromMatchUp":
+		if e.complexity.Mutation.UndoLastShotFromMatchUp == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_undoLastShotFromMatchUp_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UndoLastShotFromMatchUp(childComplexity, args["matchUpId"].(primitive.ObjectID)), true
 
 	case "Mutation.updateMatchUpStatus":
 		if e.complexity.Mutation.UpdateMatchUpStatus == nil {
@@ -830,7 +830,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/PointInput.gql" "schema/inputs/ShotInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql" "schema/types/Shot.gql"
+//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/PointInput.gql" "schema/inputs/ShotInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql" "schema/types/Shot.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -861,13 +861,13 @@ var sources = []*ast.Source{
 	{Name: "schema/inputs/ShotInput.gql", Input: sourceData("schema/inputs/ShotInput.gql"), BuiltIn: false},
 	{Name: "schema/mutations/MatchUpMutations.gql", Input: sourceData("schema/mutations/MatchUpMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/MatchUpFormatQueries.gql", Input: sourceData("schema/queries/MatchUpFormatQueries.gql"), BuiltIn: false},
-	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
 	{Name: "schema/types/MatchUp.gql", Input: sourceData("schema/types/MatchUp.gql"), BuiltIn: false},
 	{Name: "schema/types/MatchUpFormat.gql", Input: sourceData("schema/types/MatchUpFormat.gql"), BuiltIn: false},
 	{Name: "schema/types/Point.gql", Input: sourceData("schema/types/Point.gql"), BuiltIn: false},
 	{Name: "schema/types/Score.gql", Input: sourceData("schema/types/Score.gql"), BuiltIn: false},
 	{Name: "schema/types/Shot.gql", Input: sourceData("schema/types/Shot.gql"), BuiltIn: false},
-	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime`, BuiltIn: false},
+	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE
@@ -940,52 +940,6 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
-
-func (ec *executionContext) field_Mutation_DeleteLastPointFromMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_DeleteLastPointFromMatchUp_argsMatchUpID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["matchUpId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_DeleteLastPointFromMatchUp_argsMatchUpID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
-	if tmp, ok := rawArgs["matchUpId"]; ok {
-		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-	}
-
-	var zeroVal primitive.ObjectID
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Mutation_DeleteLastShotFromMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Mutation_DeleteLastShotFromMatchUp_argsMatchUpID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["matchUpId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Mutation_DeleteLastShotFromMatchUp_argsMatchUpID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
-	if tmp, ok := rawArgs["matchUpId"]; ok {
-		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-	}
-
-	var zeroVal primitive.ObjectID
-	return zeroVal, nil
-}
 
 func (ec *executionContext) field_Mutation_addPointToMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -1139,6 +1093,52 @@ func (ec *executionContext) field_Mutation_deleteMatchUp_args(ctx context.Contex
 	return args, nil
 }
 func (ec *executionContext) field_Mutation_deleteMatchUp_argsMatchUpID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
+	if tmp, ok := rawArgs["matchUpId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_undoLastPointFromMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_undoLastPointFromMatchUp_argsMatchUpID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["matchUpId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_undoLastPointFromMatchUp_argsMatchUpID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
+	if tmp, ok := rawArgs["matchUpId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_undoLastShotFromMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_undoLastShotFromMatchUp_argsMatchUpID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["matchUpId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_undoLastShotFromMatchUp_argsMatchUpID(
 	ctx context.Context,
 	rawArgs map[string]any,
 ) (primitive.ObjectID, error) {
@@ -1818,7 +1818,7 @@ func (ec *executionContext) _MatchUp_pointsSequence(ctx context.Context, field g
 	}
 	res := resTmp.([]*model.Point)
 	fc.Result = res
-	return ec.marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx, field.Selections, res)
+	return ec.marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUp_pointsSequence(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2682,8 +2682,8 @@ func (ec *executionContext) fieldContext_Mutation_addShotToMatchUp(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_DeleteLastShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_DeleteLastShotFromMatchUp(ctx, field)
+func (ec *executionContext) _Mutation_undoLastShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_undoLastShotFromMatchUp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2696,7 +2696,7 @@ func (ec *executionContext) _Mutation_DeleteLastShotFromMatchUp(ctx context.Cont
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteLastShotFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().UndoLastShotFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2713,7 +2713,7 @@ func (ec *executionContext) _Mutation_DeleteLastShotFromMatchUp(ctx context.Cont
 	return ec.marshalNMatchUp2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUp(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_DeleteLastShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_undoLastShotFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2764,15 +2764,15 @@ func (ec *executionContext) fieldContext_Mutation_DeleteLastShotFromMatchUp(ctx 
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_DeleteLastShotFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_undoLastShotFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_DeleteLastPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_DeleteLastPointFromMatchUp(ctx, field)
+func (ec *executionContext) _Mutation_undoLastPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_undoLastPointFromMatchUp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2785,7 +2785,7 @@ func (ec *executionContext) _Mutation_DeleteLastPointFromMatchUp(ctx context.Con
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteLastPointFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
+		return ec.resolvers.Mutation().UndoLastPointFromMatchUp(rctx, fc.Args["matchUpId"].(primitive.ObjectID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2802,7 +2802,7 @@ func (ec *executionContext) _Mutation_DeleteLastPointFromMatchUp(ctx context.Con
 	return ec.marshalNMatchUp2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUp(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_DeleteLastPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_undoLastPointFromMatchUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -2853,7 +2853,7 @@ func (ec *executionContext) fieldContext_Mutation_DeleteLastPointFromMatchUp(ctx
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_DeleteLastPointFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_undoLastPointFromMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7288,16 +7288,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "UndoLastShotFromMatchUp":
+		case "undoLastShotFromMatchUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_DeleteLastShotFromMatchUp(ctx, field)
+				return ec._Mutation_undoLastShotFromMatchUp(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "UndoLastPointFromMatchUp":
+		case "undoLastPointFromMatchUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_DeleteLastPointFromMatchUp(ctx, field)
+				return ec._Mutation_undoLastPointFromMatchUp(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8443,7 +8443,7 @@ func (ec *executionContext) marshalNPlayingSide2githubᚗcomᚋCourtIQᚋcourtiq
 	return v
 }
 
-func (ec *executionContext) marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx context.Context, sel ast.SelectionSet, v []*model.Point) graphql.Marshaler {
+func (ec *executionContext) marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Point) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -8467,7 +8467,7 @@ func (ec *executionContext) marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiq
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx, sel, v[i])
+			ret[i] = ec.marshalNPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -8478,7 +8478,23 @@ func (ec *executionContext) marshalNPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiq
 	}
 	wg.Wait()
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
+}
+
+func (ec *executionContext) marshalNPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx context.Context, sel ast.SelectionSet, v *model.Point) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Point(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNPointInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointInput(ctx context.Context, v any) (model.PointInput, error) {
@@ -9124,13 +9140,6 @@ func (ec *executionContext) marshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdri
 	}
 	res := scalar.MarshalObjectID(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPoint(ctx context.Context, sel ast.SelectionSet, v *model.Point) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Point(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx context.Context, v any) (*model.PointWinReason, error) {

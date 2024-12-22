@@ -39,11 +39,11 @@ extend type Mutation {
          shotInput: ShotInput!
     ): MatchUp!
 
-    DeleteLastShotFromMatchUp(
+    undoLastShotFromMatchUp(
         matchUpId: ObjectID!
     ): MatchUp!
 
-    DeleteLastPointFromMatchUp(
+    undoLastPointFromMatchUp(
         matchUpId: ObjectID!
     ): MatchUp!
 

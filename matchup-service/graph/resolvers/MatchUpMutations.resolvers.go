@@ -33,13 +33,13 @@ func (r *mutationResolver) AddShotToMatchUp(ctx context.Context, matchUpID primi
 	panic(fmt.Errorf("not implemented: AddShotToMatchUp - addShotToMatchUp"))
 }
 
-// DeleteLastShotFromMatchUp is the resolver for the undoLastShotFromMatchUp field.
-func (r *mutationResolver) DeleteLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+// UndoLastShotFromMatchUp is the resolver for the undoLastShotFromMatchUp field.
+func (r *mutationResolver) UndoLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	panic(fmt.Errorf("not implemented: UndoLastShotFromMatchUp - undoLastShotFromMatchUp"))
 }
 
-// DeleteLastPointFromMatchUp is the resolver for the undoLastPointFromMatchUp field.
-func (r *mutationResolver) DeleteLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
+// UndoLastPointFromMatchUp is the resolver for the undoLastPointFromMatchUp field.
+func (r *mutationResolver) UndoLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	panic(fmt.Errorf("not implemented: UndoLastPointFromMatchUp - undoLastPointFromMatchUp"))
 }
 

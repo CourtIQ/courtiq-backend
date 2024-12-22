@@ -1,7 +1,0 @@
-mutation DeleteLastPointFromMatchUp {
-  deleteLastPointFromMatchUp(
-    matchUpId: "676828f186b97c57daf1c528"
-  ) {
-    id
-  }
-}
