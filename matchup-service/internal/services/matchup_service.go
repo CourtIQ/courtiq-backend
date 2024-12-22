@@ -100,8 +100,8 @@ func (s *MatchUpService) CreateMatchUp(
 	}
 	// Converting ParticipantsMapInput -> ParticipantsMap
 	participantsMap := model.ParticipantsMap{
-		A: utils.ConvertListOfObjectsToListOfPointers(&participantsMapInput.A),
-		B: utils.ConvertListOfObjectsToListOfPointers(&participantsMapInput.B),
+		A: utils.ConvertListOfObjToListOfPtr(&participantsMapInput.A),
+		B: utils.ConvertListOfObjToListOfPtr(&participantsMapInput.B),
 	}
 
 	timeNow := time.Now()
@@ -191,15 +191,19 @@ func (s *MatchUpService) UndoLastShotFromMatchUp(ctx context.Context, matchUpID 
 	}
 	return nil, err
 }
+
 func (s *MatchUpService) UndoLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
 	if matchUp != nil && err == nil {
-		matchUp.PointsSequence = matchUp.PointsSequence[:len(matchUp.PointsSequence)-1]
-		err = s.matchUpRepo.Update(ctx, matchUp)
+		if len(matchUp.PointsSequence) > 0 {
+			matchUp.PointsSequence = matchUp.PointsSequence[:len(matchUp.PointsSequence)-1]
+			err = s.matchUpRepo.Update(ctx, matchUp)
+		}
 		return matchUp, err
 	}
 	return nil, err
 }
+
 func (s *MatchUpService) DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
 	matchUp, err := s.matchUpRepo.FindByID(ctx, matchUpID)
 	if matchUp != nil && err == nil {

@@ -40,7 +40,7 @@ func (r *mutationResolver) UndoLastShotFromMatchUp(ctx context.Context, matchUpI
 
 // UndoLastPointFromMatchUp is the resolver for the undoLastPointFromMatchUp field.
 func (r *mutationResolver) UndoLastPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UndoLastPointFromMatchUp - undoLastPointFromMatchUp"))
+	return r.MatchUpServiceIntf.UndoLastPointFromMatchUp(ctx, matchUpID)
 }
 
 // DeleteMatchUp is the resolver for the deleteMatchUp field.
