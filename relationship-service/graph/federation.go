@@ -36,7 +36,7 @@ func (ec *executionContext) __resolve__service(ctx context.Context) (fedruntime.
 	}, nil
 }
 
-func (ec *executionContext) __resolve_entities(ctx context.Context, representations []map[string]interface{}) []fedruntime.Entity {
+func (ec *executionContext) __resolve_entities(ctx context.Context, representations []map[string]any) []fedruntime.Entity {
 	list := make([]fedruntime.Entity, len(representations))
 
 	repsMap := ec.buildRepresentationGroups(ctx, representations)
@@ -237,10 +237,13 @@ func (ec *executionContext) resolveManyEntities(
 }
 
 func entityResolverNameForCoachship(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
 	for {
 		var (
 			m   EntityRepresentation
-			val interface{}
+			val any
 			ok  bool
 		)
 		_ = val
@@ -250,24 +253,32 @@ func entityResolverNameForCoachship(ctx context.Context, rep EntityRepresentatio
 		m = rep
 		val, ok = m["id"]
 		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for Coachship", ErrTypeNotFound))
 			break
 		}
 		if allNull {
 			allNull = val == nil
 		}
 		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for Coachship", ErrTypeNotFound))
 			break
 		}
 		return "findCoachshipByID", nil
 	}
-	return "", fmt.Errorf("%w for Coachship", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for Coachship due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
 }
 
 func entityResolverNameForFriendship(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
 	for {
 		var (
 			m   EntityRepresentation
-			val interface{}
+			val any
 			ok  bool
 		)
 		_ = val
@@ -277,24 +288,32 @@ func entityResolverNameForFriendship(ctx context.Context, rep EntityRepresentati
 		m = rep
 		val, ok = m["id"]
 		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for Friendship", ErrTypeNotFound))
 			break
 		}
 		if allNull {
 			allNull = val == nil
 		}
 		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for Friendship", ErrTypeNotFound))
 			break
 		}
 		return "findFriendshipByID", nil
 	}
-	return "", fmt.Errorf("%w for Friendship", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for Friendship due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
 }
 
 func entityResolverNameForRelationship(ctx context.Context, rep EntityRepresentation) (string, error) {
+	// we collect errors because a later entity resolver may work fine
+	// when an entity has multiple keys
+	entityResolverErrs := []error{}
 	for {
 		var (
 			m   EntityRepresentation
-			val interface{}
+			val any
 			ok  bool
 		)
 		_ = val
@@ -304,15 +323,20 @@ func entityResolverNameForRelationship(ctx context.Context, rep EntityRepresenta
 		m = rep
 		val, ok = m["id"]
 		if !ok {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to missing Key Field \"id\" for Relationship", ErrTypeNotFound))
 			break
 		}
 		if allNull {
 			allNull = val == nil
 		}
 		if allNull {
+			entityResolverErrs = append(entityResolverErrs,
+				fmt.Errorf("%w due to all null value KeyFields for Relationship", ErrTypeNotFound))
 			break
 		}
 		return "findRelationshipByID", nil
 	}
-	return "", fmt.Errorf("%w for Relationship", ErrTypeNotFound)
+	return "", fmt.Errorf("%w for Relationship due to %v", ErrTypeNotFound,
+		errors.Join(entityResolverErrs...).Error())
 }

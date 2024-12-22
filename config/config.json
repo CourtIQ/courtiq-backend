@@ -130,6 +130,32 @@
           "GIN_MODE": "release"
         }
       }
+    },
+    "search_service": {
+      "name": "search-service",
+      "port": 8085,
+      "internal_port": 8080,
+      "graphql_path": "/graphql",
+      "env_variables": {
+        "development": {
+          "GO_ENV": "development",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "debug",
+          "GIN_MODE": "debug"
+        },
+        "staging": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "info",
+          "GIN_MODE": "release"
+        },
+        "production": {
+          "GO_ENV": "production",
+          "GRAPHQL_PLAYGROUND": true,
+          "LOG_LEVEL": "warn",
+          "GIN_MODE": "release"
+        }
+      }
     }
   },
   "environments": {

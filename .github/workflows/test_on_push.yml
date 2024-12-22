@@ -114,3 +114,26 @@ jobs:
           cd ${{ env.SVC_NAME }}
           go mod download
           go test -v ./...
+    
+  search-service:
+    env:
+      SVC_NAME: searchgithu-service
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Install dependencies and test
+        run: |
+          cd ${{ env.SVC_NAME }}
+          go mod download
+          go test -v ./...
+

@@ -114,3 +114,25 @@ jobs:
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: false
           tags: test
+
+  search_service:
+    env:
+      SVC_NAME: search-service
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ env.SVC_NAME }}
+          file: ./${{ env.SVC_NAME }}/Dockerfile
+          push: false
+          tags: test

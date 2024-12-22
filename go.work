@@ -6,4 +6,5 @@ use (
 	./relationship-service
 	./shared
 	./user-service
+	./search-service
 )

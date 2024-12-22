@@ -21,8 +21,8 @@ spec:
       timeoutSeconds: 300
       serviceAccountName: 1080781728713-compute@developer.gserviceaccount.com
       containers:
-      - name: relationship-service
-        image: us-central1-docker.pkg.dev/courtiq-backend/relationship-service/relationship-service:IMAGE_TAG
+      - name: search-service
+        image: us-central1-docker.pkg.dev/courtiq-backend/search-service/search-service:IMAGE_TAG
         ports:
         - name: http1
           containerPort: 8080

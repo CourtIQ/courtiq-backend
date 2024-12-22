@@ -55,6 +55,16 @@ services:
       - "${PORT:-8084}:${INTERNAL_PORT:-8080}"
     networks:
       - court-iq-network
+  search-service:
+    build:
+      context: ./search-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./search-service/.env
+    ports:
+      - "${PORT:-8085}:${INTERNAL_PORT:-8080}"
+    networks:
+      - court-iq-network
 
 networks:
   court-iq-network:
