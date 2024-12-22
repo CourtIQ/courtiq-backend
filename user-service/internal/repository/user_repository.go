@@ -51,7 +51,7 @@ func (r *userRepository) UpdateUser(ctx context.Context, id primitive.ObjectID, 
 		updateFields["firstName"] = *input.FirstName
 		updateFields["displayName"] = fmt.Sprintf("%s %s", *input.FirstName, *input.LastName)
 	}
-	
+
 	if input.DateOfBirth != nil {
 		// Assuming `DateOfBirth` is a scalar Time type that you can store as a Date in Mongo
 		updateFields["dateOfBirth"] = *input.DateOfBirth

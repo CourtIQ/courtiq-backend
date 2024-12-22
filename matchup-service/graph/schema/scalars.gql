@@ -1,3 +1,0 @@
-# graph/schema/schema.gql
-scalar DateTime
-scalar ObjectID

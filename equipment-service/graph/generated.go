@@ -755,7 +755,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/EquipmentType.gql" "schema/enums/StringGuage.gql" "schema/inputs/TennisEquipmentInput.gql" "schema/interfaces/Equipment.gql" "schema/mutations/EquipmentMutations.gql" "schema/queries/EquipmentQueries.gql" "schema/scalars.gql" "schema/types/TennisRacket.gql" "schema/types/TennisString.gql"
+//go:embed "schema/enums/EquipmentType.gql" "schema/enums/StringGuage.gql" "schema/inputs/TennisEquipmentInput.gql" "schema/interfaces/Equipment.gql" "schema/mutations/EquipmentMutations.gql" "schema/queries/EquipmentQueries.gql" "schema/types/TennisRacket.gql" "schema/types/TennisString.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -773,9 +773,10 @@ var sources = []*ast.Source{
 	{Name: "schema/interfaces/Equipment.gql", Input: sourceData("schema/interfaces/Equipment.gql"), BuiltIn: false},
 	{Name: "schema/mutations/EquipmentMutations.gql", Input: sourceData("schema/mutations/EquipmentMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/EquipmentQueries.gql", Input: sourceData("schema/queries/EquipmentQueries.gql"), BuiltIn: false},
-	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisRacket.gql", Input: sourceData("schema/types/TennisRacket.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisString.gql", Input: sourceData("schema/types/TennisString.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE

@@ -837,7 +837,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql"
+//go:embed "schema/enums/CourtSide.gql" "schema/enums/DeuceType.gql" "schema/enums/GameScore.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/NumberOfGames.gql" "schema/enums/NumberOfSets.gql" "schema/enums/PlayingSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ShotType.gql" "schema/enums/TiebreakPoints.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/Point.gql" "schema/types/Score.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -866,11 +866,12 @@ var sources = []*ast.Source{
 	{Name: "schema/inputs/MatchUpFormatInput.gql", Input: sourceData("schema/inputs/MatchUpFormatInput.gql"), BuiltIn: false},
 	{Name: "schema/mutations/MatchUpMutations.gql", Input: sourceData("schema/mutations/MatchUpMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/MatchUpFormatQueries.gql", Input: sourceData("schema/queries/MatchUpFormatQueries.gql"), BuiltIn: false},
-	{Name: "schema/scalars.gql", Input: sourceData("schema/scalars.gql"), BuiltIn: false},
 	{Name: "schema/types/MatchUp.gql", Input: sourceData("schema/types/MatchUp.gql"), BuiltIn: false},
 	{Name: "schema/types/MatchUpFormat.gql", Input: sourceData("schema/types/MatchUpFormat.gql"), BuiltIn: false},
 	{Name: "schema/types/Point.gql", Input: sourceData("schema/types/Point.gql"), BuiltIn: false},
 	{Name: "schema/types/Score.gql", Input: sourceData("schema/types/Score.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE
