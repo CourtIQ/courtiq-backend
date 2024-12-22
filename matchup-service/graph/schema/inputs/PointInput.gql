@@ -1,0 +1,25 @@
+input PointInput {
+    setIndex: Int!                     # Index of the set this point belongs to (0-based or 1-based)
+    gameIndexWithinSet: Int!           # Index of the game within the set
+    isTiebreak: Boolean!
+    tiebreakPointNumber: Int           # If in a tiebreak, the order of the point in the tiebreak
+
+    pointWinner: ObjectID!             # ID of the player who won the point
+    pointServer: ObjectID!
+    pointWinReason: PointWinReason
+
+    playingSide: PlayingSide!          # Side of the court where the point was played
+    courtSide: CourtSide!              # Side of the court where the point was played
+
+    shotsInput: [ShotInput]                    # Sequence of shots played in this point
+
+    # Contextual flags:
+    isBreakPoint: Boolean!             # True if this point represented a break opportunity for the receiver
+    isGamePoint: Boolean!              # True if winning this point would win the current game
+    isSetPoint: Boolean!               # True if winning this point would win the current set
+    isMatchPoint: Boolean!             # True if winning this point would win the match
+
+    playedAt: DateTime       # Timestamp when the point was played
+}
+# TODO: Add more fields to the PointInput
+# Use point type to understand what fields required.

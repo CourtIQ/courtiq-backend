@@ -1,13 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/db"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
+	service "github.com/CourtIQ/courtiq-backend/matchup-service/internal/services"
 	"log"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
+	_ "github.com/urfave/cli/v2"  //  prevent removal by go mod tidy
+	_ "github.com/xrash/smetrics" // prevent removal by go mod tidy
 
 	configs "github.com/CourtIQ/courtiq-backend/matchup-service/internal/config"
 )
@@ -19,12 +26,22 @@ func main() {
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Create the service (using dummy implementation for now)
-	// matchupService := service.NewMatchUpService()
+	// Initialize MongoDB client
+	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
+
+	// Create repositories
+	matchUpRepo := repository.NewMatchUpMongoRepo(mongodb)
+
+	// Create the service with the repositories
+	matchUpService := service.NewMatchUpService(matchUpRepo)
 
 	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		// Resolvers: resolvers.NewRcesolver(matchupService),
+		Resolvers: &resolvers.Resolver{
+			MatchUpServiceIntf: matchUpService},
 	}))
 
 	// Create router mux

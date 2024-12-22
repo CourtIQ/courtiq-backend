@@ -1,0 +1,23 @@
+mutation AddPointToMatchUp {
+  addPointToMatchUp(
+    matchUpId: "676828f186b97c57daf1c528"
+    pointInput:{
+      setIndex: 0
+      gameIndexWithinSet: 0
+      isTiebreak:false
+      tiebreakPointNumber:0
+      pointWinner: "00e04c3ace9d00e04c3ace9d"
+      pointServer: "00e04c3ace9d00e04c3ace9d"
+      pointWinReason:ACE
+      playingSide:AD
+      courtSide:LEFT
+      isBreakPoint:false
+      isGamePoint:true
+      isSetPoint:true
+      isMatchPoint:true
+      playedAt:"2023-10-05T14:48:00Z"
+    }
+  ) {
+    id
+  }
+}

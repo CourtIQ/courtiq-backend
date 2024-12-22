@@ -1,0 +1,7 @@
+mutation UndoLastPointFromMatchUp {
+  undoLastPointFromMatchUp(
+    matchUpId: "6768351df04998c3c9c70206"
+  ) {
+    id
+  }
+}

@@ -4,16 +4,19 @@ type MatchUp {
     matchUpStatus: MatchUpStatus!
     matchUpType: MatchUpType!
 
-    participantIds: [ObjectID!]!
-    participants: ParticipantsMap!
+    participantsMap: ParticipantsMap!
 
     currentSetIndex: Int
     currentGameIndexWithinSet: Int
     currentPointIndexWithinGame: Int
     currentScore: Score
     currentServer: ObjectID!
+    initialServer: ObjectID!
+    # In tennis the server in singles changes after every game
+    # In doubles, if i start serving i will server after 3 games,
+    # Every fourth game i will server if i am inital server.
 
-    pointsSequence: [ObjectID!]!
+    pointsSequence: [Point!]!
 
     startTime: DateTime!
     endTime: DateTime
@@ -22,6 +25,6 @@ type MatchUp {
 }
 
 type ParticipantsMap {
-    A: ObjectID!
-    B: ObjectID!
+    A: [ObjectID]!
+    B: [ObjectID]!
 }

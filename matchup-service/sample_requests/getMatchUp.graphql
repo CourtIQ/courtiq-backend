@@ -1,0 +1,6 @@
+query GetMatchUp {
+  getMatchUp(id: "67643c6cf1eaae6f2bebfa7a") {
+    id
+    matchUpStatus
+  }
+}

@@ -1,30 +1,49 @@
 extend type Mutation {
     createMatchUp(
-        matchUpFormat: MatchUpFormatInput!
+        matchUpFormatInput: MatchUpFormatInput!
         matchUpType: MatchUpType!
-        participants: [ObjectID!]!
+        participantsMapInput: ParticipantsMapInput!
     ): MatchUp!
+
+    # Information needed to create a match up
+    # 1. MatchUpFormatInput
+    # 2. ID of the User who is tracking the match (Must provide)
+    # 3. Type of the match up (Singles/Doubles) (Must provide)
+    # 4. Participants of the match up (Must provide)
+    # 5. Initial Server (Must provide)
+    # Mutation should have better structure.
+
     
     updateMatchUpStatus(
         status: MatchUpStatus!, 
         matchUpId: ObjectID!
     ): MatchUp!
+
+    # Add point to matchup will contain the following fields
+    # 2. MatchUpId
+    # 3. PointInput which contains the following fields
+    #    1. pointWinner
+    #    2. pointServer
+    #    3. pointWinReason
+    #    4. playingSide
+
     
     addPointToMatchUp(
-        matchupFormat: MatchUpFormatInput!
+        pointInput: PointInput!
         matchUpId: ObjectID!
     ): MatchUp!
     
-    # addShotToMatchUp(
-    #     matchUpId: ObjectID!
-    #     shot: ShotInput!
-    # ): MatchUp!
+    
+    addShotToMatchUp(
+        matchUpId: ObjectID!
+         shotInput: ShotInput!
+    ): MatchUp!
 
-    undoShotFromMatchUp(
+    undoLastShotFromMatchUp(
         matchUpId: ObjectID!
     ): MatchUp!
 
-    undoPointFromMatchUp(
+    undoLastPointFromMatchUp(
         matchUpId: ObjectID!
     ): MatchUp!
 

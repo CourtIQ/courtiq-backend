@@ -1,0 +1,8 @@
+input ShotInput {
+    playerId: ObjectID!
+    shotType: ShotType!
+    serveStyle: ServeStyle
+    groundStrokeType: GroundStrokeType
+    groundStrokeStyle: GroundStrokeStyle
+    playedAt: DateTime       # Timestamp when the point was played
+}

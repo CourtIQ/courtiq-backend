@@ -1,9 +1,0 @@
-go 1.23.1
-
-use (
-	./equipment-service
-	./matchup-service
-	./relationship-service
-	./shared
-	./user-service
-)
