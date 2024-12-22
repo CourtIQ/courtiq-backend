@@ -41,6 +41,7 @@ type MatchUpFormat struct {
 
 type MatchUpFormatInput struct {
 	Tracker        primitive.ObjectID `json:"tracker" bson:"tracker"`
+	InitialServer  primitive.ObjectID `json:"initialServer" bson:"initialServer"`
 	NumberOfSets   NumberOfSets       `json:"numberOfSets" bson:"numberOfSets"`
 	SetFormat      *SetFormatInput    `json:"setFormat" bson:"setFormat"`
 	FinalSetFormat *SetFormatInput    `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
