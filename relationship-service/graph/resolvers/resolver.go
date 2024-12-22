@@ -7,5 +7,5 @@ import "github.com/CourtIQ/courtiq-backend/relationship-service/internal/service
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	RelationshipService services.RelationshipServiceIntf
+	RelationshipServiceIntf services.RelationshipServiceIntf
 }

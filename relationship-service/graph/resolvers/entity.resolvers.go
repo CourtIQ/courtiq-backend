@@ -14,17 +14,17 @@ import (
 
 // FindCoachshipByID is the resolver for the findCoachshipByID field.
 func (r *entityResolver) FindCoachshipByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.FindCoachshipByID(ctx, id)
+	return r.RelationshipServiceIntf.FindCoachshipByID(ctx, id)
 }
 
 // FindFriendshipByID is the resolver for the findFriendshipByID field.
 func (r *entityResolver) FindFriendshipByID(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.FindFriendshipByID(ctx, id)
+	return r.RelationshipServiceIntf.FindFriendshipByID(ctx, id)
 }
 
 // FindRelationshipByID is the resolver for the findRelationshipByID field.
 func (r *entityResolver) FindRelationshipByID(ctx context.Context, id primitive.ObjectID) (model.Relationship, error) {
-	return r.RelationshipService.FindRelationshipByID(ctx, id)
+	return r.RelationshipServiceIntf.FindRelationshipByID(ctx, id)
 }
 
 // Entity returns graph.EntityResolver implementation.

@@ -24,7 +24,7 @@ func main() {
 
 	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		// Resolvers: resolvers.NewResolver(matchupService),
+		// Resolvers: resolvers.NewRcesolver(matchupService),
 	}))
 
 	// Create router mux
