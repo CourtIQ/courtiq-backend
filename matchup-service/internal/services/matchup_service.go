@@ -176,10 +176,18 @@ func (s *MatchUpService) AddPointToMatchUp(ctx context.Context, pointInput model
 		PlayedAt:            pointInput.PlayedAt,
 	}
 
+	side := GetParticipantSide(matchUp, point.PointWinner)
+	IncrementScore(matchUp.CurrentScore, side)
+	if IsGameFinished(matchUp.CurrentScore) {
+		*matchUp.CurrentGameIndexWithinSet++
+	}
+
 	matchUp.PointsSequence = append(matchUp.PointsSequence, &point)
+	if ShouldChangeServer(matchUp) {
+		matchUp.CurrentServer = *GetNextServer(matchUp)
+	}
 
 	err = s.matchUpRepo.Update(ctx, matchUp)
-
 	return matchUp, err
 }
 func (s *MatchUpService) UndoLastShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
@@ -210,4 +218,85 @@ func (s *MatchUpService) DeleteMatchUp(ctx context.Context, matchUpID primitive.
 		err = s.matchUpRepo.Delete(ctx, matchUpID)
 	}
 	return matchUp, err
+}
+
+func GetNextServer(matchUp *model.MatchUp) *primitive.ObjectID {
+	allParticipants := append(matchUp.ParticipantsMap.A, matchUp.ParticipantsMap.B...)
+	for i := 0; i < len(allParticipants); i++ {
+		if i == len(allParticipants)-1 && *allParticipants[i] == matchUp.CurrentServer {
+			return allParticipants[0]
+		} else if *allParticipants[i] == matchUp.CurrentServer {
+			return allParticipants[i+1]
+		}
+	}
+	return nil
+}
+
+func ShouldChangeServer(matchUp *model.MatchUp) bool {
+	//TODO implement logic
+	return false
+}
+
+func GetParticipantSide(matchUp *model.MatchUp, playerID primitive.ObjectID) string {
+	for _, participant := range matchUp.ParticipantsMap.A {
+		if *participant == playerID {
+			return "A"
+		}
+	}
+	return "B"
+}
+
+// IncrementScore increments the score for the given side according to Tennis score logic
+func IncrementScore(score *model.Score, side string) {
+	if score.A.CurrentPointScore == model.GameScoreForty && score.B.CurrentPointScore == model.GameScoreForty {
+		if side == "A" {
+			score.A.CurrentPointScore = model.GameScoreAdvantage
+		} else {
+			score.B.CurrentPointScore = model.GameScoreAdvantage
+		}
+		return
+	}
+
+	if side == "A" {
+		if score.A.CurrentPointScore == model.GameScoreAdvantage {
+			score.A.CurrentPointScore = model.GameScoreGame
+		} else if score.B.CurrentPointScore == model.GameScoreAdvantage {
+			score.A.CurrentPointScore = model.GameScoreForty
+			score.B.CurrentPointScore = model.GameScoreForty
+		} else {
+			score.A.CurrentPointScore = incrementScore(score.A.CurrentPointScore)
+		}
+	} else {
+		if score.B.CurrentPointScore == model.GameScoreAdvantage {
+			score.B.CurrentPointScore = model.GameScoreGame
+		} else if score.A.CurrentPointScore == model.GameScoreAdvantage {
+			score.A.CurrentPointScore = model.GameScoreForty
+			score.B.CurrentPointScore = model.GameScoreForty
+		} else {
+			score.B.CurrentPointScore = incrementScore(score.B.CurrentPointScore)
+		}
+	}
+}
+
+func incrementScore(gameScore model.GameScore) model.GameScore {
+	switch gameScore {
+	case model.GameScoreLove:
+		return model.GameScoreFifteen
+	case model.GameScoreFifteen:
+		return model.GameScoreThirty
+	case model.GameScoreThirty:
+		return model.GameScoreForty
+	default:
+		return model.GameScoreGame
+	}
+
+}
+
+func IsGameFinished(score *model.Score) bool {
+	if score.A.CurrentPointScore == model.GameScoreGame || score.B.CurrentPointScore == model.GameScoreGame {
+		return true
+	} else {
+		return false
+	}
+
 }

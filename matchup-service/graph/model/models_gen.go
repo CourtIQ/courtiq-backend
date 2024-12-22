@@ -248,6 +248,7 @@ const (
 	GameScoreThirty    GameScore = "THIRTY"
 	GameScoreForty     GameScore = "FORTY"
 	GameScoreAdvantage GameScore = "ADVANTAGE"
+	GameScoreGame      GameScore = "GAME"
 )
 
 var AllGameScore = []GameScore{
