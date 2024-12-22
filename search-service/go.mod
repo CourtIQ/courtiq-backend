@@ -1,10 +1,9 @@
-module github.com/CourtIQ/courtiq-backend/relationship-service
+module github.com/CourtIQ/courtiq-backend/search-service
 
 go 1.23.1
 
 require (
-	github.com/99designs/gqlgen v0.17.60
-	github.com/CourtIQ/courtiq-backend/equipment-service v0.0.0-20241216152259-78280c3f33ae
+	github.com/99designs/gqlgen v0.17.61
 	github.com/joho/godotenv v1.5.1
 	github.com/vektah/gqlparser/v2 v2.5.20
 	go.mongodb.org/mongo-driver v1.17.1
@@ -25,6 +24,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	golang.org/x/crypto v0.27.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )

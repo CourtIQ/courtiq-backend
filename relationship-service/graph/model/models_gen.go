@@ -117,7 +117,7 @@ func (e RelationshipStatus) String() string {
 	return string(e)
 }
 
-func (e *RelationshipStatus) UnmarshalGQL(v interface{}) error {
+func (e *RelationshipStatus) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -161,7 +161,7 @@ func (e RelationshipType) String() string {
 	return string(e)
 }
 
-func (e *RelationshipType) UnmarshalGQL(v interface{}) error {
+func (e *RelationshipType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -206,7 +206,7 @@ func (e Visibility) String() string {
 	return string(e)
 }
 
-func (e *Visibility) UnmarshalGQL(v interface{}) error {
+func (e *Visibility) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

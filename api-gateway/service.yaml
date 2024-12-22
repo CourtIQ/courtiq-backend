@@ -49,6 +49,8 @@ spec:
           value: https://matchup-service-zgctp7qz3q-uc.a.run.app
         - name: EQUIPMENT_SERVICE_URL
           value: https://equipment-service-zgctp7qz3q-uc.a.run.app
+        - name: SEARCH_SERVICE_URL
+          value: https://search-service-zgctp7qz3q-uc.a.run.app
         - name: MONGODB_URL
           valueFrom:
             secretKeyRef:

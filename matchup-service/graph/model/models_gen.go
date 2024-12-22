@@ -151,7 +151,7 @@ func (e CourtSide) String() string {
 	return string(e)
 }
 
-func (e *CourtSide) UnmarshalGQL(v interface{}) error {
+func (e *CourtSide) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -194,7 +194,7 @@ func (e DeuceType) String() string {
 	return string(e)
 }
 
-func (e *DeuceType) UnmarshalGQL(v interface{}) error {
+func (e *DeuceType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -241,7 +241,7 @@ func (e GameScore) String() string {
 	return string(e)
 }
 
-func (e *GameScore) UnmarshalGQL(v interface{}) error {
+func (e *GameScore) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -294,7 +294,7 @@ func (e GroundStrokeStyle) String() string {
 	return string(e)
 }
 
-func (e *GroundStrokeStyle) UnmarshalGQL(v interface{}) error {
+func (e *GroundStrokeStyle) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -335,7 +335,7 @@ func (e GroundStrokeType) String() string {
 	return string(e)
 }
 
-func (e *GroundStrokeType) UnmarshalGQL(v interface{}) error {
+func (e *GroundStrokeType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -388,7 +388,7 @@ func (e MatchUpStatus) String() string {
 	return string(e)
 }
 
-func (e *MatchUpStatus) UnmarshalGQL(v interface{}) error {
+func (e *MatchUpStatus) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -429,7 +429,7 @@ func (e MatchUpType) String() string {
 	return string(e)
 }
 
-func (e *MatchUpType) UnmarshalGQL(v interface{}) error {
+func (e *MatchUpType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -478,7 +478,7 @@ func (e NumberOfGames) String() string {
 	return string(e)
 }
 
-func (e *NumberOfGames) UnmarshalGQL(v interface{}) error {
+func (e *NumberOfGames) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -521,7 +521,7 @@ func (e NumberOfSets) String() string {
 	return string(e)
 }
 
-func (e *NumberOfSets) UnmarshalGQL(v interface{}) error {
+func (e *NumberOfSets) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -562,7 +562,7 @@ func (e PlayingSide) String() string {
 	return string(e)
 }
 
-func (e *PlayingSide) UnmarshalGQL(v interface{}) error {
+func (e *PlayingSide) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -609,7 +609,7 @@ func (e PointWinReason) String() string {
 	return string(e)
 }
 
-func (e *PointWinReason) UnmarshalGQL(v interface{}) error {
+func (e *PointWinReason) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -654,7 +654,7 @@ func (e ServeStyle) String() string {
 	return string(e)
 }
 
-func (e *ServeStyle) UnmarshalGQL(v interface{}) error {
+func (e *ServeStyle) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -697,7 +697,7 @@ func (e ShotType) String() string {
 	return string(e)
 }
 
-func (e *ShotType) UnmarshalGQL(v interface{}) error {
+func (e *ShotType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -746,7 +746,7 @@ func (e TiebreakPoints) String() string {
 	return string(e)
 }
 
-func (e *TiebreakPoints) UnmarshalGQL(v interface{}) error {
+func (e *TiebreakPoints) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -791,7 +791,7 @@ func (e Visibility) String() string {
 	return string(e)
 }
 
-func (e *Visibility) UnmarshalGQL(v interface{}) error {
+func (e *Visibility) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

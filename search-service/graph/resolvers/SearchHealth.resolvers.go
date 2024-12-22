@@ -6,16 +6,13 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/CourtIQ/courtiq-backend/search-service/graph"
 )
 
-// GetMatchUp is the resolver for the getMatchUp field.
-func (r *queryResolver) GetMatchUp(ctx context.Context, id primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: GetMatchUp - getMatchUp"))
+// SearchHealth is the resolver for the searchHealth field.
+func (r *queryResolver) SearchHealth(ctx context.Context) (bool, error) {
+	return true, nil
 }
 
 // Query returns graph.QueryResolver implementation.

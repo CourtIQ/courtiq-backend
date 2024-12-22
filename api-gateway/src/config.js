@@ -28,6 +28,10 @@ const SERVICES = {
     name: 'equipment-service',
     url: process.env.EQUIPMENT_SERVICE_URL || 'http://localhost:8080',
   },
+  searchService: {
+    name: 'search-service',
+    url: process.env.SEARCH_SERVICE_URL || 'http://localhost:8080',
+  },
 };
 
 module.exports = {
