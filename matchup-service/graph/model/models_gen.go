@@ -11,6 +11,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Provides structured geographical details about a user's location.
+// All fields are optional and can be omitted if unknown.
+type Location struct {
+	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
+	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
+	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
+}
+
 type MatchUp struct {
 	ID                          primitive.ObjectID   `json:"id" bson:"_id"`
 	MatchUpFormat               *MatchUpFormat       `json:"matchUpFormat" bson:"matchUpFormat"`

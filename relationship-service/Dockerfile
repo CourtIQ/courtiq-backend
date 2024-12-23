@@ -1,14 +1,16 @@
-# relationship-service/Dockerfile (same for other Go services)
 FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY go.mod go.sum ./
+# Copy shared module first
+COPY shared/ ./shared/
+
+# Now copy the service's files
+COPY relationship-service/go.mod relationship-service/go.sum ./
 RUN go mod download
 
-# Copy source
-COPY . .
+# Copy the rest of service code
+COPY search-service/ ./
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
@@ -17,11 +19,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
 FROM alpine:latest
 
 WORKDIR /app
-
-# Copy binary
 COPY --from=builder /app/main .
 
-# COPY .env .
-
-# Default command
 CMD ["./main"]

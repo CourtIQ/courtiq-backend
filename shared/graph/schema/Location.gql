@@ -1,0 +1,11 @@
+"""
+Provides structured geographical details about a user's location.
+All fields are optional and can be omitted if unknown.
+"""
+type Location {
+  city: String
+  state: String
+  country: String
+  latitude: Float
+  longitude: Float
+}

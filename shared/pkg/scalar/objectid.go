@@ -1,3 +1,4 @@
+// shared/pkg/scalar/objectid.go
 package scalar
 
 import (

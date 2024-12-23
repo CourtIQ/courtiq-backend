@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/utils"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

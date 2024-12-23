@@ -57,8 +57,8 @@ services:
       - court-iq-network
   search-service:
     build:
-      context: ./search-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: search-service/Dockerfile
     env_file:
       - ./search-service/.env
     ports:

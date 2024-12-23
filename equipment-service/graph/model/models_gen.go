@@ -45,6 +45,16 @@ type CreateTennisStringInput struct {
 	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
+// Provides structured geographical details about a user's location.
+// All fields are optional and can be omitted if unknown.
+type Location struct {
+	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
+	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
+	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
+}
+
 type Mutation struct {
 }
 
@@ -171,7 +181,7 @@ func (e EquipmentType) String() string {
 	return string(e)
 }
 
-func (e *EquipmentType) UnmarshalGQL(v interface{}) error {
+func (e *EquipmentType) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -222,7 +232,7 @@ func (e StringGauge) String() string {
 	return string(e)
 }
 
-func (e *StringGauge) UnmarshalGQL(v interface{}) error {
+func (e *StringGauge) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
@@ -267,7 +277,7 @@ func (e Visibility) String() string {
 	return string(e)
 }
 
-func (e *Visibility) UnmarshalGQL(v interface{}) error {
+func (e *Visibility) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")

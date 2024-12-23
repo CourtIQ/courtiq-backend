@@ -10,11 +10,70 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type SearchResult interface {
+	IsSearchResult()
+}
+
+// Provides structured geographical details about a user's location.
+// All fields are optional and can be omitted if unknown.
+type Location struct {
+	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
+	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
+	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
+}
+
 type Query struct {
 }
 
-type Search struct {
-	ID primitive.ObjectID `json:"id" bson:"_id"`
+type UserSearchResult struct {
+	ID             primitive.ObjectID `json:"id" bson:"_id"`
+	Username       string             `json:"username" bson:"username"`
+	DisplayName    *string            `json:"displayName,omitempty" bson:"displayName,omitempty"`
+	ProfilePicture *string            `json:"profilePicture,omitempty" bson:"profilePicture,omitempty"`
+	Location       *Location          `json:"location,omitempty" bson:"location,omitempty"`
+}
+
+func (UserSearchResult) IsSearchResult() {}
+
+type ResourceType string
+
+const (
+	ResourceTypeUser ResourceType = "USER"
+)
+
+var AllResourceType = []ResourceType{
+	ResourceTypeUser,
+}
+
+func (e ResourceType) IsValid() bool {
+	switch e {
+	case ResourceTypeUser:
+		return true
+	}
+	return false
+}
+
+func (e ResourceType) String() string {
+	return string(e)
+}
+
+func (e *ResourceType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ResourceType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ResourceType", str)
+	}
+	return nil
+}
+
+func (e ResourceType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type Visibility string

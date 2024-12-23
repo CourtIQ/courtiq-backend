@@ -1,4 +1,3 @@
-// db/client.go
 package db
 
 import (
@@ -7,12 +6,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-const (
-	DatabaseName          = "courtiq-db"
-	FriendshipsCollection = "friendships"
-	CoachshipsCollection  = "coachships"
 )
 
 // MongoDB represents the MongoDB client wrapper

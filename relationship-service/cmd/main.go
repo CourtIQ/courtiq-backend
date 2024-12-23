@@ -14,12 +14,10 @@ import (
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/configs"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/db"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
-	// If you have a `utils` package with middleware:
-	// "github.com/CourtIQ/courtiq-backend/equipment-service/internal/utils"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
 )
 
 func main() {

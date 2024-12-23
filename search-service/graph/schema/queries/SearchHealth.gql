@@ -1,6 +1,0 @@
-extend type Query {
-  # Health Queries
-
-  # Fetch the health of the search service
-  searchHealth: Boolean!
-}

@@ -4,7 +4,7 @@ use (
 	./equipment-service
 	./matchup-service
 	./relationship-service
+	./search-service
 	./shared
 	./user-service
-	./search-service
 )
