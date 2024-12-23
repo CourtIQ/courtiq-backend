@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: relationship-service
+  name: search-service
   labels:
     cloud.googleapis.com/location: us-central1
   annotations:
@@ -28,7 +28,7 @@ spec:
           containerPort: 8080
         env:
         - name: SERVICE_NAME
-          value: relationship-service
+          value: search-service
         - name: DOCKER_ENV
           value: 'true'
         - name: NODE_ENV
