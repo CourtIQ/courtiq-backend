@@ -28,7 +28,7 @@ spec:
           containerPort: 8080
         env:
         - name: SERVICE_NAME
-          value: relationship-service
+          value: search-service
         - name: DOCKER_ENV
           value: 'true'
         - name: NODE_ENV
