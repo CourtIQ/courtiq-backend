@@ -117,7 +117,7 @@ jobs:
     
   search-service:
     env:
-      SVC_NAME: searchgithu-service
+      SVC_NAME: search-service
     runs-on: ubuntu-latest
     permissions:
       id-token: write
