@@ -31,6 +31,8 @@ type UserSearchResult struct {
 	ID             primitive.ObjectID `json:"id" bson:"_id"`
 	Username       string             `json:"username" bson:"username"`
 	DisplayName    *string            `json:"displayName,omitempty" bson:"displayName,omitempty"`
+	FirstName      *string            `json:"firstName,omitempty" bson:"firstName,omitempty"`
+	LastName       *string            `json:"lastName,omitempty" bson:"lastName,omitempty"`
 	ProfilePicture *string            `json:"profilePicture,omitempty" bson:"profilePicture,omitempty"`
 	Location       *Location          `json:"location,omitempty" bson:"location,omitempty"`
 }

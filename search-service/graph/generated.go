@@ -64,7 +64,9 @@ type ComplexityRoot struct {
 
 	UserSearchResult struct {
 		DisplayName    func(childComplexity int) int
+		FirstName      func(childComplexity int) int
 		ID             func(childComplexity int) int
+		LastName       func(childComplexity int) int
 		Location       func(childComplexity int) int
 		ProfilePicture func(childComplexity int) int
 		Username       func(childComplexity int) int
@@ -159,12 +161,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserSearchResult.DisplayName(childComplexity), true
 
+	case "UserSearchResult.firstName":
+		if e.complexity.UserSearchResult.FirstName == nil {
+			break
+		}
+
+		return e.complexity.UserSearchResult.FirstName(childComplexity), true
+
 	case "UserSearchResult.id":
 		if e.complexity.UserSearchResult.ID == nil {
 			break
 		}
 
 		return e.complexity.UserSearchResult.ID(childComplexity), true
+
+	case "UserSearchResult.lastName":
+		if e.complexity.UserSearchResult.LastName == nil {
+			break
+		}
+
+		return e.complexity.UserSearchResult.LastName(childComplexity), true
 
 	case "UserSearchResult.location":
 		if e.complexity.UserSearchResult.Location == nil {
@@ -1089,6 +1105,88 @@ func (ec *executionContext) _UserSearchResult_displayName(ctx context.Context, f
 }
 
 func (ec *executionContext) fieldContext_UserSearchResult_displayName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSearchResult_firstName(ctx context.Context, field graphql.CollectedField, obj *model.UserSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSearchResult_firstName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FirstName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSearchResult_firstName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserSearchResult_lastName(ctx context.Context, field graphql.CollectedField, obj *model.UserSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserSearchResult_lastName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserSearchResult_lastName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserSearchResult",
 		Field:      field,
@@ -3194,6 +3292,10 @@ func (ec *executionContext) _UserSearchResult(ctx context.Context, sel ast.Selec
 			}
 		case "displayName":
 			out.Values[i] = ec._UserSearchResult_displayName(ctx, field, obj)
+		case "firstName":
+			out.Values[i] = ec._UserSearchResult_firstName(ctx, field, obj)
+		case "lastName":
+			out.Values[i] = ec._UserSearchResult_lastName(ctx, field, obj)
 		case "profilePicture":
 			out.Values[i] = ec._UserSearchResult_profilePicture(ctx, field, obj)
 		case "location":

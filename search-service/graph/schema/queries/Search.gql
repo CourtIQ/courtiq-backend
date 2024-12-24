@@ -19,6 +19,8 @@ type UserSearchResult {
   id: ObjectID!
   username: String!
   displayName: String
+  firstName: String
+  lastName: String
   profilePicture: String
   location: Location
 }

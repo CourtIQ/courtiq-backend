@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,12 +12,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/search-service/graph"
 	"github.com/CourtIQ/courtiq-backend/search-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/search-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/search-service/internal/services"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 )
 
 func main() {
-
 	// Load configuration
 	config := configs.LoadConfig()
 
@@ -24,13 +27,22 @@ func main() {
 	configs.SetupLogging(config)
 
 	// Initialize MongoDB client
-	// mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to MongoDB: %v", err)
-	// }
+	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{},
+	// Create repositories
+	searchRepo := repository.NewSearchRepository(mongodb)
+
+	// Create the service with the repositories
+	searchService := services.NewSearchService(searchRepo)
+
+	// Replace NewDefaultServer with explicitly configured server
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{
+		Resolvers: &resolvers.Resolver{
+			SearchService: searchService,
+		},
 	}))
 
 	// Configure transports with specific order and options

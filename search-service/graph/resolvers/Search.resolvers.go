@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/search-service/graph"
 	"github.com/CourtIQ/courtiq-backend/search-service/graph/model"
@@ -14,7 +13,7 @@ import (
 
 // Search is the resolver for the search field.
 func (r *queryResolver) Search(ctx context.Context, query string, resourceTypes []model.ResourceType, limit *int, offset *int) ([]model.SearchResult, error) {
-	panic(fmt.Errorf("not implemented: Search - search"))
+	return r.SearchService.Search(ctx, query, resourceTypes, limit, offset)
 }
 
 // Query returns graph.QueryResolver implementation.
