@@ -11,8 +11,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/search-service/graph"
 	"github.com/CourtIQ/courtiq-backend/search-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/search-service/internal/configs"
-	"github.com/CourtIQ/courtiq-backend/search-service/internal/middleware"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 )
 
 func main() {

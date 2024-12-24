@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/repository"
 
 	"go.mongodb.org/mongo-driver/bson"

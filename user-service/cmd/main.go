@@ -8,11 +8,11 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/configs"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/db"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/services"
 )

@@ -23,14 +23,14 @@ type Relationship interface {
 }
 
 type Coachship struct {
-	ID           primitive.ObjectID   `json:"id"`
-	Participants []primitive.ObjectID `json:"participants"`
-	Type         RelationshipType     `json:"type"`
-	Status       RelationshipStatus   `json:"status"`
-	CreatedAt    time.Time            `json:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt"`
-	CoachID      primitive.ObjectID   `json:"coachId"`
-	StudentID    primitive.ObjectID   `json:"studentId"`
+	ID           primitive.ObjectID   `json:"id" bson:"_id"`
+	Participants []primitive.ObjectID `json:"participants" bson:"participants"`
+	Type         RelationshipType     `json:"type" bson:"type"`
+	Status       RelationshipStatus   `json:"status" bson:"status"`
+	CreatedAt    time.Time            `json:"createdAt" bson:"createdAt"`
+	UpdatedAt    time.Time            `json:"updatedAt" bson:"updatedAt"`
+	CoachID      primitive.ObjectID   `json:"coachId" bson:"coachId"`
+	StudentID    primitive.ObjectID   `json:"studentId" bson:"studentId"`
 }
 
 func (Coachship) IsRelationship()                {}
@@ -53,14 +53,14 @@ func (this Coachship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
 func (Coachship) IsEntity() {}
 
 type Friendship struct {
-	ID           primitive.ObjectID   `json:"id"`
-	Participants []primitive.ObjectID `json:"participants"`
-	Type         RelationshipType     `json:"type"`
-	Status       RelationshipStatus   `json:"status"`
-	CreatedAt    time.Time            `json:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt"`
-	SenderID     primitive.ObjectID   `json:"senderId"`
-	ReceiverID   primitive.ObjectID   `json:"receiverId"`
+	ID           primitive.ObjectID   `json:"id" bson:"_id"`
+	Participants []primitive.ObjectID `json:"participants" bson:"participants"`
+	Type         RelationshipType     `json:"type" bson:"type"`
+	Status       RelationshipStatus   `json:"status" bson:"status"`
+	CreatedAt    time.Time            `json:"createdAt" bson:"createdAt"`
+	UpdatedAt    time.Time            `json:"updatedAt" bson:"updatedAt"`
+	SenderID     primitive.ObjectID   `json:"senderId" bson:"senderId"`
+	ReceiverID   primitive.ObjectID   `json:"receiverId" bson:"receiverId"`
 }
 
 func (Friendship) IsRelationship()                {}
@@ -85,11 +85,11 @@ func (Friendship) IsEntity() {}
 // Provides structured geographical details about a user's location.
 // All fields are optional and can be omitted if unknown.
 type Location struct {
-	City      *string  `json:"city,omitempty"`
-	State     *string  `json:"state,omitempty"`
-	Country   *string  `json:"country,omitempty"`
-	Latitude  *float64 `json:"latitude,omitempty"`
-	Longitude *float64 `json:"longitude,omitempty"`
+	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
+	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
+	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
 }
 
 type Mutation struct {

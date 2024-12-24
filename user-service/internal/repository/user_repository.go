@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

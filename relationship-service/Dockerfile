@@ -2,23 +2,20 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-# Copy shared module first
-COPY shared/ ./shared/
-
-# Now copy the service's files
-COPY relationship-service/go.mod relationship-service/go.sum ./
+# First copy and build shared module
+WORKDIR /app/shared
+COPY shared/ .
 RUN go mod download
+RUN go build ./...
 
-# Copy the rest of service code
-COPY search-service/ ./
-
-# Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
+# Now build the service
+WORKDIR /app/service
+COPY relationship-service/ .
+RUN go mod download
+RUN go build -o main ./cmd/main.go
 
 # Production image
 FROM alpine:latest
-
 WORKDIR /app
-COPY --from=builder /app/main .
-
+COPY --from=builder /app/service/main .
 CMD ["./main"]

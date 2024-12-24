@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/middleware"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/utils"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )

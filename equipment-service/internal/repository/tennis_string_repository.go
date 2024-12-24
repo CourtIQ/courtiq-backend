@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/db"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

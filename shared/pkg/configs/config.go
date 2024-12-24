@@ -1,4 +1,4 @@
-// configs/config.go
+// shared/pkg/configs/config.go
 package configs
 
 import (
@@ -34,7 +34,7 @@ func LoadConfig() *Config {
 	}
 
 	return &Config{
-		ServiceName:            getEnvWithDefault("SERVICE_NAME", "equipment-service"),
+		ServiceName:            getEnvWithDefault("SERVICE_NAME", "relationship-service"),
 		Port:                   port,
 		Environment:            getEnvWithDefault("GO_ENV", "development"),
 		LogLevel:               getEnvWithDefault("LOG_LEVEL", "info"),

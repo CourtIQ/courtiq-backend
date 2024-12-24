@@ -14,8 +14,8 @@ services:
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: user-service/Dockerfile
     env_file:
       - ./user-service/.env
     ports:
@@ -25,8 +25,8 @@ services:
 
   relationship-service:
     build:
-      context: ./relationship-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: relationship-service/Dockerfile
     env_file:
       - ./relationship-service/.env
     ports:
@@ -36,8 +36,8 @@ services:
 
   matchup-service:
     build:
-      context: ./matchup-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: matchup-service/Dockerfile
     env_file:
       - ./matchup-service/.env
     ports:
@@ -47,8 +47,8 @@ services:
 
   equipment-service:
     build:
-      context: ./equipment-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: equipment-service/Dockerfile
     env_file:
       - ./equipment-service/.env
     ports:
