@@ -1,39 +1,34 @@
-# 1. Resource types you plan to support in the future
-# For now, we only have USER, but you can add CLUB, MATCHUP, etc. later.
 enum ResourceType {
   USER
-  # CLUB
-  # MATCHUP
-  # RELATIONSHIP
-  # ...
+  TENNIS_COURTS
 }
 
-# 2. Union of all possible search results
-# For now, it only includes UserSearchResult,
-# but you can extend it with EquipmentSearchResult, ClubSearchResult, etc.
-union SearchResult = UserSearchResult
+union SearchResult = UserSearchResult | TennisCourtSearchResult
 
-# 3. Minimal fields for a user in search results
-# Just enough to display a result (no full user details).
-type UserSearchResult {
-  id: ObjectID!
-  username: String!
-  displayName: String
-  firstName: String
-  lastName: String
-  profilePicture: String
-  location: Location
-}
-
-# 4. The main "search" query
-#    - query: the text or keywords you're searching for
-#    - resourceTypes: by default [USER], but can be extended to other resource types
-#    - limit, offset: for simple offset-based pagination
 extend type Query {
   search(
     query: String!
     resourceTypes: [ResourceType!] = [USER]
-    limit: Int = 10
+    limit: Int = 5
     offset: Int = 0
+    near: GeoPoint
   ): [SearchResult!]!
+
+  searchTennisCourts(
+    query: String!
+    limit: Int = 5
+    offset: Int = 0
+    near: GeoPoint
+  ): [TennisCourtSearchResult!]!
+
+  searchUsers(
+    query: String!
+    limit: Int = 5
+    offset: Int = 0
+  ): [UserSearchResult!]!
+}
+
+extend type Mutation {
+  favouriteCourt(courtId: ObjectID!): Boolean!
+  removeCourtFromFavorites(courtId: ObjectID!): Boolean!
 }

@@ -1,0 +1,14 @@
+"""
+Minimal tennis-court data for search results + some extras like city, country, rating, openNow.
+"""
+type TennisCourtSearchResult {
+  id: ObjectID!
+  googlePlaceId: String!
+  displayName: String!
+  address: String!
+  city: String
+  country: String
+  rating: Float
+  openNow: Boolean
+  coordinates: GeoPoint!
+}

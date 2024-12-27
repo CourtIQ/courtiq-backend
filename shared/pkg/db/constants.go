@@ -1,3 +1,4 @@
+// shared/pkg/db/constants.go
 package db
 
 const (
@@ -7,4 +8,5 @@ const (
 	CoachshipsCollection    = "coachships"
 	TennisRacketsCollection = "tennis_rackets"
 	TennisStringsCollection = "tennis_strings"
+	TennisCourtsCollection  = "tennis_courts"
 )

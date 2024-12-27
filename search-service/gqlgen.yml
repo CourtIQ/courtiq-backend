@@ -99,5 +99,6 @@ models:
   DateTime:
     model: github.com/99designs/gqlgen/graphql.Time
   ObjectID:
-    model: github.com/CourtIQ/courtiq-backend/shared/pkg/scalar.ObjectID
-
+    model: github.com/CourtIQ/courtiq-backend/shared/pkg/scalar.ObjectID  
+  GeoPoint:
+    model: github.com/CourtIQ/courtiq-backend/shared/pkg/scalar.GeoPoint

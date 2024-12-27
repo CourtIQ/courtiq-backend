@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -42,6 +43,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
@@ -49,6 +51,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Coordinates struct {
+		Latitude  func(childComplexity int) int
+		Longitude func(childComplexity int) int
+	}
+
 	Location struct {
 		City      func(childComplexity int) int
 		Country   func(childComplexity int) int
@@ -57,17 +64,66 @@ type ComplexityRoot struct {
 		State     func(childComplexity int) int
 	}
 
+	Mutation struct {
+		FavouriteCourt           func(childComplexity int, courtID primitive.ObjectID) int
+		RemoveCourtFromFavorites func(childComplexity int, courtID primitive.ObjectID) int
+	}
+
+	OpeningHours struct {
+		Periods     func(childComplexity int) int
+		WeekdayText func(childComplexity int) int
+	}
+
+	OpeningPeriod struct {
+		CloseTime func(childComplexity int) int
+		Day       func(childComplexity int) int
+		OpenTime  func(childComplexity int) int
+	}
+
 	Query struct {
-		Search             func(childComplexity int, query string, resourceTypes []model.ResourceType, limit *int, offset *int) int
+		Search             func(childComplexity int, query string, resourceTypes []model.ResourceType, limit *int, offset *int, near *scalar.GeoPoint) int
+		SearchTennisCourts func(childComplexity int, query string, limit *int, offset *int, near *scalar.GeoPoint) int
+		SearchUsers        func(childComplexity int, query string, limit *int, offset *int) int
 		__resolve__service func(childComplexity int) int
+	}
+
+	TennisCourt struct {
+		BusinessStatus           func(childComplexity int) int
+		City                     func(childComplexity int) int
+		Coordinates              func(childComplexity int) int
+		Country                  func(childComplexity int) int
+		FormattedAddress         func(childComplexity int) int
+		GooglePlaceID            func(childComplexity int) int
+		ID                       func(childComplexity int) int
+		InternationalPhoneNumber func(childComplexity int) int
+		LastUpdated              func(childComplexity int) int
+		Name                     func(childComplexity int) int
+		OpenNow                  func(childComplexity int) int
+		OpeningHours             func(childComplexity int) int
+		PhoneNumber              func(childComplexity int) int
+		PostalCode               func(childComplexity int) int
+		Rating                   func(childComplexity int) int
+		State                    func(childComplexity int) int
+		Types                    func(childComplexity int) int
+		UserRatingsTotal         func(childComplexity int) int
+		Website                  func(childComplexity int) int
+	}
+
+	TennisCourtSearchResult struct {
+		Address       func(childComplexity int) int
+		City          func(childComplexity int) int
+		Coordinates   func(childComplexity int) int
+		Country       func(childComplexity int) int
+		DisplayName   func(childComplexity int) int
+		GooglePlaceID func(childComplexity int) int
+		ID            func(childComplexity int) int
+		OpenNow       func(childComplexity int) int
+		Rating        func(childComplexity int) int
 	}
 
 	UserSearchResult struct {
 		DisplayName    func(childComplexity int) int
-		FirstName      func(childComplexity int) int
 		ID             func(childComplexity int) int
-		LastName       func(childComplexity int) int
-		Location       func(childComplexity int) int
 		ProfilePicture func(childComplexity int) int
 		Username       func(childComplexity int) int
 	}
@@ -77,8 +133,14 @@ type ComplexityRoot struct {
 	}
 }
 
+type MutationResolver interface {
+	FavouriteCourt(ctx context.Context, courtID primitive.ObjectID) (bool, error)
+	RemoveCourtFromFavorites(ctx context.Context, courtID primitive.ObjectID) (bool, error)
+}
 type QueryResolver interface {
-	Search(ctx context.Context, query string, resourceTypes []model.ResourceType, limit *int, offset *int) ([]model.SearchResult, error)
+	Search(ctx context.Context, query string, resourceTypes []model.ResourceType, limit *int, offset *int, near *scalar.GeoPoint) ([]model.SearchResult, error)
+	SearchTennisCourts(ctx context.Context, query string, limit *int, offset *int, near *scalar.GeoPoint) ([]*model.TennisCourtSearchResult, error)
+	SearchUsers(ctx context.Context, query string, limit *int, offset *int) ([]*model.UserSearchResult, error)
 }
 
 type executableSchema struct {
@@ -99,6 +161,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Coordinates.latitude":
+		if e.complexity.Coordinates.Latitude == nil {
+			break
+		}
+
+		return e.complexity.Coordinates.Latitude(childComplexity), true
+
+	case "Coordinates.longitude":
+		if e.complexity.Coordinates.Longitude == nil {
+			break
+		}
+
+		return e.complexity.Coordinates.Longitude(childComplexity), true
 
 	case "Location.city":
 		if e.complexity.Location.City == nil {
@@ -135,6 +211,65 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Location.State(childComplexity), true
 
+	case "Mutation.favouriteCourt":
+		if e.complexity.Mutation.FavouriteCourt == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_favouriteCourt_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.FavouriteCourt(childComplexity, args["courtId"].(primitive.ObjectID)), true
+
+	case "Mutation.removeCourtFromFavorites":
+		if e.complexity.Mutation.RemoveCourtFromFavorites == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeCourtFromFavorites_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveCourtFromFavorites(childComplexity, args["courtId"].(primitive.ObjectID)), true
+
+	case "OpeningHours.periods":
+		if e.complexity.OpeningHours.Periods == nil {
+			break
+		}
+
+		return e.complexity.OpeningHours.Periods(childComplexity), true
+
+	case "OpeningHours.weekdayText":
+		if e.complexity.OpeningHours.WeekdayText == nil {
+			break
+		}
+
+		return e.complexity.OpeningHours.WeekdayText(childComplexity), true
+
+	case "OpeningPeriod.closeTime":
+		if e.complexity.OpeningPeriod.CloseTime == nil {
+			break
+		}
+
+		return e.complexity.OpeningPeriod.CloseTime(childComplexity), true
+
+	case "OpeningPeriod.day":
+		if e.complexity.OpeningPeriod.Day == nil {
+			break
+		}
+
+		return e.complexity.OpeningPeriod.Day(childComplexity), true
+
+	case "OpeningPeriod.openTime":
+		if e.complexity.OpeningPeriod.OpenTime == nil {
+			break
+		}
+
+		return e.complexity.OpeningPeriod.OpenTime(childComplexity), true
+
 	case "Query.search":
 		if e.complexity.Query.Search == nil {
 			break
@@ -145,7 +280,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Search(childComplexity, args["query"].(string), args["resourceTypes"].([]model.ResourceType), args["limit"].(*int), args["offset"].(*int)), true
+		return e.complexity.Query.Search(childComplexity, args["query"].(string), args["resourceTypes"].([]model.ResourceType), args["limit"].(*int), args["offset"].(*int), args["near"].(*scalar.GeoPoint)), true
+
+	case "Query.searchTennisCourts":
+		if e.complexity.Query.SearchTennisCourts == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchTennisCourts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SearchTennisCourts(childComplexity, args["query"].(string), args["limit"].(*int), args["offset"].(*int), args["near"].(*scalar.GeoPoint)), true
+
+	case "Query.searchUsers":
+		if e.complexity.Query.SearchUsers == nil {
+			break
+		}
+
+		args, err := ec.field_Query_searchUsers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.SearchUsers(childComplexity, args["query"].(string), args["limit"].(*int), args["offset"].(*int)), true
 
 	case "Query._service":
 		if e.complexity.Query.__resolve__service == nil {
@@ -154,6 +313,202 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.__resolve__service(childComplexity), true
 
+	case "TennisCourt.businessStatus":
+		if e.complexity.TennisCourt.BusinessStatus == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.BusinessStatus(childComplexity), true
+
+	case "TennisCourt.city":
+		if e.complexity.TennisCourt.City == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.City(childComplexity), true
+
+	case "TennisCourt.coordinates":
+		if e.complexity.TennisCourt.Coordinates == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.Coordinates(childComplexity), true
+
+	case "TennisCourt.country":
+		if e.complexity.TennisCourt.Country == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.Country(childComplexity), true
+
+	case "TennisCourt.formattedAddress":
+		if e.complexity.TennisCourt.FormattedAddress == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.FormattedAddress(childComplexity), true
+
+	case "TennisCourt.googlePlaceId":
+		if e.complexity.TennisCourt.GooglePlaceID == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.GooglePlaceID(childComplexity), true
+
+	case "TennisCourt.id":
+		if e.complexity.TennisCourt.ID == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.ID(childComplexity), true
+
+	case "TennisCourt.internationalPhoneNumber":
+		if e.complexity.TennisCourt.InternationalPhoneNumber == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.InternationalPhoneNumber(childComplexity), true
+
+	case "TennisCourt.lastUpdated":
+		if e.complexity.TennisCourt.LastUpdated == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.LastUpdated(childComplexity), true
+
+	case "TennisCourt.name":
+		if e.complexity.TennisCourt.Name == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.Name(childComplexity), true
+
+	case "TennisCourt.openNow":
+		if e.complexity.TennisCourt.OpenNow == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.OpenNow(childComplexity), true
+
+	case "TennisCourt.openingHours":
+		if e.complexity.TennisCourt.OpeningHours == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.OpeningHours(childComplexity), true
+
+	case "TennisCourt.phoneNumber":
+		if e.complexity.TennisCourt.PhoneNumber == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.PhoneNumber(childComplexity), true
+
+	case "TennisCourt.postalCode":
+		if e.complexity.TennisCourt.PostalCode == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.PostalCode(childComplexity), true
+
+	case "TennisCourt.rating":
+		if e.complexity.TennisCourt.Rating == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.Rating(childComplexity), true
+
+	case "TennisCourt.state":
+		if e.complexity.TennisCourt.State == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.State(childComplexity), true
+
+	case "TennisCourt.types":
+		if e.complexity.TennisCourt.Types == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.Types(childComplexity), true
+
+	case "TennisCourt.userRatingsTotal":
+		if e.complexity.TennisCourt.UserRatingsTotal == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.UserRatingsTotal(childComplexity), true
+
+	case "TennisCourt.website":
+		if e.complexity.TennisCourt.Website == nil {
+			break
+		}
+
+		return e.complexity.TennisCourt.Website(childComplexity), true
+
+	case "TennisCourtSearchResult.address":
+		if e.complexity.TennisCourtSearchResult.Address == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.Address(childComplexity), true
+
+	case "TennisCourtSearchResult.city":
+		if e.complexity.TennisCourtSearchResult.City == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.City(childComplexity), true
+
+	case "TennisCourtSearchResult.coordinates":
+		if e.complexity.TennisCourtSearchResult.Coordinates == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.Coordinates(childComplexity), true
+
+	case "TennisCourtSearchResult.country":
+		if e.complexity.TennisCourtSearchResult.Country == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.Country(childComplexity), true
+
+	case "TennisCourtSearchResult.displayName":
+		if e.complexity.TennisCourtSearchResult.DisplayName == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.DisplayName(childComplexity), true
+
+	case "TennisCourtSearchResult.googlePlaceId":
+		if e.complexity.TennisCourtSearchResult.GooglePlaceID == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.GooglePlaceID(childComplexity), true
+
+	case "TennisCourtSearchResult.id":
+		if e.complexity.TennisCourtSearchResult.ID == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.ID(childComplexity), true
+
+	case "TennisCourtSearchResult.openNow":
+		if e.complexity.TennisCourtSearchResult.OpenNow == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.OpenNow(childComplexity), true
+
+	case "TennisCourtSearchResult.rating":
+		if e.complexity.TennisCourtSearchResult.Rating == nil {
+			break
+		}
+
+		return e.complexity.TennisCourtSearchResult.Rating(childComplexity), true
+
 	case "UserSearchResult.displayName":
 		if e.complexity.UserSearchResult.DisplayName == nil {
 			break
@@ -161,33 +516,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UserSearchResult.DisplayName(childComplexity), true
 
-	case "UserSearchResult.firstName":
-		if e.complexity.UserSearchResult.FirstName == nil {
-			break
-		}
-
-		return e.complexity.UserSearchResult.FirstName(childComplexity), true
-
 	case "UserSearchResult.id":
 		if e.complexity.UserSearchResult.ID == nil {
 			break
 		}
 
 		return e.complexity.UserSearchResult.ID(childComplexity), true
-
-	case "UserSearchResult.lastName":
-		if e.complexity.UserSearchResult.LastName == nil {
-			break
-		}
-
-		return e.complexity.UserSearchResult.LastName(childComplexity), true
-
-	case "UserSearchResult.location":
-		if e.complexity.UserSearchResult.Location == nil {
-			break
-		}
-
-		return e.complexity.UserSearchResult.Location(childComplexity), true
 
 	case "UserSearchResult.profilePicture":
 		if e.complexity.UserSearchResult.ProfilePicture == nil {
@@ -217,7 +551,9 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCoordinatesInput,
+	)
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -250,6 +586,21 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 
 			return &response
+		}
+	case ast.Mutation:
+		return func(ctx context.Context) *graphql.Response {
+			if !first {
+				return nil
+			}
+			first = false
+			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
+			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
 		}
 
 	default:
@@ -298,7 +649,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/queries/Search.gql"
+//go:embed "schema/queries/Search.gql" "schema/types/Coordinates.gql" "schema/types/OpeningHours.gql" "schema/types/OpeningPeriod.gql" "schema/types/TennisCourt.gql" "schema/types/TennisCourtSearchResult.gql" "schema/types/UserSearchResult.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -311,6 +662,12 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/queries/Search.gql", Input: sourceData("schema/queries/Search.gql"), BuiltIn: false},
+	{Name: "schema/types/Coordinates.gql", Input: sourceData("schema/types/Coordinates.gql"), BuiltIn: false},
+	{Name: "schema/types/OpeningHours.gql", Input: sourceData("schema/types/OpeningHours.gql"), BuiltIn: false},
+	{Name: "schema/types/OpeningPeriod.gql", Input: sourceData("schema/types/OpeningPeriod.gql"), BuiltIn: false},
+	{Name: "schema/types/TennisCourt.gql", Input: sourceData("schema/types/TennisCourt.gql"), BuiltIn: false},
+	{Name: "schema/types/TennisCourtSearchResult.gql", Input: sourceData("schema/types/TennisCourtSearchResult.gql"), BuiltIn: false},
+	{Name: "schema/types/UserSearchResult.gql", Input: sourceData("schema/types/UserSearchResult.gql"), BuiltIn: false},
 	{Name: "../../shared/graph/schema/Location.gql", Input: `"""
 Provides structured geographical details about a user's location.
 All fields are optional and can be omitted if unknown.
@@ -323,7 +680,9 @@ type Location {
   longitude: Float
 }`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID`, BuiltIn: false},
+scalar ObjectID
+scalar GeoPoint
+`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE
@@ -397,6 +756,52 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_favouriteCourt_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_favouriteCourt_argsCourtID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["courtId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_favouriteCourt_argsCourtID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("courtId"))
+	if tmp, ok := rawArgs["courtId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_removeCourtFromFavorites_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_removeCourtFromFavorites_argsCourtID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["courtId"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_removeCourtFromFavorites_argsCourtID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (primitive.ObjectID, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("courtId"))
+	if tmp, ok := rawArgs["courtId"]; ok {
+		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
+	}
+
+	var zeroVal primitive.ObjectID
+	return zeroVal, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -417,6 +822,142 @@ func (ec *executionContext) field_Query___type_argsName(
 	}
 
 	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchTennisCourts_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_searchTennisCourts_argsQuery(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["query"] = arg0
+	arg1, err := ec.field_Query_searchTennisCourts_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	arg2, err := ec.field_Query_searchTennisCourts_argsOffset(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg2
+	arg3, err := ec.field_Query_searchTennisCourts_argsNear(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["near"] = arg3
+	return args, nil
+}
+func (ec *executionContext) field_Query_searchTennisCourts_argsQuery(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+	if tmp, ok := rawArgs["query"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchTennisCourts_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchTennisCourts_argsOffset(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+	if tmp, ok := rawArgs["offset"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchTennisCourts_argsNear(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*scalar.GeoPoint, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("near"))
+	if tmp, ok := rawArgs["near"]; ok {
+		return ec.unmarshalOGeoPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx, tmp)
+	}
+
+	var zeroVal *scalar.GeoPoint
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchUsers_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Query_searchUsers_argsQuery(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["query"] = arg0
+	arg1, err := ec.field_Query_searchUsers_argsLimit(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg1
+	arg2, err := ec.field_Query_searchUsers_argsOffset(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["offset"] = arg2
+	return args, nil
+}
+func (ec *executionContext) field_Query_searchUsers_argsQuery(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("query"))
+	if tmp, ok := rawArgs["query"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchUsers_argsLimit(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_searchUsers_argsOffset(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*int, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+	if tmp, ok := rawArgs["offset"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
 	return zeroVal, nil
 }
 
@@ -443,6 +984,11 @@ func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs
 		return nil, err
 	}
 	args["offset"] = arg3
+	arg4, err := ec.field_Query_search_argsNear(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["near"] = arg4
 	return args, nil
 }
 func (ec *executionContext) field_Query_search_argsQuery(
@@ -494,6 +1040,19 @@ func (ec *executionContext) field_Query_search_argsOffset(
 	}
 
 	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_search_argsNear(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (*scalar.GeoPoint, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("near"))
+	if tmp, ok := rawArgs["near"]; ok {
+		return ec.unmarshalOGeoPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx, tmp)
+	}
+
+	var zeroVal *scalar.GeoPoint
 	return zeroVal, nil
 }
 
@@ -550,6 +1109,94 @@ func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Coordinates_latitude(ctx context.Context, field graphql.CollectedField, obj *model.Coordinates) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Coordinates_latitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Latitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Coordinates_latitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Coordinates",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Coordinates_longitude(ctx context.Context, field graphql.CollectedField, obj *model.Coordinates) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Coordinates_longitude(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Longitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Coordinates_longitude(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Coordinates",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Location_city(ctx context.Context, field graphql.CollectedField, obj *model.Location) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Location_city(ctx, field)
@@ -756,6 +1403,329 @@ func (ec *executionContext) fieldContext_Location_longitude(_ context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_favouriteCourt(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_favouriteCourt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().FavouriteCourt(rctx, fc.Args["courtId"].(primitive.ObjectID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_favouriteCourt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_favouriteCourt_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeCourtFromFavorites(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeCourtFromFavorites(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveCourtFromFavorites(rctx, fc.Args["courtId"].(primitive.ObjectID))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeCourtFromFavorites(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeCourtFromFavorites_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OpeningHours_weekdayText(ctx context.Context, field graphql.CollectedField, obj *model.OpeningHours) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OpeningHours_weekdayText(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.WeekdayText, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OpeningHours_weekdayText(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OpeningHours",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OpeningHours_periods(ctx context.Context, field graphql.CollectedField, obj *model.OpeningHours) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OpeningHours_periods(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Periods, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.OpeningPeriod)
+	fc.Result = res
+	return ec.marshalOOpeningPeriod2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐOpeningPeriodᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OpeningHours_periods(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OpeningHours",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "day":
+				return ec.fieldContext_OpeningPeriod_day(ctx, field)
+			case "openTime":
+				return ec.fieldContext_OpeningPeriod_openTime(ctx, field)
+			case "closeTime":
+				return ec.fieldContext_OpeningPeriod_closeTime(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OpeningPeriod", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OpeningPeriod_day(ctx context.Context, field graphql.CollectedField, obj *model.OpeningPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OpeningPeriod_day(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Day, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OpeningPeriod_day(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OpeningPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OpeningPeriod_openTime(ctx context.Context, field graphql.CollectedField, obj *model.OpeningPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OpeningPeriod_openTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OpeningPeriod_openTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OpeningPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OpeningPeriod_closeTime(ctx context.Context, field graphql.CollectedField, obj *model.OpeningPeriod) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OpeningPeriod_closeTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CloseTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OpeningPeriod_closeTime(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OpeningPeriod",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_search(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_search(ctx, field)
 	if err != nil {
@@ -770,7 +1740,7 @@ func (ec *executionContext) _Query_search(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Search(rctx, fc.Args["query"].(string), fc.Args["resourceTypes"].([]model.ResourceType), fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+		return ec.resolvers.Query().Search(rctx, fc.Args["query"].(string), fc.Args["resourceTypes"].([]model.ResourceType), fc.Args["limit"].(*int), fc.Args["offset"].(*int), fc.Args["near"].(*scalar.GeoPoint))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -805,6 +1775,146 @@ func (ec *executionContext) fieldContext_Query_search(ctx context.Context, field
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_search_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_searchTennisCourts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_searchTennisCourts(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SearchTennisCourts(rctx, fc.Args["query"].(string), fc.Args["limit"].(*int), fc.Args["offset"].(*int), fc.Args["near"].(*scalar.GeoPoint))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TennisCourtSearchResult)
+	fc.Result = res
+	return ec.marshalNTennisCourtSearchResult2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐTennisCourtSearchResultᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_searchTennisCourts(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TennisCourtSearchResult_id(ctx, field)
+			case "googlePlaceId":
+				return ec.fieldContext_TennisCourtSearchResult_googlePlaceId(ctx, field)
+			case "displayName":
+				return ec.fieldContext_TennisCourtSearchResult_displayName(ctx, field)
+			case "address":
+				return ec.fieldContext_TennisCourtSearchResult_address(ctx, field)
+			case "city":
+				return ec.fieldContext_TennisCourtSearchResult_city(ctx, field)
+			case "country":
+				return ec.fieldContext_TennisCourtSearchResult_country(ctx, field)
+			case "rating":
+				return ec.fieldContext_TennisCourtSearchResult_rating(ctx, field)
+			case "openNow":
+				return ec.fieldContext_TennisCourtSearchResult_openNow(ctx, field)
+			case "coordinates":
+				return ec.fieldContext_TennisCourtSearchResult_coordinates(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TennisCourtSearchResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_searchTennisCourts_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_searchUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_searchUsers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().SearchUsers(rctx, fc.Args["query"].(string), fc.Args["limit"].(*int), fc.Args["offset"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.UserSearchResult)
+	fc.Result = res
+	return ec.marshalNUserSearchResult2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐUserSearchResultᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_searchUsers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_UserSearchResult_id(ctx, field)
+			case "username":
+				return ec.fieldContext_UserSearchResult_username(ctx, field)
+			case "displayName":
+				return ec.fieldContext_UserSearchResult_displayName(ctx, field)
+			case "profilePicture":
+				return ec.fieldContext_UserSearchResult_profilePicture(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UserSearchResult", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_searchUsers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -988,6 +2098,1187 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _TennisCourt_id(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	fc.Result = res
+	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ObjectID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_googlePlaceId(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_googlePlaceId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GooglePlaceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_googlePlaceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_name(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_coordinates(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_coordinates(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Coordinates, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(scalar.GeoPoint)
+	fc.Result = res
+	return ec.marshalNGeoPoint2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_coordinates(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type GeoPoint does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_formattedAddress(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_formattedAddress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FormattedAddress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_formattedAddress(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_city(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_city(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.City, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_city(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_state(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_state(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.State, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_state(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_country(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_country(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Country, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_country(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_postalCode(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_postalCode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostalCode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_postalCode(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_rating(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_rating(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rating, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_rating(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_userRatingsTotal(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_userRatingsTotal(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserRatingsTotal, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_userRatingsTotal(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_businessStatus(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_businessStatus(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BusinessStatus, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_businessStatus(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_phoneNumber(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_phoneNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PhoneNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_phoneNumber(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_internationalPhoneNumber(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_internationalPhoneNumber(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InternationalPhoneNumber, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_internationalPhoneNumber(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_website(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_website(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Website, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_website(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_types(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_types(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Types, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_openingHours(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_openingHours(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpeningHours, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.OpeningHours)
+	fc.Result = res
+	return ec.marshalOOpeningHours2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐOpeningHours(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_openingHours(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "weekdayText":
+				return ec.fieldContext_OpeningHours_weekdayText(ctx, field)
+			case "periods":
+				return ec.fieldContext_OpeningHours_periods(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type OpeningHours", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_openNow(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_openNow(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenNow, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_openNow(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourt_lastUpdated(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourt) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourt_lastUpdated(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastUpdated, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourt_lastUpdated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourt",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_id(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	fc.Result = res
+	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ObjectID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_googlePlaceId(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_googlePlaceId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GooglePlaceID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_googlePlaceId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_displayName(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_displayName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DisplayName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_displayName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_address(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_address(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Address, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_address(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_city(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_city(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.City, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_city(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_country(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_country(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Country, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_country(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_rating(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_rating(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Rating, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_rating(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_openNow(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_openNow(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenNow, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_openNow(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TennisCourtSearchResult_coordinates(ctx context.Context, field graphql.CollectedField, obj *model.TennisCourtSearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TennisCourtSearchResult_coordinates(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Coordinates, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(scalar.GeoPoint)
+	fc.Result = res
+	return ec.marshalNGeoPoint2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TennisCourtSearchResult_coordinates(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TennisCourtSearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type GeoPoint does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UserSearchResult_id(ctx context.Context, field graphql.CollectedField, obj *model.UserSearchResult) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UserSearchResult_id(ctx, field)
 	if err != nil {
@@ -1097,96 +3388,17 @@ func (ec *executionContext) _UserSearchResult_displayName(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserSearchResult_displayName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserSearchResult",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserSearchResult_firstName(ctx context.Context, field graphql.CollectedField, obj *model.UserSearchResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserSearchResult_firstName(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FirstName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserSearchResult_firstName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserSearchResult",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserSearchResult_lastName(ctx context.Context, field graphql.CollectedField, obj *model.UserSearchResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserSearchResult_lastName(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.LastName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserSearchResult_lastName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UserSearchResult",
 		Field:      field,
@@ -1235,59 +3447,6 @@ func (ec *executionContext) fieldContext_UserSearchResult_profilePicture(_ conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _UserSearchResult_location(ctx context.Context, field graphql.CollectedField, obj *model.UserSearchResult) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_UserSearchResult_location(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Location, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Location)
-	fc.Result = res
-	return ec.marshalOLocation2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐLocation(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_UserSearchResult_location(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "UserSearchResult",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "city":
-				return ec.fieldContext_Location_city(ctx, field)
-			case "state":
-				return ec.fieldContext_Location_state(ctx, field)
-			case "country":
-				return ec.fieldContext_Location_country(ctx, field)
-			case "latitude":
-				return ec.fieldContext_Location_latitude(ctx, field)
-			case "longitude":
-				return ec.fieldContext_Location_longitude(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
 		},
 	}
 	return fc, nil
@@ -3107,6 +5266,40 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCoordinatesInput(ctx context.Context, obj any) (model.CoordinatesInput, error) {
+	var it model.CoordinatesInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"latitude", "longitude"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "latitude":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("latitude"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Latitude = data
+		case "longitude":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("longitude"))
+			data, err := ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Longitude = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -3122,6 +5315,13 @@ func (ec *executionContext) _SearchResult(ctx context.Context, sel ast.Selection
 			return graphql.Null
 		}
 		return ec._UserSearchResult(ctx, sel, obj)
+	case model.TennisCourtSearchResult:
+		return ec._TennisCourtSearchResult(ctx, sel, &obj)
+	case *model.TennisCourtSearchResult:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._TennisCourtSearchResult(ctx, sel, obj)
 	default:
 		panic(fmt.Errorf("unexpected type %T", obj))
 	}
@@ -3130,6 +5330,50 @@ func (ec *executionContext) _SearchResult(ctx context.Context, sel ast.Selection
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var coordinatesImplementors = []string{"Coordinates"}
+
+func (ec *executionContext) _Coordinates(ctx context.Context, sel ast.SelectionSet, obj *model.Coordinates) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, coordinatesImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Coordinates")
+		case "latitude":
+			out.Values[i] = ec._Coordinates_latitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "longitude":
+			out.Values[i] = ec._Coordinates_longitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
 
 var locationImplementors = []string{"Location"}
 
@@ -3152,6 +5396,140 @@ func (ec *executionContext) _Location(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Location_latitude(ctx, field, obj)
 		case "longitude":
 			out.Values[i] = ec._Location_longitude(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mutationImplementors = []string{"Mutation"}
+
+func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mutationImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Mutation",
+	})
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		innerCtx := graphql.WithRootFieldContext(ctx, &graphql.RootFieldContext{
+			Object: field.Name,
+			Field:  field,
+		})
+
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mutation")
+		case "favouriteCourt":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_favouriteCourt(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "removeCourtFromFavorites":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeCourtFromFavorites(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var openingHoursImplementors = []string{"OpeningHours"}
+
+func (ec *executionContext) _OpeningHours(ctx context.Context, sel ast.SelectionSet, obj *model.OpeningHours) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, openingHoursImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OpeningHours")
+		case "weekdayText":
+			out.Values[i] = ec._OpeningHours_weekdayText(ctx, field, obj)
+		case "periods":
+			out.Values[i] = ec._OpeningHours_periods(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var openingPeriodImplementors = []string{"OpeningPeriod"}
+
+func (ec *executionContext) _OpeningPeriod(ctx context.Context, sel ast.SelectionSet, obj *model.OpeningPeriod) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, openingPeriodImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("OpeningPeriod")
+		case "day":
+			out.Values[i] = ec._OpeningPeriod_day(ctx, field, obj)
+		case "openTime":
+			out.Values[i] = ec._OpeningPeriod_openTime(ctx, field, obj)
+		case "closeTime":
+			out.Values[i] = ec._OpeningPeriod_closeTime(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3204,6 +5582,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_search(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "searchTennisCourts":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_searchTennisCourts(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "searchUsers":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_searchUsers(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -3269,6 +5691,157 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var tennisCourtImplementors = []string{"TennisCourt"}
+
+func (ec *executionContext) _TennisCourt(ctx context.Context, sel ast.SelectionSet, obj *model.TennisCourt) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tennisCourtImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TennisCourt")
+		case "id":
+			out.Values[i] = ec._TennisCourt_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "googlePlaceId":
+			out.Values[i] = ec._TennisCourt_googlePlaceId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._TennisCourt_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "coordinates":
+			out.Values[i] = ec._TennisCourt_coordinates(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "formattedAddress":
+			out.Values[i] = ec._TennisCourt_formattedAddress(ctx, field, obj)
+		case "city":
+			out.Values[i] = ec._TennisCourt_city(ctx, field, obj)
+		case "state":
+			out.Values[i] = ec._TennisCourt_state(ctx, field, obj)
+		case "country":
+			out.Values[i] = ec._TennisCourt_country(ctx, field, obj)
+		case "postalCode":
+			out.Values[i] = ec._TennisCourt_postalCode(ctx, field, obj)
+		case "rating":
+			out.Values[i] = ec._TennisCourt_rating(ctx, field, obj)
+		case "userRatingsTotal":
+			out.Values[i] = ec._TennisCourt_userRatingsTotal(ctx, field, obj)
+		case "businessStatus":
+			out.Values[i] = ec._TennisCourt_businessStatus(ctx, field, obj)
+		case "phoneNumber":
+			out.Values[i] = ec._TennisCourt_phoneNumber(ctx, field, obj)
+		case "internationalPhoneNumber":
+			out.Values[i] = ec._TennisCourt_internationalPhoneNumber(ctx, field, obj)
+		case "website":
+			out.Values[i] = ec._TennisCourt_website(ctx, field, obj)
+		case "types":
+			out.Values[i] = ec._TennisCourt_types(ctx, field, obj)
+		case "openingHours":
+			out.Values[i] = ec._TennisCourt_openingHours(ctx, field, obj)
+		case "openNow":
+			out.Values[i] = ec._TennisCourt_openNow(ctx, field, obj)
+		case "lastUpdated":
+			out.Values[i] = ec._TennisCourt_lastUpdated(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tennisCourtSearchResultImplementors = []string{"TennisCourtSearchResult", "SearchResult"}
+
+func (ec *executionContext) _TennisCourtSearchResult(ctx context.Context, sel ast.SelectionSet, obj *model.TennisCourtSearchResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tennisCourtSearchResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TennisCourtSearchResult")
+		case "id":
+			out.Values[i] = ec._TennisCourtSearchResult_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "googlePlaceId":
+			out.Values[i] = ec._TennisCourtSearchResult_googlePlaceId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "displayName":
+			out.Values[i] = ec._TennisCourtSearchResult_displayName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "address":
+			out.Values[i] = ec._TennisCourtSearchResult_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "city":
+			out.Values[i] = ec._TennisCourtSearchResult_city(ctx, field, obj)
+		case "country":
+			out.Values[i] = ec._TennisCourtSearchResult_country(ctx, field, obj)
+		case "rating":
+			out.Values[i] = ec._TennisCourtSearchResult_rating(ctx, field, obj)
+		case "openNow":
+			out.Values[i] = ec._TennisCourtSearchResult_openNow(ctx, field, obj)
+		case "coordinates":
+			out.Values[i] = ec._TennisCourtSearchResult_coordinates(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var userSearchResultImplementors = []string{"UserSearchResult", "SearchResult"}
 
 func (ec *executionContext) _UserSearchResult(ctx context.Context, sel ast.SelectionSet, obj *model.UserSearchResult) graphql.Marshaler {
@@ -3292,14 +5865,11 @@ func (ec *executionContext) _UserSearchResult(ctx context.Context, sel ast.Selec
 			}
 		case "displayName":
 			out.Values[i] = ec._UserSearchResult_displayName(ctx, field, obj)
-		case "firstName":
-			out.Values[i] = ec._UserSearchResult_firstName(ctx, field, obj)
-		case "lastName":
-			out.Values[i] = ec._UserSearchResult_lastName(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "profilePicture":
 			out.Values[i] = ec._UserSearchResult_profilePicture(ctx, field, obj)
-		case "location":
-			out.Values[i] = ec._UserSearchResult_location(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3715,6 +6285,36 @@ func (ec *executionContext) marshalNFieldSet2string(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v any) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalNGeoPoint2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx context.Context, v any) (scalar.GeoPoint, error) {
+	res, err := scalar.UnmarshalGeoPoint(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNGeoPoint2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx context.Context, sel ast.SelectionSet, v scalar.GeoPoint) graphql.Marshaler {
+	res := scalar.MarshalGeoPoint(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v any) (primitive.ObjectID, error) {
 	res, err := scalar.UnmarshalObjectID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3728,6 +6328,16 @@ func (ec *executionContext) marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriver
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNOpeningPeriod2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐOpeningPeriod(ctx context.Context, sel ast.SelectionSet, v *model.OpeningPeriod) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._OpeningPeriod(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNResourceType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐResourceType(ctx context.Context, v any) (model.ResourceType, error) {
@@ -3807,6 +6417,114 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTennisCourtSearchResult2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐTennisCourtSearchResultᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TennisCourtSearchResult) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTennisCourtSearchResult2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐTennisCourtSearchResult(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTennisCourtSearchResult2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐTennisCourtSearchResult(ctx context.Context, sel ast.SelectionSet, v *model.TennisCourtSearchResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._TennisCourtSearchResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNUserSearchResult2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐUserSearchResultᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.UserSearchResult) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNUserSearchResult2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐUserSearchResult(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNUserSearchResult2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐUserSearchResult(ctx context.Context, sel ast.SelectionSet, v *model.UserSearchResult) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UserSearchResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx context.Context, sel ast.SelectionSet, v fedruntime.Service) graphql.Marshaler {
@@ -4250,6 +6968,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v any) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalTime(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODateTime2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalTime(*v)
+	return res
+}
+
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
 	if v == nil {
 		return nil, nil
@@ -4264,6 +6998,22 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOGeoPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx context.Context, v any) (*scalar.GeoPoint, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := scalar.UnmarshalGeoPoint(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOGeoPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsharedᚋpkgᚋscalarᚐGeoPoint(ctx context.Context, sel ast.SelectionSet, v *scalar.GeoPoint) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := scalar.MarshalGeoPoint(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
@@ -4282,11 +7032,58 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOLocation2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐLocation(ctx context.Context, sel ast.SelectionSet, v *model.Location) graphql.Marshaler {
+func (ec *executionContext) marshalOOpeningHours2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐOpeningHours(ctx context.Context, sel ast.SelectionSet, v *model.OpeningHours) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._Location(ctx, sel, v)
+	return ec._OpeningHours(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOOpeningPeriod2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐOpeningPeriodᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.OpeningPeriod) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNOpeningPeriod2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐOpeningPeriod(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOResourceType2ᚕgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋsearchᚑserviceᚋgraphᚋmodelᚐResourceTypeᚄ(ctx context.Context, v any) ([]model.ResourceType, error) {

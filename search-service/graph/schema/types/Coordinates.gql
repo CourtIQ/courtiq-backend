@@ -1,0 +1,13 @@
+"""
+Lat/lng coordinates. Nearby Search guarantees geometry for results, 
+so we mark them as non-null fields.
+"""
+type Coordinates {
+    latitude: Float!
+    longitude: Float!
+}
+
+input CoordinatesInput {
+    latitude: Float!
+    longitude: Float!
+}

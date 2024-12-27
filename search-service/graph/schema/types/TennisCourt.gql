@@ -1,0 +1,84 @@
+"""
+Represents a tennis court in MongoDB. 
+Fields that always come from Google Nearby Search or Place Details (place_id, name, geometry) are marked non-null.
+Others are optional because you may not have done a full Place Details fetch yet.
+"""
+type TennisCourt {
+  """
+  Internal DB identifier.
+  """
+  id: ObjectID!
+
+  """
+  Google 'place_id'.
+  """
+  googlePlaceId: String!
+
+  """
+  Display name of the place.
+  """
+  name: String!
+
+  """
+  Lat/lng from 'geometry' in a search or details response.
+  """
+  coordinates: GeoPoint!
+
+  """
+  Full formatted address from 'formatted_address' or 'vicinity'.
+  """
+  formattedAddress: String
+
+  """
+  Breakdowns from address_components.
+  """
+  city: String
+  state: String
+  country: String
+  postalCode: String
+
+  """
+  Rating & total user ratings from Google, if available.
+  """
+  rating: Float
+  userRatingsTotal: Int
+
+  """
+  Operational status from 'business_status' in Place Details (e.g. 'OPERATIONAL').
+  """
+  businessStatus: String
+
+  """
+  Phone numbers from Place Details:
+  - 'formatted_phone_number' can go here 
+  - or you may store 'international_phone_number' too if you need both.
+  """
+  phoneNumber: String
+  internationalPhoneNumber: String
+
+  """
+  The official website from 'website' in Place Details.
+  """
+  website: String
+
+  """
+  All place types returned by Google (e.g. ['point_of_interest','establishment']).
+  """
+  types: [String!]
+
+  """
+  Opening hours from Place Details, if fetched.
+  """
+  openingHours: OpeningHours
+
+  """
+  Derived from 'opening_hours.open_now' if you do Place Details,
+  or computed from your own logic using the periods/weekday_text.
+  """
+  openNow: Boolean
+
+  """
+  Track when you last refreshed this record from Google. 
+  """
+  lastUpdated: DateTime
+}

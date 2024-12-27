@@ -110,3 +110,51 @@ func BuildUserSearchPipeline(
 		projectStage,
 	}
 }
+
+func BuildTennisCourtLocationNamePipeline(
+    lat, lng float64,
+    maxDistance float64,
+    query string,
+    limit int,
+	offset int,
+) mongo.Pipeline {
+
+    pipeline := mongo.Pipeline{}
+
+    // 1) $geoNear stage
+    geoNearStage := bson.D{{
+        "$geoNear", bson.D{
+            {"near", bson.D{
+                {"type", "Point"},
+                {"coordinates", bson.A{lng, lat}}, // [lng, lat]
+            }},
+            {"distanceField", "distance"}, 
+            {"spherical", true},
+            // optionally: {"maxDistance", maxDistance},
+        },
+    }}
+
+    pipeline = append(pipeline, geoNearStage)
+
+    // 2) $match stage for name ~ query
+    if query != "" {
+        matchStage := bson.D{{
+            "$match", bson.M{
+                "name": bson.M{"$regex": query, "$options": "i"},
+            },
+        }}
+        pipeline = append(pipeline, matchStage)
+    }
+
+    if offset > 0 {
+        pipeline = append(pipeline, bson.D{{"$skip", offset}})
+    }
+
+    // 3) $limit stage
+    if limit > 0 {
+        pipeline = append(pipeline, bson.D{{"$limit", limit}})
+    }
+
+    return pipeline
+}
+

@@ -1,0 +1,8 @@
+"""
+Stores day-by-day hours. 
+'weekdayText' and 'periods' come from Place Details, so they're optional overall.
+"""
+type OpeningHours {
+  weekdayText: [String!]
+  periods: [OpeningPeriod!]
+}

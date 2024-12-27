@@ -486,7 +486,9 @@ type Location {
   longitude: Float
 }`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID`, BuiltIn: false},
+scalar ObjectID
+scalar GeoPoint
+`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
   PUBLIC
   PRIVATE

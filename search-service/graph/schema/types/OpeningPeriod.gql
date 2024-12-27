@@ -1,0 +1,9 @@
+"""
+A single day's open/close info. 
+Returned by Place Details; optional if you haven't fetched details yet.
+"""
+type OpeningPeriod {
+  day: Int
+  openTime: String
+  closeTime: String
+}

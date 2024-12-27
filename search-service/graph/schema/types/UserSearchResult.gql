@@ -1,0 +1,6 @@
+type UserSearchResult {
+  id: ObjectID!
+  username: String!
+  displayName: String!
+  profilePicture: String
+}

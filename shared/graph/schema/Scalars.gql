@@ -1,2 +1,3 @@
 scalar DateTime
 scalar ObjectID
+scalar GeoPoint

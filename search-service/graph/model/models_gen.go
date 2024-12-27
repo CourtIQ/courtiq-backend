@@ -6,12 +6,26 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/scalar"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type SearchResult interface {
 	IsSearchResult()
+}
+
+// Lat/lng coordinates. Nearby Search guarantees geometry for results,
+// so we mark them as non-null fields.
+type Coordinates struct {
+	Latitude  float64 `json:"latitude" bson:"latitude"`
+	Longitude float64 `json:"longitude" bson:"longitude"`
+}
+
+type CoordinatesInput struct {
+	Latitude  float64 `json:"latitude" bson:"latitude"`
+	Longitude float64 `json:"longitude" bson:"longitude"`
 }
 
 // Provides structured geographical details about a user's location.
@@ -24,17 +38,89 @@ type Location struct {
 	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
 }
 
+type Mutation struct {
+}
+
+// Stores day-by-day hours.
+// 'weekdayText' and 'periods' come from Place Details, so they're optional overall.
+type OpeningHours struct {
+	WeekdayText []string         `json:"weekdayText,omitempty" bson:"weekdayText,omitempty"`
+	Periods     []*OpeningPeriod `json:"periods,omitempty" bson:"periods,omitempty"`
+}
+
+// A single day's open/close info.
+// Returned by Place Details; optional if you haven't fetched details yet.
+type OpeningPeriod struct {
+	Day       *int    `json:"day,omitempty" bson:"day,omitempty"`
+	OpenTime  *string `json:"openTime,omitempty" bson:"openTime,omitempty"`
+	CloseTime *string `json:"closeTime,omitempty" bson:"closeTime,omitempty"`
+}
+
 type Query struct {
 }
+
+// Represents a tennis court in MongoDB.
+// Fields that always come from Google Nearby Search or Place Details (place_id, name, geometry) are marked non-null.
+// Others are optional because you may not have done a full Place Details fetch yet.
+type TennisCourt struct {
+	// Internal DB identifier.
+	ID primitive.ObjectID `json:"id" bson:"_id"`
+	// Google 'place_id'.
+	GooglePlaceID string `json:"googlePlaceId" bson:"googlePlaceId"`
+	// Display name of the place.
+	Name string `json:"name" bson:"name"`
+	// Lat/lng from 'geometry' in a search or details response.
+	Coordinates scalar.GeoPoint `json:"coordinates" bson:"coordinates"`
+	// Full formatted address from 'formatted_address' or 'vicinity'.
+	FormattedAddress *string `json:"formattedAddress,omitempty" bson:"formattedAddress,omitempty"`
+	// Breakdowns from address_components.
+	City       *string `json:"city,omitempty" bson:"city,omitempty"`
+	State      *string `json:"state,omitempty" bson:"state,omitempty"`
+	Country    *string `json:"country,omitempty" bson:"country,omitempty"`
+	PostalCode *string `json:"postalCode,omitempty" bson:"postalCode,omitempty"`
+	// Rating & total user ratings from Google, if available.
+	Rating           *float64 `json:"rating,omitempty" bson:"rating,omitempty"`
+	UserRatingsTotal *int     `json:"userRatingsTotal,omitempty" bson:"userRatingsTotal,omitempty"`
+	// Operational status from 'business_status' in Place Details (e.g. 'OPERATIONAL').
+	BusinessStatus *string `json:"businessStatus,omitempty" bson:"businessStatus,omitempty"`
+	// Phone numbers from Place Details:
+	// - 'formatted_phone_number' can go here
+	// - or you may store 'international_phone_number' too if you need both.
+	PhoneNumber              *string `json:"phoneNumber,omitempty" bson:"phoneNumber,omitempty"`
+	InternationalPhoneNumber *string `json:"internationalPhoneNumber,omitempty" bson:"internationalPhoneNumber,omitempty"`
+	// The official website from 'website' in Place Details.
+	Website *string `json:"website,omitempty" bson:"website,omitempty"`
+	// All place types returned by Google (e.g. ['point_of_interest','establishment']).
+	Types []string `json:"types,omitempty" bson:"types,omitempty"`
+	// Opening hours from Place Details, if fetched.
+	OpeningHours *OpeningHours `json:"openingHours,omitempty" bson:"openingHours,omitempty"`
+	// Derived from 'opening_hours.open_now' if you do Place Details,
+	// or computed from your own logic using the periods/weekday_text.
+	OpenNow *bool `json:"openNow,omitempty" bson:"openNow,omitempty"`
+	// Track when you last refreshed this record from Google.
+	LastUpdated *time.Time `json:"lastUpdated,omitempty" bson:"lastUpdated,omitempty"`
+}
+
+// Minimal tennis-court data for search results + some extras like city, country, rating, openNow.
+type TennisCourtSearchResult struct {
+	ID            primitive.ObjectID `json:"id" bson:"_id"`
+	GooglePlaceID string             `json:"googlePlaceId" bson:"googlePlaceId"`
+	DisplayName   string             `json:"displayName" bson:"displayName"`
+	Address       string             `json:"address" bson:"address"`
+	City          *string            `json:"city,omitempty" bson:"city,omitempty"`
+	Country       *string            `json:"country,omitempty" bson:"country,omitempty"`
+	Rating        *float64           `json:"rating,omitempty" bson:"rating,omitempty"`
+	OpenNow       *bool              `json:"openNow,omitempty" bson:"openNow,omitempty"`
+	Coordinates   scalar.GeoPoint    `json:"coordinates" bson:"coordinates"`
+}
+
+func (TennisCourtSearchResult) IsSearchResult() {}
 
 type UserSearchResult struct {
 	ID             primitive.ObjectID `json:"id" bson:"_id"`
 	Username       string             `json:"username" bson:"username"`
-	DisplayName    *string            `json:"displayName,omitempty" bson:"displayName,omitempty"`
-	FirstName      *string            `json:"firstName,omitempty" bson:"firstName,omitempty"`
-	LastName       *string            `json:"lastName,omitempty" bson:"lastName,omitempty"`
+	DisplayName    string             `json:"displayName" bson:"displayName"`
 	ProfilePicture *string            `json:"profilePicture,omitempty" bson:"profilePicture,omitempty"`
-	Location       *Location          `json:"location,omitempty" bson:"location,omitempty"`
 }
 
 func (UserSearchResult) IsSearchResult() {}
@@ -42,16 +128,18 @@ func (UserSearchResult) IsSearchResult() {}
 type ResourceType string
 
 const (
-	ResourceTypeUser ResourceType = "USER"
+	ResourceTypeUser         ResourceType = "USER"
+	ResourceTypeTennisCourts ResourceType = "TENNIS_COURTS"
 )
 
 var AllResourceType = []ResourceType{
 	ResourceTypeUser,
+	ResourceTypeTennisCourts,
 }
 
 func (e ResourceType) IsValid() bool {
 	switch e {
-	case ResourceTypeUser:
+	case ResourceTypeUser, ResourceTypeTennisCourts:
 		return true
 	}
 	return false

@@ -6,17 +6,44 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/search-service/graph"
 	"github.com/CourtIQ/courtiq-backend/search-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/scalar"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Search is the resolver for the search field.
-func (r *queryResolver) Search(ctx context.Context, query string, resourceTypes []model.ResourceType, limit *int, offset *int) ([]model.SearchResult, error) {
-	return r.SearchService.Search(ctx, query, resourceTypes, limit, offset)
+// FavouriteCourt is the resolver for the favouriteCourt field.
+func (r *mutationResolver) FavouriteCourt(ctx context.Context, courtID primitive.ObjectID) (bool, error) {
+	panic(fmt.Errorf("not implemented: FavouriteCourt - favouriteCourt"))
 }
+
+// RemoveCourtFromFavorites is the resolver for the removeCourtFromFavorites field.
+func (r *mutationResolver) RemoveCourtFromFavorites(ctx context.Context, courtID primitive.ObjectID) (bool, error) {
+	panic(fmt.Errorf("not implemented: RemoveCourtFromFavorites - removeCourtFromFavorites"))
+}
+
+// Search is the resolver for the search field.
+func (r *queryResolver) Search(ctx context.Context, query string, resourceTypes []model.ResourceType, limit *int, offset *int, near *scalar.GeoPoint) ([]model.SearchResult, error) {
+	return r.SearchService.Search(ctx, query, resourceTypes, limit, offset, near)
+}
+
+// SearchTennisCourts is the resolver for the searchTennisCourts field.
+func (r *queryResolver) SearchTennisCourts(ctx context.Context, query string, limit *int, offset *int, near *scalar.GeoPoint) ([]*model.TennisCourtSearchResult, error) {
+	return r.SearchService.SearchTennisCourts(ctx, query, limit, offset, near)
+}
+
+// SearchUsers is the resolver for the searchUsers field.
+func (r *queryResolver) SearchUsers(ctx context.Context, query string, limit *int, offset *int) ([]*model.UserSearchResult, error) {
+	return r.SearchService.SearchUsers(ctx, query, limit, offset)
+}
+
+// Mutation returns graph.MutationResolver implementation.
+func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
