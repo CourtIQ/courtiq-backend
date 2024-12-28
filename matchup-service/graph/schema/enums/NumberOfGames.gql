@@ -1,8 +1,0 @@
-enum NumberOfGames {
-  ONE
-  THREE
-  FOUR
-  FIVE
-  SIX
-  TEN
-}

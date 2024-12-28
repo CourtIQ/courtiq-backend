@@ -1,0 +1,8 @@
+input CreateMatchUpInput {
+    matchUpType: MatchUpType!
+    matchUpFormat: MatchUpFormatInput!
+    participants: [ParticipantInput!]!
+    matchUpTracker: ObjectID!
+    initalServer: ObjectID!
+    visibility: Visibility = PRIVATE
+}

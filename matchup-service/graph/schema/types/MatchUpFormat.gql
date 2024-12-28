@@ -1,25 +1,74 @@
-##################
-# MatchUpFormat  
-##################
-
+"""
+Overall "ruleset" of a tennis match:
+- Total sets (NumberOfSets) 
+- Format details for each set 
+- Optional alternate final set format
+"""
 type MatchUpFormat {
-  id: ObjectID!
-  tracker: ObjectID!
+  """
+  How many sets will be played, restricted by the NumberOfSets scalar.
+  """
   numberOfSets: NumberOfSets!
+
+  """
+  Default set format (e.g., games needed, deuce rules, etc.).
+  """
   setFormat: SetFormat!
+
+  """
+  Alternate rules for the final set (e.g., 10-point tiebreak).
+  May be null if not used.
+  """
   finalSetFormat: SetFormat
-  initialServer: PlayingSide!
 }
 
+"""
+Describes a single set's structure:
+- Number of games (NumberOfGames)
+- Deuce rules
+- Tiebreak rules
+"""
 type SetFormat {
+  """
+  Number of games to win a set, enforced by the NumberOfGames scalar.
+  """
   numberOfGames: NumberOfGames!
+
+  """
+  Deuce rule type (Advantage, No-Ad, etc.).
+  """
   deuceType: DeuceType!
+
+  """
+  If true, a player must lead by two games when at deuce.
+  """
   mustWinByTwo: Boolean!
+
+  """
+  How the tiebreak is handled, if triggered.
+  """
   tiebreakFormat: TiebreakFormat
+
+  """
+  The game score at which a tiebreak starts (commonly 6).
+  """
   tiebreakAt: Int
 }
 
+"""
+Defines how a tiebreak is played:
+- Points needed (TiebreakPoints)
+- Whether a two-point lead is required
+"""
 type TiebreakFormat {
+  """
+  How many points are needed to win the tiebreak 
+  (allowed values: 5, 6, 7, 8, 9, 10).
+  """
   points: TiebreakPoints!
+
+  """
+  If true, a two-point lead is required to win the tiebreak.
+  """
   mustWinByTwo: Boolean!
 }

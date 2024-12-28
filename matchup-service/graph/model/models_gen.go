@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -22,168 +23,136 @@ type Location struct {
 }
 
 type MatchUp struct {
-	ID                          primitive.ObjectID   `json:"id" bson:"_id"`
-	MatchUpFormat               *MatchUpFormat       `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpStatus               MatchUpStatus        `json:"matchUpStatus" bson:"matchUpStatus"`
-	MatchUpType                 MatchUpType          `json:"matchUpType" bson:"matchUpType"`
-	ParticipantIds              []primitive.ObjectID `json:"participantIds" bson:"participantIds"`
-	Participants                *ParticipantsMap     `json:"participants" bson:"participants"`
-	CurrentSetIndex             *int                 `json:"currentSetIndex,omitempty" bson:"currentSetIndex,omitempty"`
-	CurrentGameIndexWithinSet   *int                 `json:"currentGameIndexWithinSet,omitempty" bson:"currentGameIndexWithinSet,omitempty"`
-	CurrentPointIndexWithinGame *int                 `json:"currentPointIndexWithinGame,omitempty" bson:"currentPointIndexWithinGame,omitempty"`
-	CurrentScore                *Score               `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
-	CurrentServer               primitive.ObjectID   `json:"currentServer" bson:"currentServer"`
-	PointsSequence              []primitive.ObjectID `json:"pointsSequence" bson:"pointsSequence"`
-	StartTime                   time.Time            `json:"startTime" bson:"startTime"`
-	EndTime                     *time.Time           `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt                   time.Time            `json:"createdAt" bson:"createdAt"`
-	UpdatedAt                   time.Time            `json:"updatedAt" bson:"updatedAt"`
-}
-
-type MatchUpFormat struct {
 	ID             primitive.ObjectID `json:"id" bson:"_id"`
-	Tracker        primitive.ObjectID `json:"tracker" bson:"tracker"`
-	NumberOfSets   NumberOfSets       `json:"numberOfSets" bson:"numberOfSets"`
-	SetFormat      *SetFormat         `json:"setFormat" bson:"setFormat"`
-	FinalSetFormat *SetFormat         `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
-	InitialServer  PlayingSide        `json:"initialServer" bson:"initialServer"`
+	MatchUpFormat  *MatchUpFormat     `json:"matchUpFormat" bson:"matchUpFormat"`
+	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
+	MatchUpType    MatchUpType        `json:"matchUpType" bson:"matchUpType"`
+	MatchUpStatus  MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
+	Participants   []*Participant     `json:"participants" bson:"participants"`
+	StartTime      time.Time          `json:"startTime" bson:"startTime"`
+	EndTime        *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
+	CreatedAt      time.Time          `json:"createdAt" bson:"createdAt"`
+	LastUpdated    time.Time          `json:"lastUpdated" bson:"lastUpdated"`
 }
 
+// Overall "ruleset" of a tennis match:
+// - Total sets (NumberOfSets)
+// - Format details for each set
+// - Optional alternate final set format
+type MatchUpFormat struct {
+	// How many sets will be played, restricted by the NumberOfSets scalar.
+	NumberOfSets scalars.NumberOfSets `json:"numberOfSets" bson:"numberOfSets"`
+	// Default set format (e.g., games needed, deuce rules, etc.).
+	SetFormat *SetFormat `json:"setFormat" bson:"setFormat"`
+	// Alternate rules for the final set (e.g., 10-point tiebreak).
+	// May be null if not used.
+	FinalSetFormat *SetFormat `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
+}
+
+// Input representation of MatchUpFormat,
+// mirroring the MatchUpFormat type.
 type MatchUpFormatInput struct {
-	Tracker        primitive.ObjectID `json:"tracker" bson:"tracker"`
-	NumberOfSets   NumberOfSets       `json:"numberOfSets" bson:"numberOfSets"`
-	SetFormat      *SetFormatInput    `json:"setFormat" bson:"setFormat"`
-	FinalSetFormat *SetFormatInput    `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
+	// How many total sets are played, restricted by NumberOfSets (1, 3, 5).
+	NumberOfSets scalars.NumberOfSets `json:"numberOfSets" bson:"numberOfSets"`
+	// The default format for all sets except possibly the final one.
+	SetFormat *SetFormatInput `json:"setFormat" bson:"setFormat"`
+	// Alternate final set format, e.g., to allow a 10-point tiebreak.
+	// Optional (null) if not used.
+	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
 }
 
 type Mutation struct {
 }
 
-type ParticipantsMap struct {
-	A primitive.ObjectID `json:"A" bson:"A"`
-	B primitive.ObjectID `json:"B" bson:"B"`
+// Represents an individual participant in a tennis match (could be a singles player
+// or one of the doubles players). Each participant is associated with one 'team side'
+// (e.g., Team A or Team B).
+type Participant struct {
+	// A unique identifier for the participant.
+	ID string `json:"id" bson:"_id"`
+	// The name to be displayed (e.g., on scoreboards or UIs).
+	DisplayName string `json:"displayName" bson:"displayName"`
+	// The side (A or B) that this participant is associated with.
+	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
 }
 
-type Point struct {
-	ID                   primitive.ObjectID `json:"id" bson:"_id"`
-	SetIndex             int                `json:"setIndex" bson:"setIndex"`
-	GameIndexWithinSet   int                `json:"gameIndexWithinSet" bson:"gameIndexWithinSet"`
-	PointIndexWithinGame int                `json:"pointIndexWithinGame" bson:"pointIndexWithinGame"`
-	IsTiebreak           bool               `json:"isTiebreak" bson:"isTiebreak"`
-	TiebreakPointNumber  *int               `json:"tiebreakPointNumber,omitempty" bson:"tiebreakPointNumber,omitempty"`
-	PointWinner          primitive.ObjectID `json:"pointWinner" bson:"pointWinner"`
-	PointServer          primitive.ObjectID `json:"pointServer" bson:"pointServer"`
-	PointWinReason       *PointWinReason    `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
-	PlayingSide          PlayingSide        `json:"playingSide" bson:"playingSide"`
-	CourtSide            CourtSide          `json:"courtSide" bson:"courtSide"`
-	ScoreBefore          *Score             `json:"scoreBefore" bson:"scoreBefore"`
-	ScoreAfter           *Score             `json:"scoreAfter" bson:"scoreAfter"`
-	Shots                []*Shot            `json:"shots" bson:"shots"`
-	IsBreakPoint         bool               `json:"isBreakPoint" bson:"isBreakPoint"`
-	IsGamePoint          bool               `json:"isGamePoint" bson:"isGamePoint"`
-	IsSetPoint           bool               `json:"isSetPoint" bson:"isSetPoint"`
-	IsMatchPoint         bool               `json:"isMatchPoint" bson:"isMatchPoint"`
-	PlayedAt             *time.Time         `json:"playedAt,omitempty" bson:"playedAt,omitempty"`
+type ParticipantInput struct {
+	ID            *string  `json:"id" bson:"_id"`
+	DisplayedName string   `json:"displayedName" bson:"displayedName"`
+	TeamSide      TeamSide `json:"teamSide" bson:"teamSide"`
 }
 
 type Query struct {
 }
 
-type Score struct {
-	A *SideScore `json:"a" bson:"a"`
-	B *SideScore `json:"b" bson:"b"`
-}
-
+// Describes a single set's structure:
+// - Number of games (NumberOfGames)
+// - Deuce rules
+// - Tiebreak rules
 type SetFormat struct {
-	NumberOfGames  NumberOfGames   `json:"numberOfGames" bson:"numberOfGames"`
-	DeuceType      DeuceType       `json:"deuceType" bson:"deuceType"`
-	MustWinByTwo   bool            `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// Number of games to win a set, enforced by the NumberOfGames scalar.
+	NumberOfGames scalars.NumberOfGames `json:"numberOfGames" bson:"numberOfGames"`
+	// Deuce rule type (Advantage, No-Ad, etc.).
+	DeuceType DeuceType `json:"deuceType" bson:"deuceType"`
+	// If true, a player must lead by two games when at deuce.
+	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// How the tiebreak is handled, if triggered.
 	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
-	TiebreakAt     *int            `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+	// The game score at which a tiebreak starts (commonly 6).
+	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
 }
 
+// Input representation of SetFormat,
+// mirroring the SetFormat type.
 type SetFormatInput struct {
-	NumberOfGames  NumberOfGames        `json:"numberOfGames" bson:"numberOfGames"`
-	DeuceType      DeuceType            `json:"deuceType" bson:"deuceType"`
-	MustWinByTwo   bool                 `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// Number of games required to win a set (allowed values: 1, 3, 4, 5, 6, 10).
+	NumberOfGames scalars.NumberOfGames `json:"numberOfGames" bson:"numberOfGames"`
+	// Deuce rule type (e.g., ADV or NO_AD).
+	// This remains required because you must specify some deuce rule.
+	DeuceType DeuceType `json:"deuceType" bson:"deuceType"`
+	// Whether a two-game lead is required to close the set.
+	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// Optional tiebreak specification.
+	// If omitted, it implies that no tiebreak is used.
 	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
-	TiebreakAt     *int                 `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+	// Optional "trigger" at which a tiebreak starts (commonly 6).
+	// If omitted or null, no tiebreak is triggered at any game score.
+	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
 }
 
-type Shot struct {
-	PlayerID          primitive.ObjectID `json:"playerId" bson:"playerId"`
-	ShotType          ShotType           `json:"shotType" bson:"shotType"`
-	ServeStyle        *ServeStyle        `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
-	GroundStrokeType  *GroundStrokeType  `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
-	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
-	PlayedAt          *time.Time         `json:"playedAt,omitempty" bson:"playedAt,omitempty"`
-}
-
-type SideScore struct {
-	Player               primitive.ObjectID `json:"player" bson:"player"`
-	CurrentPointScore    GameScore          `json:"currentPointScore" bson:"currentPointScore"`
-	CurrentGameScore     int                `json:"currentGameScore" bson:"currentGameScore"`
-	CurrentSetScore      int                `json:"currentSetScore" bson:"currentSetScore"`
-	CurrentTiebreakScore *int               `json:"currentTiebreakScore,omitempty" bson:"currentTiebreakScore,omitempty"`
-}
-
+// Defines how a tiebreak is played:
+// - Points needed (TiebreakPoints)
+// - Whether a two-point lead is required
 type TiebreakFormat struct {
-	Points       TiebreakPoints `json:"points" bson:"points"`
-	MustWinByTwo bool           `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// How many points are needed to win the tiebreak
+	// (allowed values: 5, 6, 7, 8, 9, 10).
+	Points string `json:"points" bson:"points"`
+	// If true, a two-point lead is required to win the tiebreak.
+	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
 }
 
+// Input representation of TiebreakFormat,
+// mirroring the TiebreakFormat type.
 type TiebreakFormatInput struct {
-	Points       TiebreakPoints `json:"points" bson:"points"`
-	MustWinByTwo bool           `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// Points needed to win the tiebreak (5, 6, 7, 8, 9, or 10).
+	Points string `json:"points" bson:"points"`
+	// If true, a 2-point lead is required to win the tiebreak.
+	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
 }
 
-type CourtSide string
-
-const (
-	CourtSideLeft  CourtSide = "LEFT"
-	CourtSideRight CourtSide = "RIGHT"
-)
-
-var AllCourtSide = []CourtSide{
-	CourtSideLeft,
-	CourtSideRight,
-}
-
-func (e CourtSide) IsValid() bool {
-	switch e {
-	case CourtSideLeft, CourtSideRight:
-		return true
-	}
-	return false
-}
-
-func (e CourtSide) String() string {
-	return string(e)
-}
-
-func (e *CourtSide) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CourtSide(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CourtSide", str)
-	}
-	return nil
-}
-
-func (e CourtSide) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
+// Specifies the deuce rule, i.e., how a game proceeds once it reaches a 40-40 score.
 type DeuceType string
 
 const (
+	// Sudden-death format: once the score reaches deuce (40-40),
+	// the very next point decides the game — no requirement to win by two points.
 	DeuceTypeSuddenDeath DeuceType = "SUDDEN_DEATH"
+	// Traditional deuce format: a player must secure a two-point lead to win
+	// (i.e., 'advantage' followed by another point).
 	DeuceTypeNormalDeuce DeuceType = "NORMAL_DEUCE"
-	DeuceTypeOneDeuce    DeuceType = "ONE_DEUCE"
+	// One-deuce format: once the score reaches deuce, only one deuce is allowed.
+	// After that, the next point wins the game, regardless of any lead requirement.
+	DeuceTypeOneDeuce DeuceType = "ONE_DEUCE"
 )
 
 var AllDeuceType = []DeuceType{
@@ -362,17 +331,29 @@ func (e GroundStrokeType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Represents the different stages or outcomes a tennis match can go through.
 type MatchUpStatus string
 
 const (
-	MatchUpStatusScheduled  MatchUpStatus = "SCHEDULED"
+	// The match is scheduled in advance but has not yet started.
+	MatchUpStatusScheduled MatchUpStatus = "SCHEDULED"
+	// The match is currently in progress.
 	MatchUpStatusInProgress MatchUpStatus = "IN_PROGRESS"
-	MatchUpStatusCompleted  MatchUpStatus = "COMPLETED"
-	MatchUpStatusSuspended  MatchUpStatus = "SUSPENDED"
-	MatchUpStatusCancelled  MatchUpStatus = "CANCELLED"
-	MatchUpStatusAbandoned  MatchUpStatus = "ABANDONED"
-	MatchUpStatusRetired    MatchUpStatus = "RETIRED"
-	MatchUpStatusRequested  MatchUpStatus = "REQUESTED"
+	// The match has ended with a clear result (winner determined).
+	MatchUpStatusCompleted MatchUpStatus = "COMPLETED"
+	// The match has been paused (e.g., due to weather or other external conditions)
+	// and is expected to resume later.
+	MatchUpStatusSuspended MatchUpStatus = "SUSPENDED"
+	// The match has been canceled and will not be played or resumed.
+	MatchUpStatusCancelled MatchUpStatus = "CANCELLED"
+	// The match was started but ultimately abandoned partway and will not be completed.
+	MatchUpStatusAbandoned MatchUpStatus = "ABANDONED"
+	// One player (or team) has 'retired' from the match — usually due to injury.
+	// The other player (or team) is declared the winner by default.
+	MatchUpStatusRetired MatchUpStatus = "RETIRED"
+	// The match creation or scheduling is in progress, or it is awaiting final
+	// confirmation (e.g., from players or for court availability).
+	MatchUpStatusRequested MatchUpStatus = "REQUESTED"
 )
 
 var AllMatchUpStatus = []MatchUpStatus{
@@ -415,10 +396,13 @@ func (e MatchUpStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Indicates whether a match is singles (1 vs. 1) or doubles (2 vs. 2).
 type MatchUpType string
 
 const (
+	// Each side consists of one player.
 	MatchUpTypeSingles MatchUpType = "SINGLES"
+	// Each side consists of two players.
 	MatchUpTypeDoubles MatchUpType = "DOUBLES"
 )
 
@@ -456,95 +440,49 @@ func (e MatchUpType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-type NumberOfGames string
+// Refers to the physical orientation of the tennis court itself, which could matter
+// for sun, wind, or camera placement. For example, a stadium court may label one
+// end 'North' and the other end 'South.'
+type PhysicalCourtSide string
 
 const (
-	NumberOfGamesOne   NumberOfGames = "ONE"
-	NumberOfGamesThree NumberOfGames = "THREE"
-	NumberOfGamesFour  NumberOfGames = "FOUR"
-	NumberOfGamesFive  NumberOfGames = "FIVE"
-	NumberOfGamesSix   NumberOfGames = "SIX"
-	NumberOfGamesTen   NumberOfGames = "TEN"
+	// The north side of the court.
+	PhysicalCourtSideNorthSide PhysicalCourtSide = "NORTH_SIDE"
+	// The south side of the court.
+	PhysicalCourtSideSouthSide PhysicalCourtSide = "SOUTH_SIDE"
 )
 
-var AllNumberOfGames = []NumberOfGames{
-	NumberOfGamesOne,
-	NumberOfGamesThree,
-	NumberOfGamesFour,
-	NumberOfGamesFive,
-	NumberOfGamesSix,
-	NumberOfGamesTen,
+var AllPhysicalCourtSide = []PhysicalCourtSide{
+	PhysicalCourtSideNorthSide,
+	PhysicalCourtSideSouthSide,
 }
 
-func (e NumberOfGames) IsValid() bool {
+func (e PhysicalCourtSide) IsValid() bool {
 	switch e {
-	case NumberOfGamesOne, NumberOfGamesThree, NumberOfGamesFour, NumberOfGamesFive, NumberOfGamesSix, NumberOfGamesTen:
+	case PhysicalCourtSideNorthSide, PhysicalCourtSideSouthSide:
 		return true
 	}
 	return false
 }
 
-func (e NumberOfGames) String() string {
+func (e PhysicalCourtSide) String() string {
 	return string(e)
 }
 
-func (e *NumberOfGames) UnmarshalGQL(v any) error {
+func (e *PhysicalCourtSide) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = NumberOfGames(str)
+	*e = PhysicalCourtSide(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid NumberOfGames", str)
+		return fmt.Errorf("%s is not a valid PhysicalCourtSide", str)
 	}
 	return nil
 }
 
-func (e NumberOfGames) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type NumberOfSets string
-
-const (
-	NumberOfSetsOne   NumberOfSets = "ONE"
-	NumberOfSetsThree NumberOfSets = "THREE"
-	NumberOfSetsFive  NumberOfSets = "FIVE"
-)
-
-var AllNumberOfSets = []NumberOfSets{
-	NumberOfSetsOne,
-	NumberOfSetsThree,
-	NumberOfSetsFive,
-}
-
-func (e NumberOfSets) IsValid() bool {
-	switch e {
-	case NumberOfSetsOne, NumberOfSetsThree, NumberOfSetsFive:
-		return true
-	}
-	return false
-}
-
-func (e NumberOfSets) String() string {
-	return string(e)
-}
-
-func (e *NumberOfSets) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = NumberOfSets(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid NumberOfSets", str)
-	}
-	return nil
-}
-
-func (e NumberOfSets) MarshalGQL(w io.Writer) {
+func (e PhysicalCourtSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -681,6 +619,53 @@ func (e ServeStyle) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Represents which service box a player is serving into or standing on
+// during a tennis point. From the server's perspective:
+// - The DEUCE_SIDE is on the right side.
+// - The AD_SIDE is on the left side.
+type ServiceBoxSide string
+
+const (
+	// The right side from the server's perspective, commonly called the 'deuce side'.
+	ServiceBoxSideDeuceSide ServiceBoxSide = "DEUCE_SIDE"
+	// The left side from the server's perspective, commonly called the 'ad side'.
+	ServiceBoxSideAdSide ServiceBoxSide = "AD_SIDE"
+)
+
+var AllServiceBoxSide = []ServiceBoxSide{
+	ServiceBoxSideDeuceSide,
+	ServiceBoxSideAdSide,
+}
+
+func (e ServiceBoxSide) IsValid() bool {
+	switch e {
+	case ServiceBoxSideDeuceSide, ServiceBoxSideAdSide:
+		return true
+	}
+	return false
+}
+
+func (e ServiceBoxSide) String() string {
+	return string(e)
+}
+
+func (e *ServiceBoxSide) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ServiceBoxSide(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ServiceBoxSide", str)
+	}
+	return nil
+}
+
+func (e ServiceBoxSide) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type ShotType string
 
 const (
@@ -724,52 +709,48 @@ func (e ShotType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-type TiebreakPoints string
+// Indicates which 'team side' a participant belongs to in a tennis match.
+// For instance, in a doubles match, one side may be labeled Team A vs. Team B.
+type TeamSide string
 
 const (
-	TiebreakPointsFive  TiebreakPoints = "FIVE"
-	TiebreakPointsSix   TiebreakPoints = "SIX"
-	TiebreakPointsSeven TiebreakPoints = "SEVEN"
-	TiebreakPointsEight TiebreakPoints = "EIGHT"
-	TiebreakPointsNine  TiebreakPoints = "NINE"
-	TiebreakPointsTen   TiebreakPoints = "TEN"
+	// The 'A' team side.
+	TeamSideTeamA TeamSide = "TEAM_A"
+	// The 'B' team side.
+	TeamSideTeamB TeamSide = "TEAM_B"
 )
 
-var AllTiebreakPoints = []TiebreakPoints{
-	TiebreakPointsFive,
-	TiebreakPointsSix,
-	TiebreakPointsSeven,
-	TiebreakPointsEight,
-	TiebreakPointsNine,
-	TiebreakPointsTen,
+var AllTeamSide = []TeamSide{
+	TeamSideTeamA,
+	TeamSideTeamB,
 }
 
-func (e TiebreakPoints) IsValid() bool {
+func (e TeamSide) IsValid() bool {
 	switch e {
-	case TiebreakPointsFive, TiebreakPointsSix, TiebreakPointsSeven, TiebreakPointsEight, TiebreakPointsNine, TiebreakPointsTen:
+	case TeamSideTeamA, TeamSideTeamB:
 		return true
 	}
 	return false
 }
 
-func (e TiebreakPoints) String() string {
+func (e TeamSide) String() string {
 	return string(e)
 }
 
-func (e *TiebreakPoints) UnmarshalGQL(v any) error {
+func (e *TeamSide) UnmarshalGQL(v any) error {
 	str, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("enums must be strings")
 	}
 
-	*e = TiebreakPoints(str)
+	*e = TeamSide(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid TiebreakPoints", str)
+		return fmt.Errorf("%s is not a valid TeamSide", str)
 	}
 	return nil
 }
 
-func (e TiebreakPoints) MarshalGQL(w io.Writer) {
+func (e TeamSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

@@ -1,0 +1,32 @@
+"""
+Represents a single side's in-game point level in traditional tennis scoring.
+"""
+enum InGamePoint {
+  """
+  0 points in the current game.
+  """
+  ZERO
+
+  """
+  15 points in the current game.
+  """
+  FIFTEEN
+
+  """
+  30 points in the current game.
+  """
+  THIRTY
+
+  """
+  40 points in the current game. If the opponent also reaches 40, 
+  the game is at 'deuce'.
+  """
+  FORTY
+
+  """
+  Advantage. Occurs when both players reach deuce (40-40). 
+  A player with 'ADV' must win one more point to clinch the game;
+  otherwise it returns to deuce.
+  """
+  ADV
+}

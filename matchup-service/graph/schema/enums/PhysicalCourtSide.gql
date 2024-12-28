@@ -1,0 +1,41 @@
+"""
+Refers to the physical orientation of the tennis court itself, which could matter
+for sun, wind, or camera placement. For example, a stadium court may label one
+end 'North' and the other end 'South.'
+"""
+enum PhysicalCourtSide {
+  """
+  The north side of the court.
+  """
+  NORTH_SIDE
+
+  """
+  The south side of the court.
+  """
+  SOUTH_SIDE
+}
+
+##############################
+#                            #
+#            North           #
+#                            #
+#                            #
+##############################
+#              #             #
+#              #             #
+#    Deuce     #      AD     #
+#              #             #
+#              #             #
+##############################
+##############################
+#              #             #
+#              #             #
+#     AD       #     Deuce   #
+#              #             #
+#              #             #
+##############################
+#                            #
+#                            #
+#            South           #
+#                            #
+##############################

@@ -1,0 +1,59 @@
+type MatchUpScore {
+  """
+  A list of set-by-set scoring details.
+  Each SetScore includes how many games (and tiebreak points)
+  each side has won so far or finally.
+  """
+  sets: [SetScore!]!
+
+  """
+  Indicates whether the match is completed (someone has won
+  the required number of sets based on MatchUpFormat).
+  """
+  isMatchComplete: Boolean!
+}
+
+type SetScore {
+  """
+  Which set number this is (0-based).
+  """
+  setIndex: Int!
+
+  """
+  An array of two (TEAM_A, TEAM_B) scoring items. Each item
+  holds games won, plus tiebreak points if applicable.
+  """
+  sides: [SideSetScore!]!
+
+  """
+  If true, this set is finished (a side reached the required games
+  or won the tiebreak).
+  """
+  isCompleted: Boolean!
+
+  """
+  Indicates if a tiebreak is currently in progress (useful if
+  your logic needs to display partial tiebreak scores).
+  Otherwise, if the tiebreak has finished or never started,
+  it's false.
+  """
+  isTiebreakActive: Boolean!
+}
+
+type SideSetScore {
+  """
+  The side that this score belongs to (TEAM_A or TEAM_B).
+  """
+  side: TeamSide!
+
+  """
+  The number of games won by this side in the current set.
+  """
+  gamesWon: Int!
+
+  """
+  If a tiebreak is active or has completed, store the
+  tiebreak points for this side. Otherwise null or 0.
+  """
+  tiebreakPoints: Int
+}

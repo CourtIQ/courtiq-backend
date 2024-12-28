@@ -1,0 +1,22 @@
+"""
+Represents an individual participant in a tennis match (could be a singles player 
+or one of the doubles players). Each participant is associated with one 'team side' 
+(e.g., Team A or Team B).
+"""
+type Participant {
+  """
+  A unique identifier for the participant.
+  """
+  id: ID!
+
+  """
+  The name to be displayed (e.g., on scoreboards or UIs).
+  """
+  displayName: String!
+
+  """
+  The side (A or B) that this participant is associated with.
+  """
+  teamSide: TeamSide!
+}
+a

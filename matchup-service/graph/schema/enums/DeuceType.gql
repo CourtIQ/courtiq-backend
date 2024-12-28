@@ -1,6 +1,22 @@
-# graph/schema/enums/DeuceType.gql
+"""
+Specifies the deuce rule, i.e., how a game proceeds once it reaches a 40-40 score.
+"""
 enum DeuceType {
-    SUDDEN_DEATH  # Next point wins
-    NORMAL_DEUCE  # Must win by 2 points
-    ONE_DEUCE     # One deuce only, then next point wins
+  """
+  Sudden-death format: once the score reaches deuce (40-40), 
+  the very next point decides the game — no requirement to win by two points.
+  """
+  SUDDEN_DEATH
+
+  """
+  Traditional deuce format: a player must secure a two-point lead to win
+  (i.e., 'advantage' followed by another point).
+  """
+  NORMAL_DEUCE
+
+  """
+  One-deuce format: once the score reaches deuce, only one deuce is allowed.
+  After that, the next point wins the game, regardless of any lead requirement.
+  """
+  ONE_DEUCE
 }

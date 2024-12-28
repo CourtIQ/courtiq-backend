@@ -9,38 +9,22 @@ import (
 	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars"
 )
 
-// CreateMatchUp is the resolver for the createMatchUp field.
-func (r *mutationResolver) CreateMatchUp(ctx context.Context, matchUpFormat model.MatchUpFormatInput, matchUpType model.MatchUpType, participants []primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: CreateMatchUp - createMatchUp"))
+// TestNumberOfSets is the resolver for the testNumberOfSets field.
+func (r *mutationResolver) TestNumberOfSets(ctx context.Context, sets *scalars.NumberOfSets) (scalars.NumberOfSets, error) {
+	return *sets, nil
 }
 
-// UpdateMatchUpStatus is the resolver for the updateMatchUpStatus field.
-func (r *mutationResolver) UpdateMatchUpStatus(ctx context.Context, status model.MatchUpStatus, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UpdateMatchUpStatus - updateMatchUpStatus"))
+// TestNumberOfGames is the resolver for the testNumberOfGames field.
+func (r *mutationResolver) TestNumberOfGames(ctx context.Context, games *scalars.NumberOfGames) (scalars.NumberOfGames, error) {
+	return *games, nil
 }
 
-// AddPointToMatchUp is the resolver for the addPointToMatchUp field.
-func (r *mutationResolver) AddPointToMatchUp(ctx context.Context, matchupFormat model.MatchUpFormatInput, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: AddPointToMatchUp - addPointToMatchUp"))
-}
-
-// UndoShotFromMatchUp is the resolver for the undoShotFromMatchUp field.
-func (r *mutationResolver) UndoShotFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UndoShotFromMatchUp - undoShotFromMatchUp"))
-}
-
-// UndoPointFromMatchUp is the resolver for the undoPointFromMatchUp field.
-func (r *mutationResolver) UndoPointFromMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: UndoPointFromMatchUp - undoPointFromMatchUp"))
-}
-
-// DeleteMatchUp is the resolver for the deleteMatchUp field.
-func (r *mutationResolver) DeleteMatchUp(ctx context.Context, matchUpID primitive.ObjectID) (*model.MatchUp, error) {
-	panic(fmt.Errorf("not implemented: DeleteMatchUp - deleteMatchUp"))
+// TestTiebreakPoints is the resolver for the testTiebreakPoints field.
+func (r *mutationResolver) TestTiebreakPoints(ctx context.Context, games *string) (string, error) {
+	panic(fmt.Errorf("not implemented: TestTiebreakPoints - testTiebreakPoints"))
 }
 
 // Mutation returns graph.MutationResolver implementation.

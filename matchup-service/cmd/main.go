@@ -8,6 +8,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
 )
 
@@ -19,11 +21,13 @@ func main() {
 	configs.SetupLogging(config)
 
 	// Create the service (using dummy implementation for now)
-	// matchupService := service.NewMatchUpService()
+	matchupService := service.NewMatchUpService()
 
 	// Set up the GraphQL server with the resolver that has the service injected
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		// Resolvers: resolvers.NewRcesolver(matchupService),
+		Resolvers: &resolvers.Resolver{
+			MatchupService: matchupService, // Make sure this matches the field name in the Resolver struct
+		},
 	}))
 
 	// Create router mux

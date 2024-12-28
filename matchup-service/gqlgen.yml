@@ -103,3 +103,7 @@ models:
     model: github.com/99designs/gqlgen/graphql.Time
   ObjectID:
     model: github.com/CourtIQ/courtiq-backend/shared/pkg/scalar.ObjectID
+  NumberOfGames:
+    model: github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars.NumberOfGames
+  NumberOfSets:
+    model: github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars.NumberOfSets

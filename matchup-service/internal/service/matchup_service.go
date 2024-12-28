@@ -30,11 +30,9 @@ func (s *MatchUpService) GetMatchUp(ctx context.Context, id string) (*model.Matc
 	// In a real implementation, you would fetch this from your database
 
 	return &model.MatchUp{
-		ID:            primitive.NewObjectID(),
-		MatchUpStatus: model.MatchUpStatusInProgress,
-		MatchUpType:   model.MatchUpTypeSingles,
-		StartTime:     time.Now(),
-		CreatedAt:     time.Now(), // Created 1 hour before start
-		UpdatedAt:     time.Now(),
+		ID:          primitive.NewObjectID(),
+		MatchUpType: model.MatchUpTypeSingles,
+		StartTime:   time.Now(),
+		CreatedAt:   time.Now(), // Created 1 hour before start
 	}, nil
 }

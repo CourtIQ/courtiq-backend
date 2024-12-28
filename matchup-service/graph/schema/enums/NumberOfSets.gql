@@ -1,5 +1,0 @@
-enum NumberOfSets {
-  ONE
-  THREE
-  FIVE
-}

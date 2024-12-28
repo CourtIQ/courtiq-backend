@@ -1,0 +1,15 @@
+"""
+Indicates which 'team side' a participant belongs to in a tennis match.
+For instance, in a doubles match, one side may be labeled Team A vs. Team B.
+"""
+enum TeamSide {
+  """
+  The 'A' team side.
+  """
+  TEAM_A
+
+  """
+  The 'B' team side.
+  """
+  TEAM_B
+}
