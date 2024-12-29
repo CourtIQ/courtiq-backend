@@ -32,7 +32,6 @@ func (s *MatchUpService) GetMatchUp(ctx context.Context, id string) (*model.Matc
 	return &model.MatchUp{
 		ID:          primitive.NewObjectID(),
 		MatchUpType: model.MatchUpTypeSingles,
-		StartTime:   time.Now(),
 		CreatedAt:   time.Now(), // Created 1 hour before start
 	}, nil
 }

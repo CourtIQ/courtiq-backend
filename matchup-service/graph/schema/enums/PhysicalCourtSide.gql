@@ -1,7 +1,9 @@
 """
 Refers to the physical orientation of the tennis court itself, which could matter
 for sun, wind, or camera placement. For example, a stadium court may label one
-end 'North' and the other end 'South.'
+end 'North' and the other end 'South.' Auto assign A as north and B as south 
+in the start. Switch the sides after every odd numbered game in a set or every 
+6 points in a tiebreak.
 """
 enum PhysicalCourtSide {
   """

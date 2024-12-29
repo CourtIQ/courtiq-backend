@@ -9,25 +9,33 @@ import (
 	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 )
 
-// TestNumberOfSets is the resolver for the testNumberOfSets field.
-func (r *mutationResolver) TestNumberOfSets(ctx context.Context, sets *scalars.NumberOfSets) (scalars.NumberOfSets, error) {
-	return *sets, nil
-}
-
-// TestNumberOfGames is the resolver for the testNumberOfGames field.
-func (r *mutationResolver) TestNumberOfGames(ctx context.Context, games *scalars.NumberOfGames) (scalars.NumberOfGames, error) {
-	return *games, nil
-}
-
-// TestTiebreakPoints is the resolver for the testTiebreakPoints field.
-func (r *mutationResolver) TestTiebreakPoints(ctx context.Context, games *string) (string, error) {
-	panic(fmt.Errorf("not implemented: TestTiebreakPoints - testTiebreakPoints"))
+// CreateMatchUp is the resolver for the createMatchUp field.
+func (r *mutationResolver) CreateMatchUp(ctx context.Context, input model.CreateMatchUpInput) (*model.MatchUp, error) {
+	panic(fmt.Errorf("not implemented: CreateMatchUp - createMatchUp"))
 }
 
 // Mutation returns graph.MutationResolver implementation.
 func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+/*
+	func (r *mutationResolver) TestNumberOfSets(ctx context.Context, sets *scalars.NumberOfSets) (scalars.NumberOfSets, error) {
+	return *sets, nil
+}
+func (r *mutationResolver) TestNumberOfGames(ctx context.Context, games *scalars.NumberOfGames) (scalars.NumberOfGames, error) {
+	return *games, nil
+}
+func (r *mutationResolver) TestTiebreakPoints(ctx context.Context, games *string) (string, error) {
+	panic(fmt.Errorf("not implemented: TestTiebreakPoints - testTiebreakPoints"))
+}
+*/

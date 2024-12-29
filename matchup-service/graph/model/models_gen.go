@@ -12,6 +12,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type CreateMatchUpInput struct {
+	MatchUpType    MatchUpType         `json:"matchUpType" bson:"matchUpType"`
+	MatchUpFormat  *MatchUpFormatInput `json:"matchUpFormat" bson:"matchUpFormat"`
+	Participants   []*ParticipantInput `json:"participants" bson:"participants"`
+	MatchUpTracker primitive.ObjectID  `json:"matchUpTracker" bson:"matchUpTracker"`
+	InitalServer   primitive.ObjectID  `json:"initalServer" bson:"initalServer"`
+	Visibility     *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
+}
+
 // Provides structured geographical details about a user's location.
 // All fields are optional and can be omitted if unknown.
 type Location struct {
@@ -24,15 +33,17 @@ type Location struct {
 
 type MatchUp struct {
 	ID             primitive.ObjectID `json:"id" bson:"_id"`
+	Owner          primitive.ObjectID `json:"owner" bson:"owner"`
 	MatchUpFormat  *MatchUpFormat     `json:"matchUpFormat" bson:"matchUpFormat"`
 	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
 	MatchUpType    MatchUpType        `json:"matchUpType" bson:"matchUpType"`
 	MatchUpStatus  MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
 	Participants   []*Participant     `json:"participants" bson:"participants"`
-	StartTime      time.Time          `json:"startTime" bson:"startTime"`
+	StartTime      *time.Time         `json:"startTime,omitempty" bson:"startTime,omitempty"`
 	EndTime        *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
 	CreatedAt      time.Time          `json:"createdAt" bson:"createdAt"`
 	LastUpdated    time.Time          `json:"lastUpdated" bson:"lastUpdated"`
+	Visibility     Visibility         `json:"visibility" bson:"visibility"`
 }
 
 // Overall "ruleset" of a tennis match:
@@ -61,6 +72,24 @@ type MatchUpFormatInput struct {
 	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
 }
 
+// The main container for all real-time or final scoring data.
+// - An array of completed/in-progress sets
+// - The current in-game point score (if not in tiebreak)
+// - A flag for whether the match is finished
+type MatchUpScore struct {
+	// A list of set-by-set scoring details.
+	// Each SetScore holds how many games each side has,
+	// and whether a tiebreak is in progress.
+	Sets []*SetScore `json:"sets" bson:"sets"`
+	// The partial "point level" for the current (not-yet-finished) game,
+	// if the match is not in a tiebreak. Each entry references a side
+	// (TEAM_A or TEAM_B) and an InGamePoint.
+	CurrentGame []*SideGameScore `json:"currentGame" bson:"currentGame"`
+	// Indicates if the match is fully decided (someone reached
+	// the required sets).
+	IsMatchComplete bool `json:"isMatchComplete" bson:"isMatchComplete"`
+}
+
 type Mutation struct {
 }
 
@@ -76,10 +105,19 @@ type Participant struct {
 	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
 }
 
+// Represents the information needed to create or link a participant
+// (e.g., a player) in a tennis match. If the participant already exists
+// in the database (i.e., a registered user), 'id' should be provided.
+// If 'id' is omitted or null, the participant will be treated as a 'guest'
+// and stored in a separate guests collection.
 type ParticipantInput struct {
-	ID            *string  `json:"id" bson:"_id"`
-	DisplayedName string   `json:"displayedName" bson:"displayedName"`
-	TeamSide      TeamSide `json:"teamSide" bson:"teamSide"`
+	// If provided, this corresponds to an existing user in the database.
+	// If omitted or null, the participant is treated as a guest and stored separately.
+	ID primitive.ObjectID `json:"id" bson:"_id"`
+	// The participant's display name.
+	DisplayedName string `json:"displayedName" bson:"displayedName"`
+	// The side (TEAM_A or TEAM_B) that this participant will play on.
+	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
 }
 
 type Query struct {
@@ -118,6 +156,38 @@ type SetFormatInput struct {
 	// Optional "trigger" at which a tiebreak starts (commonly 6).
 	// If omitted or null, no tiebreak is triggered at any game score.
 	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+}
+
+// Each set in a tennis match. If 'isCompleted' is true,
+// one side has won this set (e.g., 6-4), possibly via tiebreak.
+type SetScore struct {
+	// Which set number (e.g., 0-based or 1-based).
+	SetIndex int `json:"setIndex" bson:"setIndex"`
+	// Scores for the two sides: how many games they've won,
+	// and any tiebreak points if relevant.
+	Sides []*SideSetScore `json:"sides" bson:"sides"`
+	// True if this set has been fully won by one side.
+	IsCompleted bool `json:"isCompleted" bson:"isCompleted"`
+	// True if a tiebreak is currently active (i.e., partial tiebreak),
+	// or false if no tiebreak is in progress or it already finished.
+	IsTiebreakActive bool `json:"isTiebreakActive" bson:"isTiebreakActive"`
+}
+
+// Represents the in-progress point score for an ongoing game.
+// If the match is in a tiebreak (isTiebreakActive=true),
+// you might ignore 'currentGame' and track 'tiebreakPoints' instead.
+type SideGameScore struct {
+	Side        TeamSide    `json:"side" bson:"side"`
+	InGamePoint InGameScore `json:"inGamePoint" bson:"inGamePoint"`
+}
+
+// Holds the game-level data for each side of a set:
+// - gamesWon
+// - tiebreakPoints (if a tiebreak is ongoing or completed)
+type SideSetScore struct {
+	Side           TeamSide `json:"side" bson:"side"`
+	GamesWon       int      `json:"gamesWon" bson:"gamesWon"`
+	TiebreakPoints *int     `json:"tiebreakPoints,omitempty" bson:"tiebreakPoints,omitempty"`
 }
 
 // Defines how a tiebreak is played:
@@ -187,53 +257,6 @@ func (e *DeuceType) UnmarshalGQL(v any) error {
 }
 
 func (e DeuceType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type GameScore string
-
-const (
-	GameScoreLove      GameScore = "LOVE"
-	GameScoreFifteen   GameScore = "FIFTEEN"
-	GameScoreThirty    GameScore = "THIRTY"
-	GameScoreForty     GameScore = "FORTY"
-	GameScoreAdvantage GameScore = "ADVANTAGE"
-)
-
-var AllGameScore = []GameScore{
-	GameScoreLove,
-	GameScoreFifteen,
-	GameScoreThirty,
-	GameScoreForty,
-	GameScoreAdvantage,
-}
-
-func (e GameScore) IsValid() bool {
-	switch e {
-	case GameScoreLove, GameScoreFifteen, GameScoreThirty, GameScoreForty, GameScoreAdvantage:
-		return true
-	}
-	return false
-}
-
-func (e GameScore) String() string {
-	return string(e)
-}
-
-func (e *GameScore) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = GameScore(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid GameScore", str)
-	}
-	return nil
-}
-
-func (e GameScore) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -328,6 +351,59 @@ func (e *GroundStrokeType) UnmarshalGQL(v any) error {
 }
 
 func (e GroundStrokeType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Represents a single side's in-game scoring state in traditional tennis.
+type InGameScore string
+
+const (
+	// 0 points in the current game.
+	InGameScoreZero InGameScore = "ZERO"
+	// 15 points in the current game.
+	InGameScoreFifteen InGameScore = "FIFTEEN"
+	// 30 points in the current game.
+	InGameScoreThirty InGameScore = "THIRTY"
+	// 40 points in the current game.
+	InGameScoreForty InGameScore = "FORTY"
+	// Advantage. Occurs when both players reach 40.
+	InGameScoreAdv InGameScore = "ADV"
+)
+
+var AllInGameScore = []InGameScore{
+	InGameScoreZero,
+	InGameScoreFifteen,
+	InGameScoreThirty,
+	InGameScoreForty,
+	InGameScoreAdv,
+}
+
+func (e InGameScore) IsValid() bool {
+	switch e {
+	case InGameScoreZero, InGameScoreFifteen, InGameScoreThirty, InGameScoreForty, InGameScoreAdv:
+		return true
+	}
+	return false
+}
+
+func (e InGameScore) String() string {
+	return string(e)
+}
+
+func (e *InGameScore) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = InGameScore(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid InGameScore", str)
+	}
+	return nil
+}
+
+func (e InGameScore) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -442,7 +518,9 @@ func (e MatchUpType) MarshalGQL(w io.Writer) {
 
 // Refers to the physical orientation of the tennis court itself, which could matter
 // for sun, wind, or camera placement. For example, a stadium court may label one
-// end 'North' and the other end 'South.'
+// end 'North' and the other end 'South.' Auto assign A as north and B as south
+// in the start. Switch the sides after every odd numbered game in a set or every
+// 6 points in a tiebreak.
 type PhysicalCourtSide string
 
 const (
@@ -483,47 +561,6 @@ func (e *PhysicalCourtSide) UnmarshalGQL(v any) error {
 }
 
 func (e PhysicalCourtSide) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type PlayingSide string
-
-const (
-	PlayingSideDeuce PlayingSide = "DEUCE"
-	PlayingSideAd    PlayingSide = "AD"
-)
-
-var AllPlayingSide = []PlayingSide{
-	PlayingSideDeuce,
-	PlayingSideAd,
-}
-
-func (e PlayingSide) IsValid() bool {
-	switch e {
-	case PlayingSideDeuce, PlayingSideAd:
-		return true
-	}
-	return false
-}
-
-func (e PlayingSide) String() string {
-	return string(e)
-}
-
-func (e *PlayingSide) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = PlayingSide(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid PlayingSide", str)
-	}
-	return nil
-}
-
-func (e PlayingSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
