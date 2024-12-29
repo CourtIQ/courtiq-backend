@@ -12,13 +12,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Used to create a new tennis match with the specified type, format, and participants.
+// If 'visibility' is not provided, it defaults to 'PRIVATE'.
 type CreateMatchUpInput struct {
-	MatchUpType    MatchUpType         `json:"matchUpType" bson:"matchUpType"`
-	MatchUpFormat  *MatchUpFormatInput `json:"matchUpFormat" bson:"matchUpFormat"`
-	Participants   []*ParticipantInput `json:"participants" bson:"participants"`
-	MatchUpTracker primitive.ObjectID  `json:"matchUpTracker" bson:"matchUpTracker"`
-	InitalServer   primitive.ObjectID  `json:"initalServer" bson:"initalServer"`
-	Visibility     *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
+	// The type of match, e.g., SINGLES or DOUBLES.
+	MatchUpType MatchUpType `json:"matchUpType" bson:"matchUpType"`
+	// The format and rules for this match (sets, tiebreak details, etc.).
+	MatchUpFormat *MatchUpFormatInput `json:"matchUpFormat" bson:"matchUpFormat"`
+	// The players or teams participating in the match.
+	Participants []*ParticipantInput `json:"participants" bson:"participants"`
+	// A reference or ID used to track/log this match (e.g., analytics or
+	// a parent entity).
+	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
+	// The participant (by ObjectID) who will serve first.
+	InitalServer primitive.ObjectID `json:"initalServer" bson:"initalServer"`
+	// Determines who can view or access details of the match; defaults to PRIVATE.
+	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 // Provides structured geographical details about a user's location.
@@ -32,18 +41,19 @@ type Location struct {
 }
 
 type MatchUp struct {
-	ID             primitive.ObjectID `json:"id" bson:"_id"`
-	Owner          primitive.ObjectID `json:"owner" bson:"owner"`
-	MatchUpFormat  *MatchUpFormat     `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
-	MatchUpType    MatchUpType        `json:"matchUpType" bson:"matchUpType"`
-	MatchUpStatus  MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
-	Participants   []*Participant     `json:"participants" bson:"participants"`
-	StartTime      *time.Time         `json:"startTime,omitempty" bson:"startTime,omitempty"`
-	EndTime        *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt      time.Time          `json:"createdAt" bson:"createdAt"`
-	LastUpdated    time.Time          `json:"lastUpdated" bson:"lastUpdated"`
-	Visibility     Visibility         `json:"visibility" bson:"visibility"`
+	ID                 primitive.ObjectID `json:"id" bson:"_id"`
+	Owner              primitive.ObjectID `json:"owner" bson:"owner"`
+	MatchUpFormat      *MatchUpFormat     `json:"matchUpFormat" bson:"matchUpFormat"`
+	MatchUpTracker     primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
+	MatchUpType        MatchUpType        `json:"matchUpType" bson:"matchUpType"`
+	MatchUpStatus      MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
+	Participants       []*Participant     `json:"participants" bson:"participants"`
+	ScheduledStartTime *time.Time         `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
+	StartTime          *time.Time         `json:"startTime,omitempty" bson:"startTime,omitempty"`
+	EndTime            *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
+	CreatedAt          time.Time          `json:"createdAt" bson:"createdAt"`
+	LastUpdated        time.Time          `json:"lastUpdated" bson:"lastUpdated"`
+	Visibility         Visibility         `json:"visibility" bson:"visibility"`
 }
 
 // Overall "ruleset" of a tennis match:
@@ -70,6 +80,12 @@ type MatchUpFormatInput struct {
 	// Alternate final set format, e.g., to allow a 10-point tiebreak.
 	// Optional (null) if not used.
 	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
+}
+
+type MatchUpPoint struct {
+	ID     primitive.ObjectID `json:"id" bson:"_id"`
+	Winner TeamSide           `json:"winner" bson:"winner"`
+	Loser  TeamSide           `json:"loser" bson:"loser"`
 }
 
 // The main container for all real-time or final scoring data.

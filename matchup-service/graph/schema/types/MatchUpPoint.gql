@@ -1,0 +1,5 @@
+type MatchUpPoint {
+    id: ObjectID!
+    winner: TeamSide!
+    loser: TeamSide!
+}

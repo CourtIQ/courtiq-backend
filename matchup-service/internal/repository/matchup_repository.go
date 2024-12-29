@@ -17,13 +17,11 @@ type MatchUpRepository interface {
 }
 
 type matchupRepository struct {
-	pointsColl  *mongo.Collection
 	matchupColl *mongo.Collection
 }
 
 func NewMatchUpRepository(mdb *db.MongoDB) MatchUpRepository {
 	return &matchupRepository{
-		pointsColl:  mdb.GetCollection(db.TennisMatchupsPointsCollection),
 		matchupColl: mdb.GetCollection(db.TennisMatchupsCollection),
 	}
 }

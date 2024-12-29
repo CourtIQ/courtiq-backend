@@ -7,6 +7,7 @@ type MatchUp {
     matchUpStatus: MatchUpStatus!
     participants: [Participant!]!
 
+    scheduledStartTime: DateTime
     startTime: DateTime
     endTime: DateTime
     createdAt: DateTime!
