@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -15,18 +15,20 @@ type MatchUpServiceInterface interface {
 
 // MatchUpService implements the MatchUpServiceInterface
 type MatchUpService struct {
-	matchupRepo repository.MatchUpRepository
-	pointsReop  repository.PointsRepository
+	matchupRepo repository.MatchUpRepositoryIntf
+	pointsRepo  repository.PointsRepository
 }
 
 // NewMatchUpService creates a new instance of MatchUpService
-func NewMatchUpService() MatchUpServiceInterface {
-	return &MatchUpService{}
+func NewMatchUpService(matchupRepo repository.MatchUpRepositoryIntf, pointsRepo repository.PointsRepository) MatchUpServiceInterface {
+	return &MatchUpService{
+		matchupRepo: matchupRepo,
+		pointsRepo:  pointsRepo,
+	}
 }
 
 // InitiateMatchUp creates a new MatchUp document in the database
 func (s *MatchUpService) InitiateMatchUp(ctx context.Context, input model.InitiateMatchUpInput) (*model.MatchUp, error) {
-	// 1) Build the MatchUp struct from the input
 	mu, err := NewMatchUpFromInitiateInput(ctx, &input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build MatchUp from input: %w", err)

@@ -1,0 +1,20 @@
+"""
+Categorizes the type of shot in a rally.
+"""
+enum ShotType {
+  """
+  The initial shot to start a point. Can be first or second serve.
+  """
+  SERVE
+
+  """
+  A shot hit after the serve, typically from the baseline (forehand or backhand).
+  """
+  GROUND_STROKE
+
+  """
+  A shot taken near the net, without the ball bouncing (e.g., a volley or half-volley).
+  """
+  VOLLEY
+}
+

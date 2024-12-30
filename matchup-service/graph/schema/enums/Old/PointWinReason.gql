@@ -1,7 +1,0 @@
-enum PointWinReason {
-  ACE
-  WINNER
-  FORCED_ERROR
-  UNFORCED_ERROR
-  DOUBLE_FAULT
-}

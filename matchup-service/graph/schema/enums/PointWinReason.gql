@@ -1,0 +1,29 @@
+"""
+Describes the main reason why a particular side won a tennis point.
+"""
+enum PointWinReason {
+  """
+  The server hit a serve that the opponent could not touch or return.
+  """
+  ACE
+
+  """
+  A shot that cleanly beats the opponent (not necessarily off the serve).
+  """
+  WINNER
+
+  """
+  The opponent was forced into an error by a strong or tricky shot.
+  """
+  FORCED_ERROR
+
+  """
+  The opponent made an unforced error (e.g., an easy miss or unprovoked mistake).
+  """
+  UNFORCED_ERROR
+
+  """
+  The server failed to execute a valid serve on both the first and second attempt.
+  """
+  DOUBLE_FAULT
+}

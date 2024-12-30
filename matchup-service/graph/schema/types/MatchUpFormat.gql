@@ -48,11 +48,6 @@ type SetFormat {
   How the tiebreak is handled, if triggered.
   """
   tiebreakFormat: TiebreakFormat
-
-  """
-  The game score at which a tiebreak starts (commonly 6).
-  """
-  tiebreakAt: Int
 }
 
 """
@@ -71,4 +66,9 @@ type TiebreakFormat {
   If true, a two-point lead is required to win the tiebreak.
   """
   mustWinByTwo: Boolean!
+
+  """
+  The set score at which a tiebreak starts (commonly 6).
+  """
+  tiebreakAt: Int
 }

@@ -14,6 +14,8 @@ import (
 type PointsRepository interface {
 	CreatePoint(ctx context.Context, point *model.MatchUpPoint) (*model.MatchUpPoint, error)
 	FindPointByID(ctx context.Context, id string) (*model.MatchUpPoint, error)
+	UpdatePoint(ctx context.Context, point *model.MatchUpPoint) (*model.MatchUpPoint, error)
+	DeletePoint(ctx context.Context, id string) (*model.MatchUpPoint, error)
 }
 
 type pointsRepository struct {
@@ -53,4 +55,43 @@ func (r *pointsRepository) FindPointByID(ctx context.Context, id string) (*model
 	}
 
 	return &found, nil
+}
+
+func (r *pointsRepository) DeletePoint(ctx context.Context, id string) (*model.MatchUpPoint, error) {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, errors.New("invalid ObjectID string")
+	}
+
+	var deleted model.MatchUpPoint
+	err = r.pointsColl.FindOneAndDelete(ctx, bson.M{"_id": objID}).Decode(&deleted)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, errors.New("point not found")
+		}
+		return nil, err
+	}
+
+	return &deleted, nil
+}
+
+func (r *pointsRepository) UpdatePoint(ctx context.Context, point *model.MatchUpPoint) (*model.MatchUpPoint, error) {
+	if point == nil {
+		return nil, errors.New("point cannot be nil")
+	}
+	if point.ID.IsZero() {
+		return nil, errors.New("point must have a non-zero ID for update")
+	}
+
+	filter := bson.M{"_id": point.ID}
+
+	// `replacement` is the new version of the document that will replace the old one.
+	replacement := point
+
+	_, err := r.pointsColl.ReplaceOne(ctx, filter, replacement)
+	if err != nil {
+		return nil, err
+	}
+
+	return point, nil
 }

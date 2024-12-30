@@ -1,16 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/service"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/services"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 )
 
 func main() {
@@ -20,26 +26,43 @@ func main() {
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Create the service (using dummy implementation for now)
-	matchupService := service.NewMatchUpService()
+	// Initialize MongoDB client
+	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to MongoDB: %v", err)
+	}
 
-	// Set up the GraphQL server with the resolver that has the service injected
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+	// Create repositories
+	matchUpRepo := repository.NewMatchUpRepository(mongodb)
+	pointsRepo := repository.NewPointsRepositoru(mongodb)
+
+	// Create the service with the repositories
+	matchUpService := services.NewMatchUpService(matchUpRepo, pointsRepo)
+
+	// Replace NewDefaultServer with explicitly configured server
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
-			MatchupService: matchupService, // Make sure this matches the field name in the Resolver struct
+			MatchUpServiceInterface: matchUpService,
 		},
 	}))
 
-	// Create router mux
-	mux := http.NewServeMux()
+	// Configure transports with specific order and options
+	srv.AddTransport(transport.POST{})    // Standard GraphQL POST requests
+	srv.AddTransport(transport.Options{}) // CORS preflight requests
+	srv.AddTransport(transport.GET{})     // Simple queries via GET
 
-	// Setup routes
+	// Add basic extensions
+	srv.Use(extension.Introspection{}) // Enable schema introspection
+
+	// Rest of your code remains the same...
+	mux := http.NewServeMux()
+	mux.Handle("/graphql", middleware.WithUserClaims(srv))
+
+	// Setup playground if enabled
 	if config.PlaygroundEnabled {
 		mux.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 		log.Printf("GraphQL Playground enabled at /")
 	}
-
-	mux.Handle("/graphql", srv)
 
 	// Start server
 	address := fmt.Sprintf(":%d", config.Port)

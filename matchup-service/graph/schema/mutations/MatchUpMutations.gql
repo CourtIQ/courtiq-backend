@@ -1,3 +1,5 @@
 extend type Mutation {
     initiateMatchUp(input: InitiateMatchUpInput!): MatchUp!
+    addPoint(input: AddPointInput!): MatchUpPoint!
+    addShot(matchUpPointId: ID!, input: AddShotInput!): MatchUpShot!
 }

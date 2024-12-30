@@ -12,6 +12,40 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Input for adding a completed point to a match.
+// This typically updates the scoreboard, ends the rally,
+// and records who won the point and how.
+type AddPointInput struct {
+	// Which match we're adding a point to.
+	MatchUpID string `json:"matchUpId" bson:"matchUpId"`
+	// Which team side won the point.
+	Winner TeamSide `json:"winner" bson:"winner"`
+	// The reason for the point being won
+	// (e.g., ACE, FORCED_ERROR, etc.).
+	WinReason *PointWinReason `json:"winReason,omitempty" bson:"winReason,omitempty"`
+	// Optional: An array of shots (SERVE, FOREHAND, etc.) that
+	// led up to this point. Some apps only pass the final shot,
+	// or pass them all if you recorded the entire rally.
+	Shots []*AddShotInput `json:"shots,omitempty" bson:"shots,omitempty"`
+}
+
+// Input for adding a single shot to an existing in-progress point.
+// Some shots do not end the point or change the score
+// (e.g., a rally shot in mid-point).
+type AddShotInput struct {
+	// Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY, etc.
+	ShotType ShotType `json:"shotType" bson:"shotType"`
+	// If GROUND_STROKE: FOREHAND/BACKHAND.
+	// Otherwise null.
+	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
+	// If GROUND_STROKE: SLICE, TOPSPIN, etc.
+	// Otherwise null.
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
+	// If SERVE: FLAT, KICK, SLICE, or OTHER.
+	// Otherwise null.
+	ServeStyle *ServeStyle `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
+}
+
 // Used to create a new tennis match with the specified type, format, and participants.
 // If 'visibility' is not provided, it defaults to 'PRIVATE'.
 type InitiateMatchUpInput struct {
@@ -49,6 +83,12 @@ type MatchUp struct {
 	MatchUpStatus      MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
 	Participants       []*Participant     `json:"participants" bson:"participants"`
 	InitialServer      primitive.ObjectID `json:"initialServer" bson:"initialServer"`
+	CurrentServer      primitive.ObjectID `json:"currentServer" bson:"currentServer"`
+	CurrentServingSide TeamSide           `json:"currentServingSide" bson:"currentServingSide"`
+	Points             []*MatchUpPoint    `json:"points" bson:"points"`
+	Winner             *TeamSide          `json:"winner,omitempty" bson:"winner,omitempty"`
+	Loser              *TeamSide          `json:"loser,omitempty" bson:"loser,omitempty"`
+	CurrentScore       *MatchUpScore      `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
 	ScheduledStartTime *time.Time         `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
 	StartTime          *time.Time         `json:"startTime,omitempty" bson:"startTime,omitempty"`
 	EndTime            *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
@@ -83,35 +123,67 @@ type MatchUpFormatInput struct {
 	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
 }
 
+// Represents one completed point in a tennis match.
+// Stores high-level details: who won, how, the previous scoreboard,
+// and an array of all shots taken during the rally.
 type MatchUpPoint struct {
 	ID        primitive.ObjectID `json:"id" bson:"_id"`
 	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
-	Winner    TeamSide           `json:"winner" bson:"winner"`
-	Loser     TeamSide           `json:"loser" bson:"loser"`
-	Server    *Participant       `json:"server" bson:"server"`
-	Timestamp *time.Time         `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	// Which side ultimately won this point?
+	Winner TeamSide `json:"winner" bson:"winner"`
+	// Why the winning side prevailed:
+	// e.g. ACE, FORCED_ERROR, UNFORCED_ERROR, etc.
+	WinReason *PointWinReason `json:"winReason,omitempty" bson:"winReason,omitempty"`
+	// The participant (player) who served on this point.
+	Server *Participant `json:"server" bson:"server"`
+	// A snapshot of the scoreboard right before this point was played.
+	// Useful for undo or replay logic.
+	ScoreBeforePoint *MatchUpScore `json:"scoreBeforePoint,omitempty" bson:"scoreBeforePoint,omitempty"`
+	// When the point ended.
+	Timestamp *time.Time `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	// The sequence of shots during the rally (if any).
+	// Could be an empty list if it was, for example, an immediate double fault or ace.
+	Shots []*MatchUpShot `json:"shots" bson:"shots"`
 }
 
-// The main container for all real-time or final scoring data.
-// - An array of completed/in-progress sets
-// - The current in-game point score (if not in tiebreak)
-// - A flag for whether the match is finished
+// The main container for a match's real-time or final scoring data.
+// - 'sets' contains an array of completed or in-progress sets.
+// - 'isMatchComplete' indicates whether the match is officially decided.
 type MatchUpScore struct {
 	// A list of set-by-set scoring details.
-	// Each SetScore holds how many games each side has,
-	// and whether a tiebreak is in progress.
+	// Each SetScore shows how many games each side has won
+	// and whether a tiebreak is active or finished.
 	Sets []*SetScore `json:"sets" bson:"sets"`
-	// The partial "point level" for the current (not-yet-finished) game,
-	// if the match is not in a tiebreak. Each entry references a side
-	// (TEAM_A or TEAM_B) and an InGamePoint.
-	CurrentGame []*SideGameScore `json:"currentGame" bson:"currentGame"`
-	// Indicates if the match is fully decided (someone reached
-	// the required sets).
+	// Indicates if the match is fully decided. If true, one side has won
+	// the required number of sets as defined by the MatchUpFormat.
 	IsMatchComplete bool `json:"isMatchComplete" bson:"isMatchComplete"`
 }
 
+// Each shot in a single tennis point. Could be a serve, ground stroke, or volley.
+// Shot-level details (like the stroke style, serve style, or physical court side)
+// are stored here if relevant.
 type MatchUpShot struct {
+	// Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY.
 	ShotType ShotType `json:"shotType" bson:"shotType"`
+	// If this is a ground stroke, was it FOREHAND or BACKHAND?
+	// Otherwise null.
+	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
+	// If this is a ground stroke, was it a SLICE, TOPSPIN, FLAT, LOB, etc.?
+	// Otherwise null.
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
+	// If this is a serve, was it FLAT, KICK, SLICE, or OTHER?
+	// Otherwise null.
+	ServeStyle *ServeStyle `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
+	// Which side of the physical court was this shot taken from?
+	// Could be relevant for overhead sun, wind, camera angle, etc.
+	// If not used, can be null.
+	CourtSide *PhysicalCourtSide `json:"courtSide,omitempty" bson:"courtSide,omitempty"`
+	// Which service box was targeted or stood on if relevant:
+	// AD_SIDE or DEUCE_SIDE.
+	// Typically only meaningful for serve or return positions.
+	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty" bson:"serviceBoxSide,omitempty"`
+	// When the shot ended.
+	Timestamp *time.Time `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
 }
 
 type Mutation struct {
@@ -160,8 +232,6 @@ type SetFormat struct {
 	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
 	// How the tiebreak is handled, if triggered.
 	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
-	// The game score at which a tiebreak starts (commonly 6).
-	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
 }
 
 // Input representation of SetFormat,
@@ -177,41 +247,42 @@ type SetFormatInput struct {
 	// Optional tiebreak specification.
 	// If omitted, it implies that no tiebreak is used.
 	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
-	// Optional "trigger" at which a tiebreak starts (commonly 6).
-	// If omitted or null, no tiebreak is triggered at any game score.
-	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
 }
 
 // Each set in a tennis match. If 'isCompleted' is true,
-// one side has won this set (e.g., 6-4), possibly via tiebreak.
+// one side has won the set (e.g., 6–4 or via a tiebreak).
 type SetScore struct {
-	// Which set number (e.g., 0-based or 1-based).
+	// Which set number this represents (e.g., set 1, set 2, etc.).
+	// Typically 0-based or 1-based depending on your UI.
 	SetIndex int `json:"setIndex" bson:"setIndex"`
-	// Scores for the two sides: how many games they've won,
-	// and any tiebreak points if relevant.
+	// The scores for both sides in this set, including games won
+	// and any tiebreak points.
 	Sides []*SideSetScore `json:"sides" bson:"sides"`
-	// True if this set has been fully won by one side.
+	// True if this set has been won by one side (reached the required
+	// number of games, or won the tiebreak), otherwise false.
 	IsCompleted bool `json:"isCompleted" bson:"isCompleted"`
-	// True if a tiebreak is currently active (i.e., partial tiebreak),
-	// or false if no tiebreak is in progress or it already finished.
+	// True if a tiebreak is currently underway in this set.
+	// False if no tiebreak is needed or it's already completed.
 	IsTiebreakActive bool `json:"isTiebreakActive" bson:"isTiebreakActive"`
 }
 
-// Represents the in-progress point score for an ongoing game.
-// If the match is in a tiebreak (isTiebreakActive=true),
-// you might ignore 'currentGame' and track 'tiebreakPoints' instead.
-type SideGameScore struct {
-	Side        TeamSide    `json:"side" bson:"side"`
-	InGamePoint InGameScore `json:"inGamePoint" bson:"inGamePoint"`
-}
-
-// Holds the game-level data for each side of a set:
-// - gamesWon
-// - tiebreakPoints (if a tiebreak is ongoing or completed)
+// Holds the game-level data for each side in a single set.
+//   - 'gamesWon' shows how many games that side has in this set.
+//   - 'tiebreakPoints' (if present) indicates how many points they have
+//     in a currently active or completed tiebreak.
+//   - 'inGameScore' shows the current point score within an ongoing game
+//     (e.g., ZERO, FIFTEEN, THIRTY, FORTY, ADV) if not in a tiebreak.
 type SideSetScore struct {
-	Side           TeamSide `json:"side" bson:"side"`
-	GamesWon       int      `json:"gamesWon" bson:"gamesWon"`
-	TiebreakPoints *int     `json:"tiebreakPoints,omitempty" bson:"tiebreakPoints,omitempty"`
+	// Which 'team side' (TEAM_A or TEAM_B) these stats belong to.
+	Side TeamSide `json:"side" bson:"side"`
+	// How many games this side has won so far in the current set.
+	GamesWon int `json:"gamesWon" bson:"gamesWon"`
+	// The side's point level in the current game (ZERO, FIFTEEN, etc.).
+	// If the match is in a tiebreak, this may be less relevant.
+	InGameScore InGameScore `json:"inGameScore" bson:"inGameScore"`
+	// The number of tiebreak points this side has, if a tiebreak is
+	// active or was recently completed. If no tiebreak, this may be 0 or null.
+	TiebreakPoints *int `json:"tiebreakPoints,omitempty" bson:"tiebreakPoints,omitempty"`
 }
 
 // Defines how a tiebreak is played:
@@ -223,6 +294,8 @@ type TiebreakFormat struct {
 	Points string `json:"points" bson:"points"`
 	// If true, a two-point lead is required to win the tiebreak.
 	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// The set score at which a tiebreak starts (commonly 6).
+	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
 }
 
 // Input representation of TiebreakFormat,
@@ -232,6 +305,9 @@ type TiebreakFormatInput struct {
 	Points string `json:"points" bson:"points"`
 	// If true, a 2-point lead is required to win the tiebreak.
 	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	// Optional "trigger" at which a tiebreak starts (commonly 6).
+	// If omitted or null, no tiebreak is triggered at any game score.
+	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
 }
 
 // Specifies the deuce rule, i.e., how a game proceeds once it reaches a 40-40 score.
@@ -284,17 +360,27 @@ func (e DeuceType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Describes the style of a ground stroke (forehand or backhand),
+// e.g., slice, topspin, flat, etc.
 type GroundStrokeStyle string
 
 const (
-	GroundStrokeStyleSlice       GroundStrokeStyle = "SLICE"
-	GroundStrokeStyleTopspin     GroundStrokeStyle = "TOPSPIN"
-	GroundStrokeStyleFlat        GroundStrokeStyle = "FLAT"
-	GroundStrokeStyleLob         GroundStrokeStyle = "LOB"
-	GroundStrokeStyleDropShot    GroundStrokeStyle = "DROP_SHOT"
-	GroundStrokeStyleCrosscourt  GroundStrokeStyle = "CROSSCOURT"
-	GroundStrokeStyleDownTheLine GroundStrokeStyle = "DOWN_THE_LINE"
-	GroundStrokeStyleSmash       GroundStrokeStyle = "SMASH"
+	// A stroke with a cutting motion that produces backspin on the ball.
+	// Often used defensively or for drop shots.
+	GroundStrokeStyleSlice GroundStrokeStyle = "SLICE"
+	// A stroke with heavy topspin, causing the ball to dip and bounce higher.
+	GroundStrokeStyleTopspin GroundStrokeStyle = "TOPSPIN"
+	// A relatively straight shot with minimal spin, often used aggressively.
+	GroundStrokeStyleFlat GroundStrokeStyle = "FLAT"
+	// A high, lofted shot, typically used as a defensive measure to push
+	// the opponent back or to clear the net player in doubles.
+	GroundStrokeStyleLob GroundStrokeStyle = "LOB"
+	// A short shot intended to barely clear the net, forcing the opponent
+	// to run forward.
+	GroundStrokeStyleDropShot GroundStrokeStyle = "DROP_SHOT"
+	// An overhead shot (often called an overhead smash). Usually played
+	// when a high ball or lob comes toward the net player.
+	GroundStrokeStyleSmash GroundStrokeStyle = "SMASH"
 )
 
 var AllGroundStrokeStyle = []GroundStrokeStyle{
@@ -303,14 +389,12 @@ var AllGroundStrokeStyle = []GroundStrokeStyle{
 	GroundStrokeStyleFlat,
 	GroundStrokeStyleLob,
 	GroundStrokeStyleDropShot,
-	GroundStrokeStyleCrosscourt,
-	GroundStrokeStyleDownTheLine,
 	GroundStrokeStyleSmash,
 }
 
 func (e GroundStrokeStyle) IsValid() bool {
 	switch e {
-	case GroundStrokeStyleSlice, GroundStrokeStyleTopspin, GroundStrokeStyleFlat, GroundStrokeStyleLob, GroundStrokeStyleDropShot, GroundStrokeStyleCrosscourt, GroundStrokeStyleDownTheLine, GroundStrokeStyleSmash:
+	case GroundStrokeStyleSlice, GroundStrokeStyleTopspin, GroundStrokeStyleFlat, GroundStrokeStyleLob, GroundStrokeStyleDropShot, GroundStrokeStyleSmash:
 		return true
 	}
 	return false
@@ -337,10 +421,13 @@ func (e GroundStrokeStyle) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Indicates whether a ground stroke is a forehand or backhand.
 type GroundStrokeType string
 
 const (
+	// A stroke hit from the dominant side of the body.
 	GroundStrokeTypeForehand GroundStrokeType = "FOREHAND"
+	// A stroke hit from the non-dominant side of the body (with one or two hands).
 	GroundStrokeTypeBackhand GroundStrokeType = "BACKHAND"
 )
 
@@ -588,14 +675,20 @@ func (e PhysicalCourtSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Describes the main reason why a particular side won a tennis point.
 type PointWinReason string
 
 const (
-	PointWinReasonAce           PointWinReason = "ACE"
-	PointWinReasonWinner        PointWinReason = "WINNER"
-	PointWinReasonForcedError   PointWinReason = "FORCED_ERROR"
+	// The server hit a serve that the opponent could not touch or return.
+	PointWinReasonAce PointWinReason = "ACE"
+	// A shot that cleanly beats the opponent (not necessarily off the serve).
+	PointWinReasonWinner PointWinReason = "WINNER"
+	// The opponent was forced into an error by a strong or tricky shot.
+	PointWinReasonForcedError PointWinReason = "FORCED_ERROR"
+	// The opponent made an unforced error (e.g., an easy miss or unprovoked mistake).
 	PointWinReasonUnforcedError PointWinReason = "UNFORCED_ERROR"
-	PointWinReasonDoubleFault   PointWinReason = "DOUBLE_FAULT"
+	// The server failed to execute a valid serve on both the first and second attempt.
+	PointWinReasonDoubleFault PointWinReason = "DOUBLE_FAULT"
 )
 
 var AllPointWinReason = []PointWinReason{
@@ -635,12 +728,18 @@ func (e PointWinReason) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Specifies the style of serve (flat, kick, slice, or other).
 type ServeStyle string
 
 const (
-	ServeStyleFlat  ServeStyle = "FLAT"
-	ServeStyleKick  ServeStyle = "KICK"
+	// A serve with minimal spin, often very fast and direct.
+	ServeStyleFlat ServeStyle = "FLAT"
+	// A serve with topspin that causes the ball to jump high upon bouncing.
+	ServeStyleKick ServeStyle = "KICK"
+	// A serve with sidespin, curving the ball in the air and off the court.
 	ServeStyleSlice ServeStyle = "SLICE"
+	// Any other specialized serve style (e.g., twist serve),
+	// or unclassified serve approach.
 	ServeStyleOther ServeStyle = "OTHER"
 )
 
@@ -727,12 +826,16 @@ func (e ServiceBoxSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Categorizes the type of shot in a rally.
 type ShotType string
 
 const (
-	ShotTypeServe        ShotType = "SERVE"
+	// The initial shot to start a point. Can be first or second serve.
+	ShotTypeServe ShotType = "SERVE"
+	// A shot hit after the serve, typically from the baseline (forehand or backhand).
 	ShotTypeGroundStroke ShotType = "GROUND_STROKE"
-	ShotTypeVolley       ShotType = "VOLLEY"
+	// A shot taken near the net, without the ball bouncing (e.g., a volley or half-volley).
+	ShotTypeVolley ShotType = "VOLLEY"
 )
 
 var AllShotType = []ShotType{

@@ -1,76 +1,81 @@
 """
-The main container for all real-time or final scoring data.
-- An array of completed/in-progress sets
-- The current in-game point score (if not in tiebreak)
-- A flag for whether the match is finished
+The main container for a match's real-time or final scoring data.
+- 'sets' contains an array of completed or in-progress sets.
+- 'isMatchComplete' indicates whether the match is officially decided.
 """
 type MatchUpScore {
   """
   A list of set-by-set scoring details.
-  Each SetScore holds how many games each side has,
-  and whether a tiebreak is in progress.
+  Each SetScore shows how many games each side has won 
+  and whether a tiebreak is active or finished.
   """
   sets: [SetScore!]!
 
   """
-  The partial "point level" for the current (not-yet-finished) game,
-  if the match is not in a tiebreak. Each entry references a side
-  (TEAM_A or TEAM_B) and an InGamePoint.
-  """
-  currentGame: [SideGameScore!]!
-
-  """
-  Indicates if the match is fully decided (someone reached 
-  the required sets).
+  Indicates if the match is fully decided. If true, one side has won
+  the required number of sets as defined by the MatchUpFormat.
   """
   isMatchComplete: Boolean!
 }
 
 """
-Each set in a tennis match. If 'isCompleted' is true, 
-one side has won this set (e.g., 6-4), possibly via tiebreak.
+Each set in a tennis match. If 'isCompleted' is true,
+one side has won the set (e.g., 6–4 or via a tiebreak).
 """
 type SetScore {
   """
-  Which set number (e.g., 0-based or 1-based).
+  Which set number this represents (e.g., set 1, set 2, etc.).
+  Typically 0-based or 1-based depending on your UI.
   """
   setIndex: Int!
 
   """
-  Scores for the two sides: how many games they've won,
-  and any tiebreak points if relevant.
+  The scores for both sides in this set, including games won 
+  and any tiebreak points.
   """
   sides: [SideSetScore!]!
 
   """
-  True if this set has been fully won by one side.
+  True if this set has been won by one side (reached the required 
+  number of games, or won the tiebreak), otherwise false.
   """
   isCompleted: Boolean!
 
   """
-  True if a tiebreak is currently active (i.e., partial tiebreak),
-  or false if no tiebreak is in progress or it already finished.
+  True if a tiebreak is currently underway in this set.
+  False if no tiebreak is needed or it's already completed.
   """
   isTiebreakActive: Boolean!
 }
 
 """
-Holds the game-level data for each side of a set:
-- gamesWon
-- tiebreakPoints (if a tiebreak is ongoing or completed)
+Holds the game-level data for each side in a single set.
+- 'gamesWon' shows how many games that side has in this set.
+- 'tiebreakPoints' (if present) indicates how many points they have 
+   in a currently active or completed tiebreak.
+- 'inGameScore' shows the current point score within an ongoing game 
+   (e.g., ZERO, FIFTEEN, THIRTY, FORTY, ADV) if not in a tiebreak.
 """
 type SideSetScore {
+  """
+  Which 'team side' (TEAM_A or TEAM_B) these stats belong to.
+  """
   side: TeamSide!
-  gamesWon: Int!
-  tiebreakPoints: Int
-}
 
-"""
-Represents the in-progress point score for an ongoing game.
-If the match is in a tiebreak (isTiebreakActive=true), 
-you might ignore 'currentGame' and track 'tiebreakPoints' instead.
-"""
-type SideGameScore {
-  side: TeamSide!
-  inGamePoint: InGameScore!
+  """
+  How many games this side has won so far in the current set.
+  """
+  gamesWon: Int!
+
+  """
+  The side's point level in the current game (ZERO, FIFTEEN, etc.).
+  If the match is in a tiebreak, this may be less relevant.
+  """
+  inGameScore: InGameScore!
+
+  """
+  The number of tiebreak points this side has, if a tiebreak is 
+  active or was recently completed. If no tiebreak, this may be 0 or null.
+  """
+  tiebreakPoints: Int
 }

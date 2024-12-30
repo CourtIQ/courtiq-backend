@@ -7,10 +7,19 @@ type MatchUp {
     matchUpStatus: MatchUpStatus!
     participants: [Participant!]!
     initialServer: ObjectID!
+    currentServer: ObjectID!
+    currentServingSide: TeamSide!
+    points: [MatchUpPoint!]!
 
+    winner: TeamSide
+    loser: TeamSide
+    currentScore: MatchUpScore
+
+    # Not to worry about this field for now
     scheduledStartTime: DateTime
     startTime: DateTime
     endTime: DateTime
+
     createdAt: DateTime!
     lastUpdated: DateTime!
     visibility: Visibility!

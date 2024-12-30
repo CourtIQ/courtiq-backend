@@ -1,6 +1,0 @@
-
-enum ShotType {
-  SERVE
-  GROUND_STROKE
-  VOLLEY
-}

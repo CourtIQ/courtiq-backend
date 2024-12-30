@@ -62,19 +62,25 @@ type ComplexityRoot struct {
 
 	MatchUp struct {
 		CreatedAt          func(childComplexity int) int
+		CurrentScore       func(childComplexity int) int
+		CurrentServer      func(childComplexity int) int
+		CurrentServingSide func(childComplexity int) int
 		EndTime            func(childComplexity int) int
 		ID                 func(childComplexity int) int
 		InitialServer      func(childComplexity int) int
 		LastUpdated        func(childComplexity int) int
+		Loser              func(childComplexity int) int
 		MatchUpFormat      func(childComplexity int) int
 		MatchUpStatus      func(childComplexity int) int
 		MatchUpTracker     func(childComplexity int) int
 		MatchUpType        func(childComplexity int) int
 		Owner              func(childComplexity int) int
 		Participants       func(childComplexity int) int
+		Points             func(childComplexity int) int
 		ScheduledStartTime func(childComplexity int) int
 		StartTime          func(childComplexity int) int
 		Visibility         func(childComplexity int) int
+		Winner             func(childComplexity int) int
 	}
 
 	MatchUpFormat struct {
@@ -84,25 +90,34 @@ type ComplexityRoot struct {
 	}
 
 	MatchUpPoint struct {
-		ID        func(childComplexity int) int
-		Loser     func(childComplexity int) int
-		MatchUpID func(childComplexity int) int
-		Server    func(childComplexity int) int
-		Timestamp func(childComplexity int) int
-		Winner    func(childComplexity int) int
+		ID               func(childComplexity int) int
+		MatchUpID        func(childComplexity int) int
+		ScoreBeforePoint func(childComplexity int) int
+		Server           func(childComplexity int) int
+		Shots            func(childComplexity int) int
+		Timestamp        func(childComplexity int) int
+		WinReason        func(childComplexity int) int
+		Winner           func(childComplexity int) int
 	}
 
 	MatchUpScore struct {
-		CurrentGame     func(childComplexity int) int
 		IsMatchComplete func(childComplexity int) int
 		Sets            func(childComplexity int) int
 	}
 
 	MatchUpShot struct {
-		ShotType func(childComplexity int) int
+		CourtSide         func(childComplexity int) int
+		GroundStrokeStyle func(childComplexity int) int
+		GroundStrokeType  func(childComplexity int) int
+		ServeStyle        func(childComplexity int) int
+		ServiceBoxSide    func(childComplexity int) int
+		ShotType          func(childComplexity int) int
+		Timestamp         func(childComplexity int) int
 	}
 
 	Mutation struct {
+		AddPoint        func(childComplexity int, input model.AddPointInput) int
+		AddShot         func(childComplexity int, matchUpPointID string, input model.AddShotInput) int
 		InitiateMatchUp func(childComplexity int, input model.InitiateMatchUpInput) int
 	}
 
@@ -123,7 +138,6 @@ type ComplexityRoot struct {
 		DeuceType      func(childComplexity int) int
 		MustWinByTwo   func(childComplexity int) int
 		NumberOfGames  func(childComplexity int) int
-		TiebreakAt     func(childComplexity int) int
 		TiebreakFormat func(childComplexity int) int
 	}
 
@@ -134,13 +148,9 @@ type ComplexityRoot struct {
 		Sides            func(childComplexity int) int
 	}
 
-	SideGameScore struct {
-		InGamePoint func(childComplexity int) int
-		Side        func(childComplexity int) int
-	}
-
 	SideSetScore struct {
 		GamesWon       func(childComplexity int) int
+		InGameScore    func(childComplexity int) int
 		Side           func(childComplexity int) int
 		TiebreakPoints func(childComplexity int) int
 	}
@@ -148,6 +158,7 @@ type ComplexityRoot struct {
 	TiebreakFormat struct {
 		MustWinByTwo func(childComplexity int) int
 		Points       func(childComplexity int) int
+		TiebreakAt   func(childComplexity int) int
 	}
 
 	_Service struct {
@@ -157,6 +168,8 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	InitiateMatchUp(ctx context.Context, input model.InitiateMatchUpInput) (*model.MatchUp, error)
+	AddPoint(ctx context.Context, input model.AddPointInput) (*model.MatchUpPoint, error)
+	AddShot(ctx context.Context, matchUpPointID string, input model.AddShotInput) (*model.MatchUpShot, error)
 }
 type QueryResolver interface {
 	TestNumberOfSets(ctx context.Context, sets *scalars.NumberOfSets) (scalars.NumberOfSets, error)
@@ -225,6 +238,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUp.CreatedAt(childComplexity), true
 
+	case "MatchUp.currentScore":
+		if e.complexity.MatchUp.CurrentScore == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.CurrentScore(childComplexity), true
+
+	case "MatchUp.currentServer":
+		if e.complexity.MatchUp.CurrentServer == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.CurrentServer(childComplexity), true
+
+	case "MatchUp.currentServingSide":
+		if e.complexity.MatchUp.CurrentServingSide == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.CurrentServingSide(childComplexity), true
+
 	case "MatchUp.endTime":
 		if e.complexity.MatchUp.EndTime == nil {
 			break
@@ -252,6 +286,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MatchUp.LastUpdated(childComplexity), true
+
+	case "MatchUp.loser":
+		if e.complexity.MatchUp.Loser == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.Loser(childComplexity), true
 
 	case "MatchUp.matchUpFormat":
 		if e.complexity.MatchUp.MatchUpFormat == nil {
@@ -295,6 +336,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUp.Participants(childComplexity), true
 
+	case "MatchUp.points":
+		if e.complexity.MatchUp.Points == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.Points(childComplexity), true
+
 	case "MatchUp.scheduledStartTime":
 		if e.complexity.MatchUp.ScheduledStartTime == nil {
 			break
@@ -315,6 +363,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MatchUp.Visibility(childComplexity), true
+
+	case "MatchUp.winner":
+		if e.complexity.MatchUp.Winner == nil {
+			break
+		}
+
+		return e.complexity.MatchUp.Winner(childComplexity), true
 
 	case "MatchUpFormat.finalSetFormat":
 		if e.complexity.MatchUpFormat.FinalSetFormat == nil {
@@ -344,19 +399,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUpPoint.ID(childComplexity), true
 
-	case "MatchUpPoint.loser":
-		if e.complexity.MatchUpPoint.Loser == nil {
-			break
-		}
-
-		return e.complexity.MatchUpPoint.Loser(childComplexity), true
-
 	case "MatchUpPoint.matchUpId":
 		if e.complexity.MatchUpPoint.MatchUpID == nil {
 			break
 		}
 
 		return e.complexity.MatchUpPoint.MatchUpID(childComplexity), true
+
+	case "MatchUpPoint.scoreBeforePoint":
+		if e.complexity.MatchUpPoint.ScoreBeforePoint == nil {
+			break
+		}
+
+		return e.complexity.MatchUpPoint.ScoreBeforePoint(childComplexity), true
 
 	case "MatchUpPoint.server":
 		if e.complexity.MatchUpPoint.Server == nil {
@@ -365,6 +420,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUpPoint.Server(childComplexity), true
 
+	case "MatchUpPoint.shots":
+		if e.complexity.MatchUpPoint.Shots == nil {
+			break
+		}
+
+		return e.complexity.MatchUpPoint.Shots(childComplexity), true
+
 	case "MatchUpPoint.timestamp":
 		if e.complexity.MatchUpPoint.Timestamp == nil {
 			break
@@ -372,19 +434,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUpPoint.Timestamp(childComplexity), true
 
+	case "MatchUpPoint.winReason":
+		if e.complexity.MatchUpPoint.WinReason == nil {
+			break
+		}
+
+		return e.complexity.MatchUpPoint.WinReason(childComplexity), true
+
 	case "MatchUpPoint.winner":
 		if e.complexity.MatchUpPoint.Winner == nil {
 			break
 		}
 
 		return e.complexity.MatchUpPoint.Winner(childComplexity), true
-
-	case "MatchUpScore.currentGame":
-		if e.complexity.MatchUpScore.CurrentGame == nil {
-			break
-		}
-
-		return e.complexity.MatchUpScore.CurrentGame(childComplexity), true
 
 	case "MatchUpScore.isMatchComplete":
 		if e.complexity.MatchUpScore.IsMatchComplete == nil {
@@ -400,12 +462,78 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MatchUpScore.Sets(childComplexity), true
 
+	case "MatchUpShot.courtSide":
+		if e.complexity.MatchUpShot.CourtSide == nil {
+			break
+		}
+
+		return e.complexity.MatchUpShot.CourtSide(childComplexity), true
+
+	case "MatchUpShot.groundStrokeStyle":
+		if e.complexity.MatchUpShot.GroundStrokeStyle == nil {
+			break
+		}
+
+		return e.complexity.MatchUpShot.GroundStrokeStyle(childComplexity), true
+
+	case "MatchUpShot.groundStrokeType":
+		if e.complexity.MatchUpShot.GroundStrokeType == nil {
+			break
+		}
+
+		return e.complexity.MatchUpShot.GroundStrokeType(childComplexity), true
+
+	case "MatchUpShot.serveStyle":
+		if e.complexity.MatchUpShot.ServeStyle == nil {
+			break
+		}
+
+		return e.complexity.MatchUpShot.ServeStyle(childComplexity), true
+
+	case "MatchUpShot.serviceBoxSide":
+		if e.complexity.MatchUpShot.ServiceBoxSide == nil {
+			break
+		}
+
+		return e.complexity.MatchUpShot.ServiceBoxSide(childComplexity), true
+
 	case "MatchUpShot.shotType":
 		if e.complexity.MatchUpShot.ShotType == nil {
 			break
 		}
 
 		return e.complexity.MatchUpShot.ShotType(childComplexity), true
+
+	case "MatchUpShot.timestamp":
+		if e.complexity.MatchUpShot.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.MatchUpShot.Timestamp(childComplexity), true
+
+	case "Mutation.addPoint":
+		if e.complexity.Mutation.AddPoint == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addPoint_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddPoint(childComplexity, args["input"].(model.AddPointInput)), true
+
+	case "Mutation.addShot":
+		if e.complexity.Mutation.AddShot == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_addShot_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AddShot(childComplexity, args["matchUpPointId"].(string), args["input"].(model.AddShotInput)), true
 
 	case "Mutation.initiateMatchUp":
 		if e.complexity.Mutation.InitiateMatchUp == nil {
@@ -504,13 +632,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SetFormat.NumberOfGames(childComplexity), true
 
-	case "SetFormat.tiebreakAt":
-		if e.complexity.SetFormat.TiebreakAt == nil {
-			break
-		}
-
-		return e.complexity.SetFormat.TiebreakAt(childComplexity), true
-
 	case "SetFormat.tiebreakFormat":
 		if e.complexity.SetFormat.TiebreakFormat == nil {
 			break
@@ -546,26 +667,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SetScore.Sides(childComplexity), true
 
-	case "SideGameScore.inGamePoint":
-		if e.complexity.SideGameScore.InGamePoint == nil {
-			break
-		}
-
-		return e.complexity.SideGameScore.InGamePoint(childComplexity), true
-
-	case "SideGameScore.side":
-		if e.complexity.SideGameScore.Side == nil {
-			break
-		}
-
-		return e.complexity.SideGameScore.Side(childComplexity), true
-
 	case "SideSetScore.gamesWon":
 		if e.complexity.SideSetScore.GamesWon == nil {
 			break
 		}
 
 		return e.complexity.SideSetScore.GamesWon(childComplexity), true
+
+	case "SideSetScore.inGameScore":
+		if e.complexity.SideSetScore.InGameScore == nil {
+			break
+		}
+
+		return e.complexity.SideSetScore.InGameScore(childComplexity), true
 
 	case "SideSetScore.side":
 		if e.complexity.SideSetScore.Side == nil {
@@ -595,6 +709,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TiebreakFormat.Points(childComplexity), true
 
+	case "TiebreakFormat.tiebreakAt":
+		if e.complexity.TiebreakFormat.TiebreakAt == nil {
+			break
+		}
+
+		return e.complexity.TiebreakFormat.TiebreakAt(childComplexity), true
+
 	case "_Service.sdl":
 		if e.complexity._Service.SDL == nil {
 			break
@@ -610,6 +731,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAddPointInput,
+		ec.unmarshalInputAddShotInput,
 		ec.unmarshalInputInitiateMatchUpInput,
 		ec.unmarshalInputMatchUpFormatInput,
 		ec.unmarshalInputParticipantInput,
@@ -711,7 +834,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/DeuceType.gql" "schema/enums/InGameScore.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/Old/GroundStrokeStyle.gql" "schema/enums/Old/GroundStrokeType.gql" "schema/enums/Old/PointWinReason.gql" "schema/enums/Old/ServeStyle.gql" "schema/enums/Old/ShotType.gql" "schema/enums/PhysicalCourtSide.gql" "schema/enums/ServiceBoxSide.gql" "schema/enums/TeamSide.gql" "schema/inputs/InitiateMatchUpInput.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/ParticipantInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars/CustomScalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/MatchUpPoint.gql" "schema/types/MatchUpScore.gql" "schema/types/Participant.gql"
+//go:embed "schema/enums/DeuceType.gql" "schema/enums/GroundStrokeStyle.gql" "schema/enums/GroundStrokeType.gql" "schema/enums/InGameScore.gql" "schema/enums/MatchUpStatus.gql" "schema/enums/MatchUpType.gql" "schema/enums/PhysicalCourtSide.gql" "schema/enums/PointWinReason.gql" "schema/enums/ServeStyle.gql" "schema/enums/ServiceBoxSide.gql" "schema/enums/ShotType.gql" "schema/enums/TeamSide.gql" "schema/inputs/AddPointInput.gql" "schema/inputs/AddShotInput.gql" "schema/inputs/InitiateMatchUpInput.gql" "schema/inputs/MatchUpFormatInput.gql" "schema/inputs/ParticipantInput.gql" "schema/mutations/MatchUpMutations.gql" "schema/queries/MatchUpFormatQueries.gql" "schema/scalars/CustomScalars.gql" "schema/types/MatchUp.gql" "schema/types/MatchUpFormat.gql" "schema/types/MatchUpPoint.gql" "schema/types/MatchUpScore.gql" "schema/types/Participant.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -724,17 +847,19 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema/enums/DeuceType.gql", Input: sourceData("schema/enums/DeuceType.gql"), BuiltIn: false},
+	{Name: "schema/enums/GroundStrokeStyle.gql", Input: sourceData("schema/enums/GroundStrokeStyle.gql"), BuiltIn: false},
+	{Name: "schema/enums/GroundStrokeType.gql", Input: sourceData("schema/enums/GroundStrokeType.gql"), BuiltIn: false},
 	{Name: "schema/enums/InGameScore.gql", Input: sourceData("schema/enums/InGameScore.gql"), BuiltIn: false},
 	{Name: "schema/enums/MatchUpStatus.gql", Input: sourceData("schema/enums/MatchUpStatus.gql"), BuiltIn: false},
 	{Name: "schema/enums/MatchUpType.gql", Input: sourceData("schema/enums/MatchUpType.gql"), BuiltIn: false},
-	{Name: "schema/enums/Old/GroundStrokeStyle.gql", Input: sourceData("schema/enums/Old/GroundStrokeStyle.gql"), BuiltIn: false},
-	{Name: "schema/enums/Old/GroundStrokeType.gql", Input: sourceData("schema/enums/Old/GroundStrokeType.gql"), BuiltIn: false},
-	{Name: "schema/enums/Old/PointWinReason.gql", Input: sourceData("schema/enums/Old/PointWinReason.gql"), BuiltIn: false},
-	{Name: "schema/enums/Old/ServeStyle.gql", Input: sourceData("schema/enums/Old/ServeStyle.gql"), BuiltIn: false},
-	{Name: "schema/enums/Old/ShotType.gql", Input: sourceData("schema/enums/Old/ShotType.gql"), BuiltIn: false},
 	{Name: "schema/enums/PhysicalCourtSide.gql", Input: sourceData("schema/enums/PhysicalCourtSide.gql"), BuiltIn: false},
+	{Name: "schema/enums/PointWinReason.gql", Input: sourceData("schema/enums/PointWinReason.gql"), BuiltIn: false},
+	{Name: "schema/enums/ServeStyle.gql", Input: sourceData("schema/enums/ServeStyle.gql"), BuiltIn: false},
 	{Name: "schema/enums/ServiceBoxSide.gql", Input: sourceData("schema/enums/ServiceBoxSide.gql"), BuiltIn: false},
+	{Name: "schema/enums/ShotType.gql", Input: sourceData("schema/enums/ShotType.gql"), BuiltIn: false},
 	{Name: "schema/enums/TeamSide.gql", Input: sourceData("schema/enums/TeamSide.gql"), BuiltIn: false},
+	{Name: "schema/inputs/AddPointInput.gql", Input: sourceData("schema/inputs/AddPointInput.gql"), BuiltIn: false},
+	{Name: "schema/inputs/AddShotInput.gql", Input: sourceData("schema/inputs/AddShotInput.gql"), BuiltIn: false},
 	{Name: "schema/inputs/InitiateMatchUpInput.gql", Input: sourceData("schema/inputs/InitiateMatchUpInput.gql"), BuiltIn: false},
 	{Name: "schema/inputs/MatchUpFormatInput.gql", Input: sourceData("schema/inputs/MatchUpFormatInput.gql"), BuiltIn: false},
 	{Name: "schema/inputs/ParticipantInput.gql", Input: sourceData("schema/inputs/ParticipantInput.gql"), BuiltIn: false},
@@ -833,6 +958,70 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_addPoint_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_addPoint_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_addPoint_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.AddPointInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNAddPointInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddPointInput(ctx, tmp)
+	}
+
+	var zeroVal model.AddPointInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_addShot_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := ec.field_Mutation_addShot_argsMatchUpPointID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["matchUpPointId"] = arg0
+	arg1, err := ec.field_Mutation_addShot_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg1
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_addShot_argsMatchUpPointID(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (string, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpPointId"))
+	if tmp, ok := rawArgs["matchUpPointId"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_addShot_argsInput(
+	ctx context.Context,
+	rawArgs map[string]any,
+) (model.AddShotInput, error) {
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNAddShotInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddShotInput(ctx, tmp)
+	}
+
+	var zeroVal model.AddShotInput
+	return zeroVal, nil
+}
 
 func (ec *executionContext) field_Mutation_initiateMatchUp_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
@@ -1576,6 +1765,285 @@ func (ec *executionContext) fieldContext_MatchUp_initialServer(_ context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _MatchUp_currentServer(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_currentServer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentServer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(primitive.ObjectID)
+	fc.Result = res
+	return ec.marshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_currentServer(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ObjectID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUp_currentServingSide(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_currentServingSide(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentServingSide, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.TeamSide)
+	fc.Result = res
+	return ec.marshalNTeamSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_currentServingSide(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TeamSide does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUp_points(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_points(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Points, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.MatchUpPoint)
+	fc.Result = res
+	return ec.marshalNMatchUpPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpPointᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_points(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MatchUpPoint_id(ctx, field)
+			case "matchUpId":
+				return ec.fieldContext_MatchUpPoint_matchUpId(ctx, field)
+			case "winner":
+				return ec.fieldContext_MatchUpPoint_winner(ctx, field)
+			case "winReason":
+				return ec.fieldContext_MatchUpPoint_winReason(ctx, field)
+			case "server":
+				return ec.fieldContext_MatchUpPoint_server(ctx, field)
+			case "scoreBeforePoint":
+				return ec.fieldContext_MatchUpPoint_scoreBeforePoint(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_MatchUpPoint_timestamp(ctx, field)
+			case "shots":
+				return ec.fieldContext_MatchUpPoint_shots(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpPoint", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUp_winner(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_winner(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Winner, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TeamSide)
+	fc.Result = res
+	return ec.marshalOTeamSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_winner(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TeamSide does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUp_loser(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_loser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Loser, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TeamSide)
+	fc.Result = res
+	return ec.marshalOTeamSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_loser(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type TeamSide does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUp_currentScore(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUp_currentScore(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CurrentScore, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.MatchUpScore)
+	fc.Result = res
+	return ec.marshalOMatchUpScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpScore(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUp_currentScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUp",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "sets":
+				return ec.fieldContext_MatchUpScore_sets(ctx, field)
+			case "isMatchComplete":
+				return ec.fieldContext_MatchUpScore_isMatchComplete(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpScore", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MatchUp_scheduledStartTime(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MatchUp_scheduledStartTime(ctx, field)
 	if err != nil {
@@ -1922,8 +2390,6 @@ func (ec *executionContext) fieldContext_MatchUpFormat_setFormat(_ context.Conte
 				return ec.fieldContext_SetFormat_mustWinByTwo(ctx, field)
 			case "tiebreakFormat":
 				return ec.fieldContext_SetFormat_tiebreakFormat(ctx, field)
-			case "tiebreakAt":
-				return ec.fieldContext_SetFormat_tiebreakAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SetFormat", field.Name)
 		},
@@ -1975,8 +2441,6 @@ func (ec *executionContext) fieldContext_MatchUpFormat_finalSetFormat(_ context.
 				return ec.fieldContext_SetFormat_mustWinByTwo(ctx, field)
 			case "tiebreakFormat":
 				return ec.fieldContext_SetFormat_tiebreakFormat(ctx, field)
-			case "tiebreakAt":
-				return ec.fieldContext_SetFormat_tiebreakAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SetFormat", field.Name)
 		},
@@ -2116,8 +2580,8 @@ func (ec *executionContext) fieldContext_MatchUpPoint_winner(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _MatchUpPoint_loser(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpPoint) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MatchUpPoint_loser(ctx, field)
+func (ec *executionContext) _MatchUpPoint_winReason(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpPoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpPoint_winReason(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2130,31 +2594,28 @@ func (ec *executionContext) _MatchUpPoint_loser(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Loser, nil
+		return obj.WinReason, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(model.TeamSide)
+	res := resTmp.(*model.PointWinReason)
 	fc.Result = res
-	return ec.marshalNTeamSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx, field.Selections, res)
+	return ec.marshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MatchUpPoint_loser(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MatchUpPoint_winReason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "MatchUpPoint",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type TeamSide does not have child fields")
+			return nil, errors.New("field of type PointWinReason does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2212,6 +2673,53 @@ func (ec *executionContext) fieldContext_MatchUpPoint_server(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _MatchUpPoint_scoreBeforePoint(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpPoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpPoint_scoreBeforePoint(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ScoreBeforePoint, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.MatchUpScore)
+	fc.Result = res
+	return ec.marshalOMatchUpScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpScore(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpPoint_scoreBeforePoint(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpPoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "sets":
+				return ec.fieldContext_MatchUpScore_sets(ctx, field)
+			case "isMatchComplete":
+				return ec.fieldContext_MatchUpScore_isMatchComplete(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpScore", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _MatchUpPoint_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpPoint) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MatchUpPoint_timestamp(ctx, field)
 	if err != nil {
@@ -2248,6 +2756,66 @@ func (ec *executionContext) fieldContext_MatchUpPoint_timestamp(_ context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpPoint_shots(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpPoint) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpPoint_shots(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Shots, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.MatchUpShot)
+	fc.Result = res
+	return ec.marshalNMatchUpShot2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpShotᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpPoint_shots(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpPoint",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "shotType":
+				return ec.fieldContext_MatchUpShot_shotType(ctx, field)
+			case "groundStrokeType":
+				return ec.fieldContext_MatchUpShot_groundStrokeType(ctx, field)
+			case "groundStrokeStyle":
+				return ec.fieldContext_MatchUpShot_groundStrokeStyle(ctx, field)
+			case "serveStyle":
+				return ec.fieldContext_MatchUpShot_serveStyle(ctx, field)
+			case "courtSide":
+				return ec.fieldContext_MatchUpShot_courtSide(ctx, field)
+			case "serviceBoxSide":
+				return ec.fieldContext_MatchUpShot_serviceBoxSide(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_MatchUpShot_timestamp(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpShot", field.Name)
 		},
 	}
 	return fc, nil
@@ -2302,56 +2870,6 @@ func (ec *executionContext) fieldContext_MatchUpScore_sets(_ context.Context, fi
 				return ec.fieldContext_SetScore_isTiebreakActive(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type SetScore", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _MatchUpScore_currentGame(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpScore) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MatchUpScore_currentGame(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CurrentGame, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.SideGameScore)
-	fc.Result = res
-	return ec.marshalNSideGameScore2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSideGameScoreᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MatchUpScore_currentGame(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MatchUpScore",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "side":
-				return ec.fieldContext_SideGameScore_side(ctx, field)
-			case "inGamePoint":
-				return ec.fieldContext_SideGameScore_inGamePoint(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type SideGameScore", field.Name)
 		},
 	}
 	return fc, nil
@@ -2445,6 +2963,252 @@ func (ec *executionContext) fieldContext_MatchUpShot_shotType(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _MatchUpShot_groundStrokeType(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpShot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpShot_groundStrokeType(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GroundStrokeType, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.GroundStrokeType)
+	fc.Result = res
+	return ec.marshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpShot_groundStrokeType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpShot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type GroundStrokeType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpShot_groundStrokeStyle(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpShot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpShot_groundStrokeStyle(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GroundStrokeStyle, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.GroundStrokeStyle)
+	fc.Result = res
+	return ec.marshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpShot_groundStrokeStyle(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpShot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type GroundStrokeStyle does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpShot_serveStyle(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpShot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpShot_serveStyle(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ServeStyle, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ServeStyle)
+	fc.Result = res
+	return ec.marshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpShot_serveStyle(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpShot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ServeStyle does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpShot_courtSide(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpShot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpShot_courtSide(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CourtSide, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PhysicalCourtSide)
+	fc.Result = res
+	return ec.marshalOPhysicalCourtSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPhysicalCourtSide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpShot_courtSide(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpShot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type PhysicalCourtSide does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpShot_serviceBoxSide(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpShot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpShot_serviceBoxSide(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ServiceBoxSide, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.ServiceBoxSide)
+	fc.Result = res
+	return ec.marshalOServiceBoxSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServiceBoxSide(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpShot_serviceBoxSide(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpShot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ServiceBoxSide does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchUpShot_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpShot) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchUpShot_timestamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalODateTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchUpShot_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchUpShot",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_initiateMatchUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_initiateMatchUp(ctx, field)
 	if err != nil {
@@ -2500,6 +3264,18 @@ func (ec *executionContext) fieldContext_Mutation_initiateMatchUp(ctx context.Co
 				return ec.fieldContext_MatchUp_participants(ctx, field)
 			case "initialServer":
 				return ec.fieldContext_MatchUp_initialServer(ctx, field)
+			case "currentServer":
+				return ec.fieldContext_MatchUp_currentServer(ctx, field)
+			case "currentServingSide":
+				return ec.fieldContext_MatchUp_currentServingSide(ctx, field)
+			case "points":
+				return ec.fieldContext_MatchUp_points(ctx, field)
+			case "winner":
+				return ec.fieldContext_MatchUp_winner(ctx, field)
+			case "loser":
+				return ec.fieldContext_MatchUp_loser(ctx, field)
+			case "currentScore":
+				return ec.fieldContext_MatchUp_currentScore(ctx, field)
 			case "scheduledStartTime":
 				return ec.fieldContext_MatchUp_scheduledStartTime(ctx, field)
 			case "startTime":
@@ -2524,6 +3300,150 @@ func (ec *executionContext) fieldContext_Mutation_initiateMatchUp(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_initiateMatchUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addPoint(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addPoint(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddPoint(rctx, fc.Args["input"].(model.AddPointInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MatchUpPoint)
+	fc.Result = res
+	return ec.marshalNMatchUpPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpPoint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addPoint(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_MatchUpPoint_id(ctx, field)
+			case "matchUpId":
+				return ec.fieldContext_MatchUpPoint_matchUpId(ctx, field)
+			case "winner":
+				return ec.fieldContext_MatchUpPoint_winner(ctx, field)
+			case "winReason":
+				return ec.fieldContext_MatchUpPoint_winReason(ctx, field)
+			case "server":
+				return ec.fieldContext_MatchUpPoint_server(ctx, field)
+			case "scoreBeforePoint":
+				return ec.fieldContext_MatchUpPoint_scoreBeforePoint(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_MatchUpPoint_timestamp(ctx, field)
+			case "shots":
+				return ec.fieldContext_MatchUpPoint_shots(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpPoint", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addPoint_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_addShot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_addShot(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AddShot(rctx, fc.Args["matchUpPointId"].(string), fc.Args["input"].(model.AddShotInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.MatchUpShot)
+	fc.Result = res
+	return ec.marshalNMatchUpShot2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpShot(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_addShot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "shotType":
+				return ec.fieldContext_MatchUpShot_shotType(ctx, field)
+			case "groundStrokeType":
+				return ec.fieldContext_MatchUpShot_groundStrokeType(ctx, field)
+			case "groundStrokeStyle":
+				return ec.fieldContext_MatchUpShot_groundStrokeStyle(ctx, field)
+			case "serveStyle":
+				return ec.fieldContext_MatchUpShot_serveStyle(ctx, field)
+			case "courtSide":
+				return ec.fieldContext_MatchUpShot_courtSide(ctx, field)
+			case "serviceBoxSide":
+				return ec.fieldContext_MatchUpShot_serviceBoxSide(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_MatchUpShot_timestamp(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MatchUpShot", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_addShot_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3176,49 +4096,10 @@ func (ec *executionContext) fieldContext_SetFormat_tiebreakFormat(_ context.Cont
 				return ec.fieldContext_TiebreakFormat_points(ctx, field)
 			case "mustWinByTwo":
 				return ec.fieldContext_TiebreakFormat_mustWinByTwo(ctx, field)
+			case "tiebreakAt":
+				return ec.fieldContext_TiebreakFormat_tiebreakAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TiebreakFormat", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SetFormat_tiebreakAt(ctx context.Context, field graphql.CollectedField, obj *model.SetFormat) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SetFormat_tiebreakAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TiebreakAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SetFormat_tiebreakAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SetFormat",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3311,6 +4192,8 @@ func (ec *executionContext) fieldContext_SetScore_sides(_ context.Context, field
 				return ec.fieldContext_SideSetScore_side(ctx, field)
 			case "gamesWon":
 				return ec.fieldContext_SideSetScore_gamesWon(ctx, field)
+			case "inGameScore":
+				return ec.fieldContext_SideSetScore_inGameScore(ctx, field)
 			case "tiebreakPoints":
 				return ec.fieldContext_SideSetScore_tiebreakPoints(ctx, field)
 			}
@@ -3408,94 +4291,6 @@ func (ec *executionContext) fieldContext_SetScore_isTiebreakActive(_ context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _SideGameScore_side(ctx context.Context, field graphql.CollectedField, obj *model.SideGameScore) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SideGameScore_side(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Side, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(model.TeamSide)
-	fc.Result = res
-	return ec.marshalNTeamSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SideGameScore_side(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SideGameScore",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type TeamSide does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SideGameScore_inGamePoint(ctx context.Context, field graphql.CollectedField, obj *model.SideGameScore) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SideGameScore_inGamePoint(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.InGamePoint, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(model.InGameScore)
-	fc.Result = res
-	return ec.marshalNInGameScore2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐInGameScore(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SideGameScore_inGamePoint(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SideGameScore",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type InGameScore does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _SideSetScore_side(ctx context.Context, field graphql.CollectedField, obj *model.SideSetScore) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SideSetScore_side(ctx, field)
 	if err != nil {
@@ -3579,6 +4374,50 @@ func (ec *executionContext) fieldContext_SideSetScore_gamesWon(_ context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SideSetScore_inGameScore(ctx context.Context, field graphql.CollectedField, obj *model.SideSetScore) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SideSetScore_inGameScore(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.InGameScore, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model.InGameScore)
+	fc.Result = res
+	return ec.marshalNInGameScore2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐInGameScore(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SideSetScore_inGameScore(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SideSetScore",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type InGameScore does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3708,6 +4547,47 @@ func (ec *executionContext) fieldContext_TiebreakFormat_mustWinByTwo(_ context.C
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TiebreakFormat_tiebreakAt(ctx context.Context, field graphql.CollectedField, obj *model.TiebreakFormat) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TiebreakFormat_tiebreakAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TiebreakAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TiebreakFormat_tiebreakAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TiebreakFormat",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5527,6 +6407,102 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAddPointInput(ctx context.Context, obj any) (model.AddPointInput, error) {
+	var it model.AddPointInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"matchUpId", "winner", "winReason", "shots"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "matchUpId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("matchUpId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.MatchUpID = data
+		case "winner":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("winner"))
+			data, err := ec.unmarshalNTeamSide2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Winner = data
+		case "winReason":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("winReason"))
+			data, err := ec.unmarshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.WinReason = data
+		case "shots":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shots"))
+			data, err := ec.unmarshalOAddShotInput2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddShotInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Shots = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputAddShotInput(ctx context.Context, obj any) (model.AddShotInput, error) {
+	var it model.AddShotInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"shotType", "groundStrokeType", "groundStrokeStyle", "serveStyle"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "shotType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shotType"))
+			data, err := ec.unmarshalNShotType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ShotType = data
+		case "groundStrokeType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groundStrokeType"))
+			data, err := ec.unmarshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GroundStrokeType = data
+		case "groundStrokeStyle":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("groundStrokeStyle"))
+			data, err := ec.unmarshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.GroundStrokeStyle = data
+		case "serveStyle":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("serveStyle"))
+			data, err := ec.unmarshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ServeStyle = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputInitiateMatchUpInput(ctx context.Context, obj any) (model.InitiateMatchUpInput, error) {
 	var it model.InitiateMatchUpInput
 	asMap := map[string]any{}
@@ -5682,7 +6658,7 @@ func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"numberOfGames", "deuceType", "mustWinByTwo", "tiebreakFormat", "tiebreakAt"}
+	fieldsInOrder := [...]string{"numberOfGames", "deuceType", "mustWinByTwo", "tiebreakFormat"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5717,13 +6693,6 @@ func (ec *executionContext) unmarshalInputSetFormatInput(ctx context.Context, ob
 				return it, err
 			}
 			it.TiebreakFormat = data
-		case "tiebreakAt":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tiebreakAt"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TiebreakAt = data
 		}
 	}
 
@@ -5737,7 +6706,7 @@ func (ec *executionContext) unmarshalInputTiebreakFormatInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"points", "mustWinByTwo"}
+	fieldsInOrder := [...]string{"points", "mustWinByTwo", "tiebreakAt"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5758,6 +6727,13 @@ func (ec *executionContext) unmarshalInputTiebreakFormatInput(ctx context.Contex
 				return it, err
 			}
 			it.MustWinByTwo = data
+		case "tiebreakAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tiebreakAt"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TiebreakAt = data
 		}
 	}
 
@@ -5867,6 +6843,27 @@ func (ec *executionContext) _MatchUp(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "currentServer":
+			out.Values[i] = ec._MatchUp_currentServer(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "currentServingSide":
+			out.Values[i] = ec._MatchUp_currentServingSide(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "points":
+			out.Values[i] = ec._MatchUp_points(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "winner":
+			out.Values[i] = ec._MatchUp_winner(ctx, field, obj)
+		case "loser":
+			out.Values[i] = ec._MatchUp_loser(ctx, field, obj)
+		case "currentScore":
+			out.Values[i] = ec._MatchUp_currentScore(ctx, field, obj)
 		case "scheduledStartTime":
 			out.Values[i] = ec._MatchUp_scheduledStartTime(ctx, field, obj)
 		case "startTime":
@@ -5983,18 +6980,22 @@ func (ec *executionContext) _MatchUpPoint(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "loser":
-			out.Values[i] = ec._MatchUpPoint_loser(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
+		case "winReason":
+			out.Values[i] = ec._MatchUpPoint_winReason(ctx, field, obj)
 		case "server":
 			out.Values[i] = ec._MatchUpPoint_server(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "scoreBeforePoint":
+			out.Values[i] = ec._MatchUpPoint_scoreBeforePoint(ctx, field, obj)
 		case "timestamp":
 			out.Values[i] = ec._MatchUpPoint_timestamp(ctx, field, obj)
+		case "shots":
+			out.Values[i] = ec._MatchUpPoint_shots(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6031,11 +7032,6 @@ func (ec *executionContext) _MatchUpScore(ctx context.Context, sel ast.Selection
 			out.Values[i] = graphql.MarshalString("MatchUpScore")
 		case "sets":
 			out.Values[i] = ec._MatchUpScore_sets(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "currentGame":
-			out.Values[i] = ec._MatchUpScore_currentGame(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6083,6 +7079,18 @@ func (ec *executionContext) _MatchUpShot(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "groundStrokeType":
+			out.Values[i] = ec._MatchUpShot_groundStrokeType(ctx, field, obj)
+		case "groundStrokeStyle":
+			out.Values[i] = ec._MatchUpShot_groundStrokeStyle(ctx, field, obj)
+		case "serveStyle":
+			out.Values[i] = ec._MatchUpShot_serveStyle(ctx, field, obj)
+		case "courtSide":
+			out.Values[i] = ec._MatchUpShot_courtSide(ctx, field, obj)
+		case "serviceBoxSide":
+			out.Values[i] = ec._MatchUpShot_serviceBoxSide(ctx, field, obj)
+		case "timestamp":
+			out.Values[i] = ec._MatchUpShot_timestamp(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6128,6 +7136,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "initiateMatchUp":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_initiateMatchUp(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addPoint":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addPoint(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "addShot":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_addShot(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -6370,8 +7392,6 @@ func (ec *executionContext) _SetFormat(ctx context.Context, sel ast.SelectionSet
 			}
 		case "tiebreakFormat":
 			out.Values[i] = ec._SetFormat_tiebreakFormat(ctx, field, obj)
-		case "tiebreakAt":
-			out.Values[i] = ec._SetFormat_tiebreakAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6449,50 +7469,6 @@ func (ec *executionContext) _SetScore(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
-var sideGameScoreImplementors = []string{"SideGameScore"}
-
-func (ec *executionContext) _SideGameScore(ctx context.Context, sel ast.SelectionSet, obj *model.SideGameScore) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, sideGameScoreImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SideGameScore")
-		case "side":
-			out.Values[i] = ec._SideGameScore_side(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "inGamePoint":
-			out.Values[i] = ec._SideGameScore_inGamePoint(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
 var sideSetScoreImplementors = []string{"SideSetScore"}
 
 func (ec *executionContext) _SideSetScore(ctx context.Context, sel ast.SelectionSet, obj *model.SideSetScore) graphql.Marshaler {
@@ -6511,6 +7487,11 @@ func (ec *executionContext) _SideSetScore(ctx context.Context, sel ast.Selection
 			}
 		case "gamesWon":
 			out.Values[i] = ec._SideSetScore_gamesWon(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "inGameScore":
+			out.Values[i] = ec._SideSetScore_inGameScore(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6560,6 +7541,8 @@ func (ec *executionContext) _TiebreakFormat(ctx context.Context, sel ast.Selecti
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "tiebreakAt":
+			out.Values[i] = ec._TiebreakFormat_tiebreakAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6945,6 +7928,21 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
+func (ec *executionContext) unmarshalNAddPointInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddPointInput(ctx context.Context, v any) (model.AddPointInput, error) {
+	res, err := ec.unmarshalInputAddPointInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAddShotInput2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddShotInput(ctx context.Context, v any) (model.AddShotInput, error) {
+	res, err := ec.unmarshalInputAddShotInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNAddShotInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddShotInput(ctx context.Context, v any) (*model.AddShotInput, error) {
+	res, err := ec.unmarshalInputAddShotInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7072,6 +8070,122 @@ func (ec *executionContext) marshalNMatchUpFormat2ᚖgithubᚗcomᚋCourtIQᚋco
 func (ec *executionContext) unmarshalNMatchUpFormatInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpFormatInput(ctx context.Context, v any) (*model.MatchUpFormatInput, error) {
 	res, err := ec.unmarshalInputMatchUpFormatInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMatchUpPoint2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpPoint(ctx context.Context, sel ast.SelectionSet, v model.MatchUpPoint) graphql.Marshaler {
+	return ec._MatchUpPoint(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMatchUpPoint2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpPointᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.MatchUpPoint) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMatchUpPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpPoint(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNMatchUpPoint2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpPoint(ctx context.Context, sel ast.SelectionSet, v *model.MatchUpPoint) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MatchUpPoint(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMatchUpShot2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpShot(ctx context.Context, sel ast.SelectionSet, v model.MatchUpShot) graphql.Marshaler {
+	return ec._MatchUpShot(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMatchUpShot2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpShotᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.MatchUpShot) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMatchUpShot2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpShot(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNMatchUpShot2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpShot(ctx context.Context, sel ast.SelectionSet, v *model.MatchUpShot) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MatchUpShot(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNMatchUpStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpStatus(ctx context.Context, v any) (model.MatchUpStatus, error) {
@@ -7292,60 +8406,6 @@ func (ec *executionContext) unmarshalNShotType2githubᚗcomᚋCourtIQᚋcourtiq�
 
 func (ec *executionContext) marshalNShotType2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐShotType(ctx context.Context, sel ast.SelectionSet, v model.ShotType) graphql.Marshaler {
 	return v
-}
-
-func (ec *executionContext) marshalNSideGameScore2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSideGameScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SideGameScore) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNSideGameScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSideGameScore(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNSideGameScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSideGameScore(ctx context.Context, sel ast.SelectionSet, v *model.SideGameScore) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SideGameScore(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSideSetScore2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSideSetScoreᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.SideSetScore) graphql.Marshaler {
@@ -7867,6 +8927,26 @@ func (ec *executionContext) marshalNfederation__Scope2ᚕᚕstringᚄ(ctx contex
 	return ret
 }
 
+func (ec *executionContext) unmarshalOAddShotInput2ᚕᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddShotInputᚄ(ctx context.Context, v any) ([]*model.AddShotInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.AddShotInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNAddShotInput2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐAddShotInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -7925,6 +9005,38 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
+func (ec *executionContext) unmarshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx context.Context, v any) (*model.GroundStrokeStyle, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.GroundStrokeStyle)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOGroundStrokeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeStyle(ctx context.Context, sel ast.SelectionSet, v *model.GroundStrokeStyle) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx context.Context, v any) (*model.GroundStrokeType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.GroundStrokeType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOGroundStrokeType2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐGroundStrokeType(ctx context.Context, sel ast.SelectionSet, v *model.GroundStrokeType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v any) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -7939,6 +9051,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOMatchUpScore2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpScore(ctx context.Context, sel ast.SelectionSet, v *model.MatchUpScore) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MatchUpScore(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalONumberOfGames2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋschemaᚋscalarsᚐNumberOfGames(ctx context.Context, v any) (*scalars.NumberOfGames, error) {
@@ -7971,6 +9090,70 @@ func (ec *executionContext) marshalONumberOfSets2ᚖgithubᚗcomᚋCourtIQᚋcou
 	}
 	res := scalars.MarshalNumberOfSets(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOPhysicalCourtSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPhysicalCourtSide(ctx context.Context, v any) (*model.PhysicalCourtSide, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.PhysicalCourtSide)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPhysicalCourtSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPhysicalCourtSide(ctx context.Context, sel ast.SelectionSet, v *model.PhysicalCourtSide) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx context.Context, v any) (*model.PointWinReason, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.PointWinReason)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPointWinReason2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐPointWinReason(ctx context.Context, sel ast.SelectionSet, v *model.PointWinReason) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx context.Context, v any) (*model.ServeStyle, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.ServeStyle)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOServeStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServeStyle(ctx context.Context, sel ast.SelectionSet, v *model.ServeStyle) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOServiceBoxSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServiceBoxSide(ctx context.Context, v any) (*model.ServiceBoxSide, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.ServiceBoxSide)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOServiceBoxSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐServiceBoxSide(ctx context.Context, sel ast.SelectionSet, v *model.ServiceBoxSide) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOSetFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐSetFormat(ctx context.Context, sel ast.SelectionSet, v *model.SetFormat) graphql.Marshaler {
@@ -8050,6 +9233,22 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOTeamSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx context.Context, v any) (*model.TeamSide, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.TeamSide)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTeamSide2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTeamSide(ctx context.Context, sel ast.SelectionSet, v *model.TeamSide) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOTiebreakFormat2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐTiebreakFormat(ctx context.Context, sel ast.SelectionSet, v *model.TiebreakFormat) graphql.Marshaler {
