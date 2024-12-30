@@ -2,7 +2,7 @@
 Used to create a new tennis match with the specified type, format, and participants.
 If 'visibility' is not provided, it defaults to 'PRIVATE'.
 """
-input CreateMatchUpInput {
+input InitiateMatchUpInput {
   """
   The type of match, e.g., SINGLES or DOUBLES.
   """
@@ -27,7 +27,7 @@ input CreateMatchUpInput {
   """
   The participant (by ObjectID) who will serve first.
   """
-  initalServer: ObjectID!
+  initialServer: ObjectID!
 
   """
   Determines who can view or access details of the match; defaults to PRIVATE.

@@ -14,7 +14,7 @@ import (
 
 // Used to create a new tennis match with the specified type, format, and participants.
 // If 'visibility' is not provided, it defaults to 'PRIVATE'.
-type CreateMatchUpInput struct {
+type InitiateMatchUpInput struct {
 	// The type of match, e.g., SINGLES or DOUBLES.
 	MatchUpType MatchUpType `json:"matchUpType" bson:"matchUpType"`
 	// The format and rules for this match (sets, tiebreak details, etc.).
@@ -25,7 +25,7 @@ type CreateMatchUpInput struct {
 	// a parent entity).
 	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
 	// The participant (by ObjectID) who will serve first.
-	InitalServer primitive.ObjectID `json:"initalServer" bson:"initalServer"`
+	InitialServer primitive.ObjectID `json:"initialServer" bson:"initialServer"`
 	// Determines who can view or access details of the match; defaults to PRIVATE.
 	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
@@ -48,6 +48,7 @@ type MatchUp struct {
 	MatchUpType        MatchUpType        `json:"matchUpType" bson:"matchUpType"`
 	MatchUpStatus      MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
 	Participants       []*Participant     `json:"participants" bson:"participants"`
+	InitialServer      primitive.ObjectID `json:"initialServer" bson:"initialServer"`
 	ScheduledStartTime *time.Time         `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
 	StartTime          *time.Time         `json:"startTime,omitempty" bson:"startTime,omitempty"`
 	EndTime            *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
@@ -83,9 +84,12 @@ type MatchUpFormatInput struct {
 }
 
 type MatchUpPoint struct {
-	ID     primitive.ObjectID `json:"id" bson:"_id"`
-	Winner TeamSide           `json:"winner" bson:"winner"`
-	Loser  TeamSide           `json:"loser" bson:"loser"`
+	ID        primitive.ObjectID `json:"id" bson:"_id"`
+	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
+	Winner    TeamSide           `json:"winner" bson:"winner"`
+	Loser     TeamSide           `json:"loser" bson:"loser"`
+	Server    *Participant       `json:"server" bson:"server"`
+	Timestamp *time.Time         `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
 }
 
 // The main container for all real-time or final scoring data.
@@ -104,6 +108,10 @@ type MatchUpScore struct {
 	// Indicates if the match is fully decided (someone reached
 	// the required sets).
 	IsMatchComplete bool `json:"isMatchComplete" bson:"isMatchComplete"`
+}
+
+type MatchUpShot struct {
+	ShotType ShotType `json:"shotType" bson:"shotType"`
 }
 
 type Mutation struct {

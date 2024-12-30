@@ -1,5 +1,17 @@
 type MatchUpPoint {
     id: ObjectID!
+    matchUpId: ObjectID!
     winner: TeamSide!
     loser: TeamSide!
+
+    server: Participant!
+
+    timestamp: DateTime,
+
+
+    # shots: [Shot!]!
+}
+
+type MatchUpShot {
+    shotType: ShotType!
 }

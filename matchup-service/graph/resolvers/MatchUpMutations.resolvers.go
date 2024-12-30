@@ -12,7 +12,7 @@ import (
 )
 
 // InitiateMatchUp is the resolver for the initiateMatchUp field.
-func (r *mutationResolver) InitiateMatchUp(ctx context.Context, input model.CreateMatchUpInput) (*model.MatchUp, error) {
+func (r *mutationResolver) InitiateMatchUp(ctx context.Context, input model.InitiateMatchUpInput) (*model.MatchUp, error) {
 	return r.MatchupService.InitiateMatchUp(ctx, input)
 }
 
