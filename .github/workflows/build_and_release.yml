@@ -50,14 +50,6 @@ jobs:
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ env.SVC_NAME }}
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
@@ -108,14 +100,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ env.SVC_NAME }}
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -174,14 +158,6 @@ jobs:
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ env.SVC_NAME }}
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
@@ -232,14 +208,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ env.SVC_NAME }}
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -298,14 +266,6 @@ jobs:
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ env.SVC_NAME }}
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-
       - name: Authenticate to Google Cloud
         id: auth
         uses: google-github-actions/auth@v2
@@ -356,14 +316,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./${{ env.SVC_NAME }}/Dockerfile
-          push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./${{ env.SVC_NAME }}
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
