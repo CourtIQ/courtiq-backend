@@ -143,6 +143,7 @@ func (s *EquipmentService) CreateTennisString(ctx context.Context, input model.C
 		ModelID:       input.ModelID,
 		Tension:       utils.ConvertStringTensionInput(input.Tension),
 		StringingDate: input.StringingDate,
+		BurstDate:     input.BurstDate,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
 		Type:          model.EquipmentTypeTennisString,
