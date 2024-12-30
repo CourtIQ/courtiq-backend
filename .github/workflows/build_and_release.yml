@@ -45,7 +45,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ env.SVC_NAME }}
+          context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -107,7 +107,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ env.SVC_NAME }}
+          context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -169,7 +169,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ env.SVC_NAME }}
+          context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -231,7 +231,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ env.SVC_NAME }}
+          context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -293,7 +293,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ env.SVC_NAME }}
+          context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
@@ -355,7 +355,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
-          context: ./${{ env.SVC_NAME }}
+          context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
           tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
