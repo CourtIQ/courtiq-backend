@@ -62,6 +62,8 @@ type InitiateMatchUpInput struct {
 	InitialServer primitive.ObjectID `json:"initialServer" bson:"initialServer"`
 	// Determines who can view or access details of the match; defaults to PRIVATE.
 	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
+	// The style of tracking used to record match data.
+	TrackingStyle *MatchUpTrackingStyle `json:"trackingStyle,omitempty" bson:"trackingStyle,omitempty"`
 }
 
 // Provides structured geographical details about a user's location.
@@ -75,26 +77,27 @@ type Location struct {
 }
 
 type MatchUp struct {
-	ID                 primitive.ObjectID `json:"id" bson:"_id"`
-	Owner              primitive.ObjectID `json:"owner" bson:"owner"`
-	MatchUpFormat      *MatchUpFormat     `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpTracker     primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
-	MatchUpType        MatchUpType        `json:"matchUpType" bson:"matchUpType"`
-	MatchUpStatus      MatchUpStatus      `json:"matchUpStatus" bson:"matchUpStatus"`
-	Participants       []*Participant     `json:"participants" bson:"participants"`
-	InitialServer      primitive.ObjectID `json:"initialServer" bson:"initialServer"`
-	CurrentServer      primitive.ObjectID `json:"currentServer" bson:"currentServer"`
-	CurrentServingSide TeamSide           `json:"currentServingSide" bson:"currentServingSide"`
-	Points             []*MatchUpPoint    `json:"points" bson:"points"`
-	Winner             *TeamSide          `json:"winner,omitempty" bson:"winner,omitempty"`
-	Loser              *TeamSide          `json:"loser,omitempty" bson:"loser,omitempty"`
-	CurrentScore       *MatchUpScore      `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
-	ScheduledStartTime *time.Time         `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
-	StartTime          *time.Time         `json:"startTime,omitempty" bson:"startTime,omitempty"`
-	EndTime            *time.Time         `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt          time.Time          `json:"createdAt" bson:"createdAt"`
-	LastUpdated        time.Time          `json:"lastUpdated" bson:"lastUpdated"`
-	Visibility         Visibility         `json:"visibility" bson:"visibility"`
+	ID                 primitive.ObjectID   `json:"id" bson:"_id"`
+	Owner              primitive.ObjectID   `json:"owner" bson:"owner"`
+	MatchUpFormat      *MatchUpFormat       `json:"matchUpFormat" bson:"matchUpFormat"`
+	MatchUpTracker     primitive.ObjectID   `json:"matchUpTracker" bson:"matchUpTracker"`
+	MatchUpType        MatchUpType          `json:"matchUpType" bson:"matchUpType"`
+	MatchUpStatus      MatchUpStatus        `json:"matchUpStatus" bson:"matchUpStatus"`
+	Participants       []*Participant       `json:"participants" bson:"participants"`
+	InitialServer      primitive.ObjectID   `json:"initialServer" bson:"initialServer"`
+	CurrentServer      primitive.ObjectID   `json:"currentServer" bson:"currentServer"`
+	CurrentServingSide TeamSide             `json:"currentServingSide" bson:"currentServingSide"`
+	Points             []*MatchUpPoint      `json:"points" bson:"points"`
+	TrackingStyle      MatchUpTrackingStyle `json:"trackingStyle" bson:"trackingStyle"`
+	Winner             *TeamSide            `json:"winner,omitempty" bson:"winner,omitempty"`
+	Loser              *TeamSide            `json:"loser,omitempty" bson:"loser,omitempty"`
+	CurrentScore       *MatchUpScore        `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
+	ScheduledStartTime *time.Time           `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
+	StartTime          *time.Time           `json:"startTime,omitempty" bson:"startTime,omitempty"`
+	EndTime            *time.Time           `json:"endTime,omitempty" bson:"endTime,omitempty"`
+	CreatedAt          time.Time            `json:"createdAt" bson:"createdAt"`
+	LastUpdated        time.Time            `json:"lastUpdated" bson:"lastUpdated"`
+	Visibility         Visibility           `json:"visibility" bson:"visibility"`
 }
 
 // Overall "ruleset" of a tennis match:
@@ -580,6 +583,53 @@ func (e *MatchUpStatus) UnmarshalGQL(v any) error {
 }
 
 func (e MatchUpStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Indicates different levels of tracking complexity or granularity.
+type MatchUpTrackingStyle string
+
+const (
+	// Basic minimal tracking.
+	MatchUpTrackingStyleBeginner MatchUpTrackingStyle = "BEGINNER"
+	// Moderately detailed tracking.
+	MatchUpTrackingStyleIntermediate MatchUpTrackingStyle = "INTERMEDIATE"
+	// Most detailed tracking, for power users or deep analysis.
+	MatchUpTrackingStyleAdvanced MatchUpTrackingStyle = "ADVANCED"
+)
+
+var AllMatchUpTrackingStyle = []MatchUpTrackingStyle{
+	MatchUpTrackingStyleBeginner,
+	MatchUpTrackingStyleIntermediate,
+	MatchUpTrackingStyleAdvanced,
+}
+
+func (e MatchUpTrackingStyle) IsValid() bool {
+	switch e {
+	case MatchUpTrackingStyleBeginner, MatchUpTrackingStyleIntermediate, MatchUpTrackingStyleAdvanced:
+		return true
+	}
+	return false
+}
+
+func (e MatchUpTrackingStyle) String() string {
+	return string(e)
+}
+
+func (e *MatchUpTrackingStyle) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = MatchUpTrackingStyle(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid MatchUpTrackingStyle", str)
+	}
+	return nil
+}
+
+func (e MatchUpTrackingStyle) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

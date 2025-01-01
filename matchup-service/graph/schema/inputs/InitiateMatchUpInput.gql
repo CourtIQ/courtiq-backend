@@ -33,4 +33,9 @@ input InitiateMatchUpInput {
   Determines who can view or access details of the match; defaults to PRIVATE.
   """
   visibility: Visibility = PRIVATE
+
+  """
+  The style of tracking used to record match data.
+  """
+  trackingStyle: MatchUpTrackingStyle = BEGINNER
 }

@@ -1,0 +1,19 @@
+"""
+Indicates different levels of tracking complexity or granularity.
+"""
+enum MatchUpTrackingStyle {
+  """
+  Basic minimal tracking.
+  """
+  BEGINNER
+
+  """
+  Moderately detailed tracking.
+  """
+  INTERMEDIATE
+
+  """
+  Most detailed tracking, for power users or deep analysis.
+  """
+  ADVANCED
+}

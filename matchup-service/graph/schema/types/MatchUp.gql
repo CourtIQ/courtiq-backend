@@ -10,6 +10,7 @@ type MatchUp {
     currentServer: ObjectID!
     currentServingSide: TeamSide!
     points: [MatchUpPoint!]!
+    trackingStyle: MatchUpTrackingStyle!
 
     winner: TeamSide
     loser: TeamSide

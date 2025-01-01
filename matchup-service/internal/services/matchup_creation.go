@@ -38,6 +38,7 @@ func NewMatchUpFromInitiateInput(
 		MatchUpType:    input.MatchUpType,
 		MatchUpStatus:  model.MatchUpStatusScheduled,
 		InitialServer:  input.InitialServer,
+		TrackingStyle:  *input.TrackingStyle,
 		CreatedAt:      now,
 		LastUpdated:    now,
 	}
