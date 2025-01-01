@@ -1,3 +1,5 @@
 extend type Query {
-    getMatchUp(id: ObjectID!): MatchUp!
+    testNumberOfSets(sets: NumberOfSets): NumberOfSets!
+    testNumberOfGames(games: NumberOfGames): NumberOfGames!
+    testTiebreakPoints(games: TiebreakPoints): TiebreakPoints!
 }

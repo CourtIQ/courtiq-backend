@@ -1,5 +1,14 @@
-# Define the type of matchup (Singles vs Doubles)
+"""
+Indicates whether a match is singles (1 vs. 1) or doubles (2 vs. 2).
+"""
 enum MatchUpType {
+  """
+  Each side consists of one player.
+  """
   SINGLES
+
+  """
+  Each side consists of two players.
+  """
   DOUBLES
 }

@@ -1,0 +1,24 @@
+"""
+Represents the information needed to create or link a participant 
+(e.g., a player) in a tennis match. If the participant already exists 
+in the database (i.e., a registered user), 'id' should be provided. 
+If 'id' is omitted or null, the participant will be treated as a 'guest' 
+and stored in a separate guests collection.
+"""
+input ParticipantInput {
+  """
+  If provided, this corresponds to an existing user in the database. 
+  If omitted or null, the participant is treated as a guest and stored separately.
+  """
+  id: ObjectID!
+
+  """
+  The participant's display name.
+  """
+  displayedName: String!
+
+  """
+  The side (TEAM_A or TEAM_B) that this participant will play on.
+  """
+  teamSide: TeamSide!
+}

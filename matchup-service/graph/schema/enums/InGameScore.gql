@@ -1,0 +1,29 @@
+"""
+Represents a single side's in-game scoring state in traditional tennis.
+"""
+enum InGameScore {
+  """
+  0 points in the current game.
+  """
+  ZERO
+
+  """
+  15 points in the current game.
+  """
+  FIFTEEN
+
+  """
+  30 points in the current game.
+  """
+  THIRTY
+
+  """
+  40 points in the current game.
+  """
+  FORTY
+
+  """
+  Advantage. Occurs when both players reach 40.
+  """
+  ADV
+}

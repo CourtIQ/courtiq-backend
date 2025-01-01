@@ -1,0 +1,92 @@
+"""
+Represents one completed point in a tennis match.
+Stores high-level details: who won, how, the previous scoreboard,
+and an array of all shots taken during the rally.
+"""
+type MatchUpPoint {
+  id: ObjectID!
+  matchUpId: ObjectID!
+
+  """
+  Which side ultimately won this point?
+  """
+  winner: TeamSide!
+
+  """
+  Why the winning side prevailed:
+  e.g. ACE, FORCED_ERROR, UNFORCED_ERROR, etc.
+  """
+  winReason: PointWinReason
+
+  """
+  The participant (player) who served on this point.
+  """
+  server: Participant!
+
+  """
+  A snapshot of the scoreboard right before this point was played.
+  Useful for undo or replay logic.
+  """
+  scoreBeforePoint: MatchUpScore
+
+  """
+  When the point ended.
+  """
+  timestamp: DateTime
+
+  """
+  The sequence of shots during the rally (if any).
+  Could be an empty list if it was, for example, an immediate double fault or ace.
+  """
+  shots: [MatchUpShot!]!
+}
+
+"""
+Each shot in a single tennis point. Could be a serve, ground stroke, or volley.
+Shot-level details (like the stroke style, serve style, or physical court side)
+are stored here if relevant.
+"""
+type MatchUpShot {
+  """
+  Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY.
+  """
+  shotType: ShotType!
+
+  """
+  If this is a ground stroke, was it FOREHAND or BACKHAND?
+  Otherwise null.
+  """
+  groundStrokeType: GroundStrokeType
+
+  """
+  If this is a ground stroke, was it a SLICE, TOPSPIN, FLAT, LOB, etc.?
+  Otherwise null.
+  """
+  groundStrokeStyle: GroundStrokeStyle
+
+  """
+  If this is a serve, was it FLAT, KICK, SLICE, or OTHER?
+  Otherwise null.
+  """
+  serveStyle: ServeStyle
+
+  """
+  Which side of the physical court was this shot taken from?
+  Could be relevant for overhead sun, wind, camera angle, etc.
+  If not used, can be null.
+  """
+  courtSide: PhysicalCourtSide
+
+  """
+  Which service box was targeted or stood on if relevant:
+  AD_SIDE or DEUCE_SIDE. 
+  Typically only meaningful for serve or return positions.
+  """
+  serviceBoxSide: ServiceBoxSide
+
+ """
+  When the shot ended.
+  """
+  timestamp: DateTime
+
+}

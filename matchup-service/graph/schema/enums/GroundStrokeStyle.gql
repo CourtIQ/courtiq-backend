@@ -1,10 +1,39 @@
+"""
+Describes the style of a ground stroke (forehand or backhand), 
+e.g., slice, topspin, flat, etc.
+"""
 enum GroundStrokeStyle {
+  """
+  A stroke with a cutting motion that produces backspin on the ball.
+  Often used defensively or for drop shots.
+  """
   SLICE
+
+  """
+  A stroke with heavy topspin, causing the ball to dip and bounce higher.
+  """
   TOPSPIN
+
+  """
+  A relatively straight shot with minimal spin, often used aggressively.
+  """
   FLAT
+
+  """
+  A high, lofted shot, typically used as a defensive measure to push 
+  the opponent back or to clear the net player in doubles.
+  """
   LOB
+
+  """
+  A short shot intended to barely clear the net, forcing the opponent 
+  to run forward.
+  """
   DROP_SHOT
-  CROSSCOURT
-  DOWN_THE_LINE
+
+  """
+  An overhead shot (often called an overhead smash). Usually played 
+  when a high ball or lob comes toward the net player.
+  """
   SMASH
 }

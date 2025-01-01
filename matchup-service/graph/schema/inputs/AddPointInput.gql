@@ -1,0 +1,29 @@
+"""
+Input for adding a completed point to a match. 
+This typically updates the scoreboard, ends the rally, 
+and records who won the point and how.
+"""
+input AddPointInput {
+  """
+  Which match we're adding a point to.
+  """
+  matchUpId: ID!
+
+  """
+  Which team side won the point.
+  """
+  winner: TeamSide!
+
+  """
+  The reason for the point being won 
+  (e.g., ACE, FORCED_ERROR, etc.).
+  """
+  winReason: PointWinReason
+
+  """
+  Optional: An array of shots (SERVE, FOREHAND, etc.) that 
+  led up to this point. Some apps only pass the final shot,
+  or pass them all if you recorded the entire rally.
+  """
+  shots: [AddShotInput!]
+}

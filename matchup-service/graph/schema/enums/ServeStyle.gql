@@ -1,6 +1,25 @@
+"""
+Specifies the style of serve (flat, kick, slice, or other).
+"""
 enum ServeStyle {
+  """
+  A serve with minimal spin, often very fast and direct.
+  """
   FLAT
+
+  """
+  A serve with topspin that causes the ball to jump high upon bouncing.
+  """
   KICK
+
+  """
+  A serve with sidespin, curving the ball in the air and off the court.
+  """
   SLICE
+
+  """
+  Any other specialized serve style (e.g., twist serve), 
+  or unclassified serve approach.
+  """
   OTHER
 }

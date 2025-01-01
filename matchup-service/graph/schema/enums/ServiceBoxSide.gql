@@ -1,0 +1,43 @@
+"""
+Represents which service box a player is serving into or standing on
+during a tennis point. From the server's perspective:
+- The DEUCE_SIDE is on the right side.
+- The AD_SIDE is on the left side.
+"""
+enum ServiceBoxSide {
+  """
+  The right side from the server's perspective, commonly called the 'deuce side'.
+  """
+  DEUCE_SIDE
+
+  """
+  The left side from the server's perspective, commonly called the 'ad side'.
+  """
+  AD_SIDE
+}
+
+##############################
+#                            #
+#            North           #
+#                            #
+#                            #
+##############################
+#              #             #
+#              #             #
+#    Deuce     #      AD     #
+#              #             #
+#              #             #
+##############################
+##############NET#############
+##############################
+#              #             #
+#              #             #
+#     AD       #     Deuce   #
+#              #             #
+#              #             #
+##############################
+#                            #
+#                            #
+#            South           #
+#                            #
+##############################

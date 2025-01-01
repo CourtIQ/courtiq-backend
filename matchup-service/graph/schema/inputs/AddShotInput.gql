@@ -1,0 +1,29 @@
+"""
+Input for adding a single shot to an existing in-progress point. 
+Some shots do not end the point or change the score 
+(e.g., a rally shot in mid-point).
+"""
+input AddShotInput {
+  """
+  Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY, etc.
+  """
+  shotType: ShotType!
+
+  """
+  If GROUND_STROKE: FOREHAND/BACKHAND. 
+  Otherwise null.
+  """
+  groundStrokeType: GroundStrokeType
+
+  """
+  If GROUND_STROKE: SLICE, TOPSPIN, etc. 
+  Otherwise null.
+  """
+  groundStrokeStyle: GroundStrokeStyle
+
+  """
+  If SERVE: FLAT, KICK, SLICE, or OTHER. 
+  Otherwise null.
+  """
+  serveStyle: ServeStyle
+}

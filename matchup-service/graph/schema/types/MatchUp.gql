@@ -1,27 +1,27 @@
 type MatchUp {
     id: ObjectID!
+    owner: ObjectID!
     matchUpFormat: MatchUpFormat!
-    matchUpStatus: MatchUpStatus!
+    matchUpTracker: ObjectID!
     matchUpType: MatchUpType!
-
-    participantIds: [ObjectID!]!
-    participants: ParticipantsMap!
-
-    currentSetIndex: Int
-    currentGameIndexWithinSet: Int
-    currentPointIndexWithinGame: Int
-    currentScore: Score
+    matchUpStatus: MatchUpStatus!
+    participants: [Participant!]!
+    initialServer: ObjectID!
     currentServer: ObjectID!
+    currentServingSide: TeamSide!
+    points: [MatchUpPoint!]!
+    trackingStyle: MatchUpTrackingStyle!
 
-    pointsSequence: [ObjectID!]!
+    winner: TeamSide
+    loser: TeamSide
+    currentScore: MatchUpScore
 
-    startTime: DateTime!
+    # Not to worry about this field for now
+    scheduledStartTime: DateTime
+    startTime: DateTime
     endTime: DateTime
-    createdAt: DateTime!
-    updatedAt: DateTime!
-}
 
-type ParticipantsMap {
-    A: ObjectID!
-    B: ObjectID!
+    createdAt: DateTime!
+    lastUpdated: DateTime!
+    visibility: Visibility!
 }

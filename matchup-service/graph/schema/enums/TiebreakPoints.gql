@@ -1,9 +1,0 @@
-# graph/schema/enums/TiebreakPoints.gql
-enum TiebreakPoints {
-    FIVE
-    SIX
-    SEVEN
-    EIGHT
-    NINE
-    TEN
-}

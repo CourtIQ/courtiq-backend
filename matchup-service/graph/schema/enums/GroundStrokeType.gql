@@ -1,5 +1,14 @@
-
+"""
+Indicates whether a ground stroke is a forehand or backhand.
+"""
 enum GroundStrokeType {
+  """
+  A stroke hit from the dominant side of the body.
+  """
   FOREHAND
+
+  """
+  A stroke hit from the non-dominant side of the body (with one or two hands).
+  """
   BACKHAND
 }

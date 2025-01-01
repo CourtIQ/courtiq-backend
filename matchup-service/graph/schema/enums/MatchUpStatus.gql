@@ -1,11 +1,47 @@
-
+"""
+Represents the different stages or outcomes a tennis match can go through.
+"""
 enum MatchUpStatus {
-    SCHEDULED
-    IN_PROGRESS
-    COMPLETED
-    SUSPENDED
-    CANCELLED
-    ABANDONED
-    RETIRED
-    REQUESTED
+  """
+  The match is scheduled in advance but has not yet started.
+  """
+  SCHEDULED
+
+  """
+  The match is currently in progress.
+  """
+  IN_PROGRESS
+
+  """
+  The match has ended with a clear result (winner determined).
+  """
+  COMPLETED
+
+  """
+  The match has been paused (e.g., due to weather or other external conditions) 
+  and is expected to resume later.
+  """
+  SUSPENDED
+
+  """
+  The match has been canceled and will not be played or resumed.
+  """
+  CANCELLED
+
+  """
+  The match was started but ultimately abandoned partway and will not be completed.
+  """
+  ABANDONED
+
+  """
+  One player (or team) has 'retired' from the match — usually due to injury. 
+  The other player (or team) is declared the winner by default.
+  """
+  RETIRED
+
+  """
+  The match creation or scheduling is in progress, or it is awaiting final 
+  confirmation (e.g., from players or for court availability).
+  """
+  REQUESTED
 }
