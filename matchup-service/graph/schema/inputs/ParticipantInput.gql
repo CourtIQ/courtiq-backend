@@ -10,7 +10,7 @@ input ParticipantInput {
   If provided, this corresponds to an existing user in the database. 
   If omitted or null, the participant is treated as a guest and stored separately.
   """
-  id: ObjectID!
+  id: ObjectID
 
   """
   The participant's display name.

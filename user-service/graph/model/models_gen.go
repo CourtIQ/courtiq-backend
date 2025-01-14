@@ -43,6 +43,7 @@ type UpdateUserInput struct {
 	DateOfBirth *time.Time     `json:"dateOfBirth,omitempty" bson:"dateOfBirth,omitempty"`
 	Bio         *string        `json:"bio,omitempty" bson:"bio,omitempty"`
 	Location    *LocationInput `json:"location,omitempty" bson:"location,omitempty"`
+	FcmTokens   []*string      `json:"fcmTokens,omitempty" bson:"fcmTokens,omitempty"`
 }
 
 // Represents an individual user within the application.
@@ -63,6 +64,7 @@ type User struct {
 	Rating         *int               `json:"rating,omitempty" bson:"rating,omitempty"`
 	CreatedAt      *time.Time         `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 	LastUpdated    *time.Time         `json:"lastUpdated,omitempty" bson:"lastUpdated,omitempty"`
+	FcmTokens      []*string          `json:"fcmTokens,omitempty" bson:"fcmTokens,omitempty"`
 }
 
 func (User) IsEntity() {}

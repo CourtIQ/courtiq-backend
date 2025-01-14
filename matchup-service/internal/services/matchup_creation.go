@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
@@ -108,25 +109,33 @@ func NewMatchUpFromInitiateInput(
 		FinalSetFormat: finalSetFormat,
 	}
 
+	fmt.Println("Participants: ", len(input.Participants))
 	// 7) Participants (id must always be provided)
-	if len(input.Participants) == 0 {
-		return nil, errors.New("at least one participant is required")
+	if len(input.Participants) != 2 && len(input.Participants) != 4 {
+		return nil, errors.New("either 2 or 4 participants are required")
 	}
 	var participants []*model.Participant
 	for _, partInput := range input.Participants {
 		if partInput == nil {
 			return nil, errors.New("participant input cannot be nil")
 		}
-		// If your schema says 'id: ObjectID!' is always provided:
-		// we can check if it's zero & throw an error if so.
-		if partInput.ID.IsZero() {
-			return nil, errors.New("participant ID cannot be zero (must be provided by client)")
+
+		var isGuest bool
+		// If ID is nil, assign a new one and mark as guest
+		if partInput.ID == nil {
+			newID := primitive.NewObjectID()
+			partInput.ID = &newID
+			isGuest = true
+		} else {
+			// If an ID is present, this is an existing user
+			isGuest = false
 		}
 
 		participants = append(participants, &model.Participant{
 			ID:          partInput.ID.Hex(),
 			DisplayName: partInput.DisplayedName,
 			TeamSide:    partInput.TeamSide,
+			IsGuest:     &isGuest,
 		})
 	}
 	mu.Participants = participants

@@ -66,6 +66,16 @@ func (r *userRepository) UpdateUser(ctx context.Context, id primitive.ObjectID, 
 		updateFields["gender"] = *input.Gender
 	}
 
+	if input.FcmTokens != nil {
+		var tokens []string
+		for _, tokenPtr := range input.FcmTokens {
+			if tokenPtr != nil {
+				tokens = append(tokens, *tokenPtr)
+			}
+		}
+		updateFields["fcmTokens"] = tokens
+	}
+
 	lastUpdated := primitive.NewDateTimeFromTime(time.Now())
 
 	updateFields["lastUpdated"] = lastUpdated

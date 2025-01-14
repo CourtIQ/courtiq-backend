@@ -7,6 +7,7 @@ input UpdateUserInput {
   dateOfBirth: DateTime
   bio: String
   location: LocationInput
+  fcmTokens: [String]
 }
 
 input LocationInput {

@@ -82,6 +82,7 @@ type ComplexityRoot struct {
 		DateOfBirth    func(childComplexity int) int
 		DisplayName    func(childComplexity int) int
 		Email          func(childComplexity int) int
+		FcmTokens      func(childComplexity int) int
 		FirebaseID     func(childComplexity int) int
 		FirstName      func(childComplexity int) int
 		Gender         func(childComplexity int) int
@@ -273,6 +274,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.Email(childComplexity), true
+
+	case "User.fcmTokens":
+		if e.complexity.User.FcmTokens == nil {
+			break
+		}
+
+		return e.complexity.User.FcmTokens(childComplexity), true
 
 	case "User.firebaseId":
 		if e.complexity.User.FirebaseID == nil {
@@ -832,6 +840,8 @@ func (ec *executionContext) fieldContext_Entity_findUserByID(ctx context.Context
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_User_lastUpdated(ctx, field)
+			case "fcmTokens":
+				return ec.fieldContext_User_fcmTokens(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1121,6 +1131,8 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_User_lastUpdated(ctx, field)
+			case "fcmTokens":
+				return ec.fieldContext_User_fcmTokens(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1205,6 +1217,8 @@ func (ec *executionContext) fieldContext_Query_me(_ context.Context, field graph
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_User_lastUpdated(ctx, field)
+			case "fcmTokens":
+				return ec.fieldContext_User_fcmTokens(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1278,6 +1292,8 @@ func (ec *executionContext) fieldContext_Query_getUser(ctx context.Context, fiel
 				return ec.fieldContext_User_createdAt(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_User_lastUpdated(ctx, field)
+			case "fcmTokens":
+				return ec.fieldContext_User_fcmTokens(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2214,6 +2230,47 @@ func (ec *executionContext) fieldContext_User_lastUpdated(_ context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type DateTime does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_fcmTokens(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_fcmTokens(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.FcmTokens, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_fcmTokens(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4095,7 +4152,7 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"username", "firstName", "lastName", "gender", "dateOfBirth", "bio", "location"}
+	fieldsInOrder := [...]string{"username", "firstName", "lastName", "gender", "dateOfBirth", "bio", "location", "fcmTokens"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4151,6 +4208,13 @@ func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, o
 				return it, err
 			}
 			it.Location = data
+		case "fcmTokens":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fcmTokens"))
+			data, err := ec.unmarshalOString2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FcmTokens = data
 		}
 	}
 
@@ -4539,6 +4603,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
 		case "lastUpdated":
 			out.Values[i] = ec._User_lastUpdated(ctx, field, obj)
+		case "fcmTokens":
+			out.Values[i] = ec._User_fcmTokens(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5657,6 +5723,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

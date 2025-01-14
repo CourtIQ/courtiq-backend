@@ -202,6 +202,8 @@ type Participant struct {
 	DisplayName string `json:"displayName" bson:"displayName"`
 	// The side (A or B) that this participant is associated with.
 	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
+	// Optinonal boolen to store if a participant is a guest or not.
+	IsGuest *bool `json:"isGuest,omitempty" bson:"isGuest,omitempty"`
 }
 
 // Represents the information needed to create or link a participant
@@ -212,7 +214,7 @@ type Participant struct {
 type ParticipantInput struct {
 	// If provided, this corresponds to an existing user in the database.
 	// If omitted or null, the participant is treated as a guest and stored separately.
-	ID primitive.ObjectID `json:"id" bson:"_id"`
+	ID *primitive.ObjectID `json:"id" bson:"_id"`
 	// The participant's display name.
 	DisplayedName string `json:"displayedName" bson:"displayedName"`
 	// The side (TEAM_A or TEAM_B) that this participant will play on.

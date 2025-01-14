@@ -18,4 +18,9 @@ type Participant {
   The side (A or B) that this participant is associated with.
   """
   teamSide: TeamSide!
+
+  """
+  Optinonal boolen to store if a participant is a guest or not.
+  """
+  isGuest: Boolean!
 }

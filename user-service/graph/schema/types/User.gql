@@ -18,4 +18,5 @@ type User @key(fields: "id") {
   rating: Int
   createdAt: DateTime
   lastUpdated: DateTime
+  fcmTokens: [String]
 }

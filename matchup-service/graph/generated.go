@@ -125,6 +125,7 @@ type ComplexityRoot struct {
 	Participant struct {
 		DisplayName func(childComplexity int) int
 		ID          func(childComplexity int) int
+		IsGuest     func(childComplexity int) int
 		TeamSide    func(childComplexity int) int
 	}
 
@@ -568,6 +569,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Participant.ID(childComplexity), true
+
+	case "Participant.isGuest":
+		if e.complexity.Participant.IsGuest == nil {
+			break
+		}
+
+		return e.complexity.Participant.IsGuest(childComplexity), true
 
 	case "Participant.teamSide":
 		if e.complexity.Participant.TeamSide == nil {
@@ -1723,6 +1731,8 @@ func (ec *executionContext) fieldContext_MatchUp_participants(_ context.Context,
 				return ec.fieldContext_Participant_displayName(ctx, field)
 			case "teamSide":
 				return ec.fieldContext_Participant_teamSide(ctx, field)
+			case "isGuest":
+				return ec.fieldContext_Participant_isGuest(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Participant", field.Name)
 		},
@@ -2719,6 +2729,8 @@ func (ec *executionContext) fieldContext_MatchUpPoint_server(_ context.Context, 
 				return ec.fieldContext_Participant_displayName(ctx, field)
 			case "teamSide":
 				return ec.fieldContext_Participant_teamSide(ctx, field)
+			case "isGuest":
+				return ec.fieldContext_Participant_isGuest(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Participant", field.Name)
 		},
@@ -3632,6 +3644,47 @@ func (ec *executionContext) fieldContext_Participant_teamSide(_ context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type TeamSide does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Participant_isGuest(ctx context.Context, field graphql.CollectedField, obj *model.Participant) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Participant_isGuest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsGuest, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Participant_isGuest(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Participant",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6691,7 +6744,7 @@ func (ec *executionContext) unmarshalInputParticipantInput(ctx context.Context, 
 		switch k {
 		case "id":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
+			data, err := ec.unmarshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7273,6 +7326,8 @@ func (ec *executionContext) _Participant(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "isGuest":
+			out.Values[i] = ec._Participant_isGuest(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -9185,6 +9240,22 @@ func (ec *executionContext) marshalONumberOfSets2ᚖgithubᚗcomᚋCourtIQᚋcou
 		return graphql.Null
 	}
 	res := scalars.MarshalNumberOfSets(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, v any) (*primitive.ObjectID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := scalar.UnmarshalObjectID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOObjectID2ᚖgoᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx context.Context, sel ast.SelectionSet, v *primitive.ObjectID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := scalar.MarshalObjectID(*v)
 	return res
 }
 
