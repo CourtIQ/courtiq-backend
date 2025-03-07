@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
@@ -18,40 +17,46 @@ func NewMatchUpFromInitiateInput(
 	ctx context.Context,
 	input *model.InitiateMatchUpInput,
 ) (*model.MatchUp, error) {
-
+	// 1) Validate the context and retrieve the owner's ID
 	ownerId, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// 1) Check the top-level input (InitiateMatchUpInput!)
+	// 2) Validate the input
 	if input == nil {
 		return nil, errors.New("InitiateMatchUpInput cannot be nil")
 	}
 
+	// 3) Initialize the MatchUp document with core fields
 	now := time.Now()
-
-	// 2) Construct the core MatchUp doc
 	mu := &model.MatchUp{
-		ID:             primitive.NewObjectID(),
-		Owner:          ownerId,
-		MatchUpTracker: input.MatchUpTracker,
-		MatchUpType:    input.MatchUpType,
-		MatchUpStatus:  model.MatchUpStatusScheduled,
-		InitialServer:  input.InitialServer,
-		TrackingStyle:  *input.TrackingStyle,
-		CreatedAt:      now,
-		LastUpdated:    now,
+		ID:             primitive.NewObjectID(),      // Generate a new unique ID for the MatchUp
+		Owner:          ownerId,                      // Set the owner from the context
+		MatchUpTracker: input.MatchUpTracker,         // Set the MatchUp tracker
+		MatchUpType:    input.MatchUpType,            // Set the MatchUp type (e.g., SINGLES, DOUBLES)
+		MatchUpStatus:  model.MatchUpStatusScheduled, // Default status is SCHEDULED
+		InitialServer:  input.InitialServer,          // Set the initial server
+		CreatedAt:      now,                          // Set the creation timestamp
+		LastUpdated:    now,                          // Set the last updated timestamp
 	}
 
-	// Visibility defaults to PRIVATE if not provided
+	// 4) Handle optional fields with defaults
+	// Set TrackingStyle (default to empty string if nil)
+	if input.TrackingStyle == nil {
+		mu.TrackingStyle = "" // Default to empty string
+	} else {
+		mu.TrackingStyle = *input.TrackingStyle
+	}
+
+	// Set Visibility (default to PRIVATE if nil)
 	if input.Visibility == nil {
-		mu.Visibility = model.VisibilityPrivate
+		mu.Visibility = model.VisibilityPrivate // Default to PRIVATE
 	} else {
 		mu.Visibility = *input.Visibility
 	}
 
-	// 3) Validate required fields within MatchUpFormat
+	// 5) Validate and build MatchUpFormat
 	if input.MatchUpFormat == nil {
 		return nil, errors.New("matchUpFormat is required (cannot be null)")
 	}
@@ -59,15 +64,14 @@ func NewMatchUpFromInitiateInput(
 		return nil, errors.New("matchUpFormat.setFormat is required (cannot be null)")
 	}
 
-	// 4) Build the SetFormat (required)
+	// Build the main SetFormat
 	setFormatInput := input.MatchUpFormat.SetFormat
 	var tbf *model.TiebreakFormat
-	// TiebreakFormat can be nil if no tiebreak is used
 	if setFormatInput.TiebreakFormat != nil {
 		tbf = &model.TiebreakFormat{
 			Points:       setFormatInput.TiebreakFormat.Points,
 			MustWinByTwo: setFormatInput.TiebreakFormat.MustWinByTwo,
-			TiebreakAt:   setFormatInput.TiebreakFormat.TiebreakAt, // <--- NEW
+			TiebreakAt:   setFormatInput.TiebreakFormat.TiebreakAt,
 		}
 	}
 
@@ -76,21 +80,18 @@ func NewMatchUpFromInitiateInput(
 		DeuceType:      setFormatInput.DeuceType,
 		MustWinByTwo:   setFormatInput.MustWinByTwo,
 		TiebreakFormat: tbf,
-		// Notice: we no longer set TiebreakAt directly on SetFormat
 	}
 
-	// 5) Build the finalSetFormat if provided (optional)
+	// Build the finalSetFormat (optional)
 	var finalSetFormat *model.SetFormat
 	if input.MatchUpFormat.FinalSetFormat != nil {
 		fsf := input.MatchUpFormat.FinalSetFormat
-
-		// Tiebreak for final set can also be nil
 		var finalTbf *model.TiebreakFormat
 		if fsf.TiebreakFormat != nil {
 			finalTbf = &model.TiebreakFormat{
 				Points:       fsf.TiebreakFormat.Points,
 				MustWinByTwo: fsf.TiebreakFormat.MustWinByTwo,
-				TiebreakAt:   fsf.TiebreakFormat.TiebreakAt, // <--- NEW
+				TiebreakAt:   fsf.TiebreakFormat.TiebreakAt,
 			}
 		}
 		finalSetFormat = &model.SetFormat{
@@ -98,22 +99,21 @@ func NewMatchUpFromInitiateInput(
 			DeuceType:      fsf.DeuceType,
 			MustWinByTwo:   fsf.MustWinByTwo,
 			TiebreakFormat: finalTbf,
-			// Again, TiebreakAt is inside finalTbf, not here
 		}
 	}
 
-	// 6) Build MatchUpFormat
+	// Set the MatchUpFormat
 	mu.MatchUpFormat = &model.MatchUpFormat{
 		NumberOfSets:   input.MatchUpFormat.NumberOfSets,
 		SetFormat:      mainSetFormat,
 		FinalSetFormat: finalSetFormat,
 	}
 
-	fmt.Println("Participants: ", len(input.Participants))
-	// 7) Participants (id must always be provided)
+	// 6) Validate and build Participants
 	if len(input.Participants) != 2 && len(input.Participants) != 4 {
 		return nil, errors.New("either 2 or 4 participants are required")
 	}
+
 	var participants []*model.Participant
 	for _, partInput := range input.Participants {
 		if partInput == nil {
@@ -132,13 +132,16 @@ func NewMatchUpFromInitiateInput(
 		}
 
 		participants = append(participants, &model.Participant{
-			ID:          partInput.ID.Hex(),
+			ID:          partInput.ID.Hex(), // Convert ObjectID to string
 			DisplayName: partInput.DisplayedName,
 			TeamSide:    partInput.TeamSide,
-			IsGuest:     &isGuest,
+			IsGuest:     isGuest, // Set the guest flag
 		})
 	}
 	mu.Participants = participants
+
+	// 7) Set the current server to the initial server
+	mu.CurrentServer = input.InitialServer
 
 	return mu, nil
 }

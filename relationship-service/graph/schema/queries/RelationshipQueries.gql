@@ -51,3 +51,13 @@ extend type Query {
   # Check if a given user (coachId) is a coach of the current user
   isCoach(coachId: ObjectID!): RelationshipStatus!
 }
+
+extend type User @key(fields: "id") {
+    id: ObjectID! @external
+    friendsCount: Int!
+    coachesCount: Int!
+    studentsCount: Int!
+    friendRequestsCount: Int!
+    coachRequestsCount: Int!
+    studentRequestsCount: Int!
+}

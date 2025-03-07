@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
@@ -25,6 +26,11 @@ func (r *entityResolver) FindFriendshipByID(ctx context.Context, id primitive.Ob
 // FindRelationshipByID is the resolver for the findRelationshipByID field.
 func (r *entityResolver) FindRelationshipByID(ctx context.Context, id primitive.ObjectID) (model.Relationship, error) {
 	return r.RelationshipServiceIntf.FindRelationshipByID(ctx, id)
+}
+
+// FindUserByID is the resolver for the findUserByID field.
+func (r *entityResolver) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
 }
 
 // Entity returns graph.EntityResolver implementation.

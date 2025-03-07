@@ -35,7 +35,7 @@ input InitiateMatchUpInput {
   visibility: Visibility = PRIVATE
 
   """
-  The style of tracking used to record match data.
+  The style of tracking make used to record match data.
   """
   trackingStyle: MatchUpTrackingStyle = BEGINNER
 }

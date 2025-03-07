@@ -62,7 +62,7 @@ type InitiateMatchUpInput struct {
 	InitialServer primitive.ObjectID `json:"initialServer" bson:"initialServer"`
 	// Determines who can view or access details of the match; defaults to PRIVATE.
 	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
-	// The style of tracking used to record match data.
+	// The style of tracking make used to record match data.
 	TrackingStyle *MatchUpTrackingStyle `json:"trackingStyle,omitempty" bson:"trackingStyle,omitempty"`
 }
 
@@ -86,8 +86,6 @@ type MatchUp struct {
 	Participants       []*Participant       `json:"participants" bson:"participants"`
 	InitialServer      primitive.ObjectID   `json:"initialServer" bson:"initialServer"`
 	CurrentServer      primitive.ObjectID   `json:"currentServer" bson:"currentServer"`
-	CurrentServingSide TeamSide             `json:"currentServingSide" bson:"currentServingSide"`
-	Points             []*MatchUpPoint      `json:"points" bson:"points"`
 	TrackingStyle      MatchUpTrackingStyle `json:"trackingStyle" bson:"trackingStyle"`
 	Winner             *TeamSide            `json:"winner,omitempty" bson:"winner,omitempty"`
 	Loser              *TeamSide            `json:"loser,omitempty" bson:"loser,omitempty"`
@@ -203,7 +201,7 @@ type Participant struct {
 	// The side (A or B) that this participant is associated with.
 	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
 	// Optinonal boolen to store if a participant is a guest or not.
-	IsGuest *bool `json:"isGuest,omitempty" bson:"isGuest,omitempty"`
+	IsGuest bool `json:"isGuest" bson:"isGuest"`
 }
 
 // Represents the information needed to create or link a participant

@@ -8,9 +8,8 @@ type MatchUp {
     participants: [Participant!]!
     initialServer: ObjectID!
     currentServer: ObjectID!
-    currentServingSide: TeamSide!
-    points: [MatchUpPoint!]!
-    trackingStyle: MatchUpTrackingStyle!
+    # points: [MatchUpPoint!]!
+    trackingStyle: MatchUpTrackingStyle
 
     winner: TeamSide
     loser: TeamSide

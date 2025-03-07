@@ -98,6 +98,18 @@ type Mutation struct {
 type Query struct {
 }
 
+type User struct {
+	ID                   primitive.ObjectID `json:"id" bson:"_id"`
+	FriendsCount         int                `json:"friendsCount" bson:"friendsCount"`
+	CoachesCount         int                `json:"coachesCount" bson:"coachesCount"`
+	StudentsCount        int                `json:"studentsCount" bson:"studentsCount"`
+	FriendRequestsCount  int                `json:"friendRequestsCount" bson:"friendRequestsCount"`
+	CoachRequestsCount   int                `json:"coachRequestsCount" bson:"coachRequestsCount"`
+	StudentRequestsCount int                `json:"studentRequestsCount" bson:"studentRequestsCount"`
+}
+
+func (User) IsEntity() {}
+
 // Represents the possible status of a relationship between users.
 type RelationshipStatus string
 
