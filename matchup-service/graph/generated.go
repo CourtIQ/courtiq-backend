@@ -1833,14 +1833,11 @@ func (ec *executionContext) _MatchUp_trackingStyle(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(model.MatchUpTrackingStyle)
+	res := resTmp.(*model.MatchUpTrackingStyle)
 	fc.Result = res
-	return ec.marshalNMatchUpTrackingStyle2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpTrackingStyle(ctx, field.Selections, res)
+	return ec.marshalOMatchUpTrackingStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpTrackingStyle(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_MatchUp_trackingStyle(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6845,9 +6842,6 @@ func (ec *executionContext) _MatchUp(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "trackingStyle":
 			out.Values[i] = ec._MatchUp_trackingStyle(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "winner":
 			out.Values[i] = ec._MatchUp_winner(ctx, field, obj)
 		case "loser":
@@ -8146,16 +8140,6 @@ func (ec *executionContext) unmarshalNMatchUpStatus2githubᚗcomᚋCourtIQᚋcou
 }
 
 func (ec *executionContext) marshalNMatchUpStatus2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpStatus(ctx context.Context, sel ast.SelectionSet, v model.MatchUpStatus) graphql.Marshaler {
-	return v
-}
-
-func (ec *executionContext) unmarshalNMatchUpTrackingStyle2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpTrackingStyle(ctx context.Context, v any) (model.MatchUpTrackingStyle, error) {
-	var res model.MatchUpTrackingStyle
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNMatchUpTrackingStyle2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpTrackingStyle(ctx context.Context, sel ast.SelectionSet, v model.MatchUpTrackingStyle) graphql.Marshaler {
 	return v
 }
 

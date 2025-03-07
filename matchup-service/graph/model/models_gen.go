@@ -77,25 +77,25 @@ type Location struct {
 }
 
 type MatchUp struct {
-	ID                 primitive.ObjectID   `json:"id" bson:"_id"`
-	Owner              primitive.ObjectID   `json:"owner" bson:"owner"`
-	MatchUpFormat      *MatchUpFormat       `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpTracker     primitive.ObjectID   `json:"matchUpTracker" bson:"matchUpTracker"`
-	MatchUpType        MatchUpType          `json:"matchUpType" bson:"matchUpType"`
-	MatchUpStatus      MatchUpStatus        `json:"matchUpStatus" bson:"matchUpStatus"`
-	Participants       []*Participant       `json:"participants" bson:"participants"`
-	InitialServer      primitive.ObjectID   `json:"initialServer" bson:"initialServer"`
-	CurrentServer      primitive.ObjectID   `json:"currentServer" bson:"currentServer"`
-	TrackingStyle      MatchUpTrackingStyle `json:"trackingStyle" bson:"trackingStyle"`
-	Winner             *TeamSide            `json:"winner,omitempty" bson:"winner,omitempty"`
-	Loser              *TeamSide            `json:"loser,omitempty" bson:"loser,omitempty"`
-	CurrentScore       *MatchUpScore        `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
-	ScheduledStartTime *time.Time           `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
-	StartTime          *time.Time           `json:"startTime,omitempty" bson:"startTime,omitempty"`
-	EndTime            *time.Time           `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt          time.Time            `json:"createdAt" bson:"createdAt"`
-	LastUpdated        time.Time            `json:"lastUpdated" bson:"lastUpdated"`
-	Visibility         Visibility           `json:"visibility" bson:"visibility"`
+	ID                 primitive.ObjectID    `json:"id" bson:"_id"`
+	Owner              primitive.ObjectID    `json:"owner" bson:"owner"`
+	MatchUpFormat      *MatchUpFormat        `json:"matchUpFormat" bson:"matchUpFormat"`
+	MatchUpTracker     primitive.ObjectID    `json:"matchUpTracker" bson:"matchUpTracker"`
+	MatchUpType        MatchUpType           `json:"matchUpType" bson:"matchUpType"`
+	MatchUpStatus      MatchUpStatus         `json:"matchUpStatus" bson:"matchUpStatus"`
+	Participants       []*Participant        `json:"participants" bson:"participants"`
+	InitialServer      primitive.ObjectID    `json:"initialServer" bson:"initialServer"`
+	CurrentServer      primitive.ObjectID    `json:"currentServer" bson:"currentServer"`
+	TrackingStyle      *MatchUpTrackingStyle `json:"trackingStyle,omitempty" bson:"trackingStyle,omitempty"`
+	Winner             *TeamSide             `json:"winner,omitempty" bson:"winner,omitempty"`
+	Loser              *TeamSide             `json:"loser,omitempty" bson:"loser,omitempty"`
+	CurrentScore       *MatchUpScore         `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
+	ScheduledStartTime *time.Time            `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
+	StartTime          *time.Time            `json:"startTime,omitempty" bson:"startTime,omitempty"`
+	EndTime            *time.Time            `json:"endTime,omitempty" bson:"endTime,omitempty"`
+	CreatedAt          time.Time             `json:"createdAt" bson:"createdAt"`
+	LastUpdated        time.Time             `json:"lastUpdated" bson:"lastUpdated"`
+	Visibility         Visibility            `json:"visibility" bson:"visibility"`
 }
 
 // Overall "ruleset" of a tennis match:

@@ -7,13 +7,16 @@ import (
 	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/repository"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
+	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/user-service/internal/services"
 )
 
@@ -30,18 +33,24 @@ func main() {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	// Create repositories
-	userRepo := repository.NewUserRepository(mongodb)
+	// Create repository using the shared package's repository
+	userRepo := repository.NewBaseRepository[model.User](mongodb.GetCollection(db.UsersCollection))
 
-	// Create the service with the repositories
+	// Create the service with the repository
 	userService := services.NewUserService(userRepo)
 
 	// Set up the GraphQL server with the resolver that has the service injected
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+	// Using non-deprecated handler.New instead of NewDefaultServer
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
 			UserServiceIntf: userService,
 		},
 	}))
+
+	// Configure the server with defaults
+	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.MultipartForm{})
+	srv.Use(extension.Introspection{})
 
 	// Create router mux
 	mux := http.NewServeMux()

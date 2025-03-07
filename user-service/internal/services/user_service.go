@@ -2,23 +2,25 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"time"
 
+	sharedErrors "github.com/CourtIQ/courtiq-backend/shared/pkg/errors"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/repository"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/user-service/internal/repository"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type userService struct {
-	userRepo repository.UserRepository
+	userRepo repository.Repository[model.User]
 }
 
-// NewUserService constructs a userService with the given UserRepository.
-func NewUserService(userRepo repository.UserRepository) UserServiceIntf {
+// NewUserService constructs a userService with the shared repository.
+func NewUserService(userRepo repository.Repository[model.User]) UserServiceIntf {
 	return &userService{
 		userRepo: userRepo,
 	}
@@ -26,18 +28,18 @@ func NewUserService(userRepo repository.UserRepository) UserServiceIntf {
 
 // Me retrieves the profile of the currently authenticated user.
 func (s *userService) Me(ctx context.Context) (*model.User, error) {
-	// Extract mongoId from context (already validated in middleware or utils)
+	// Extract mongoId from context
 	mongoID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unauthorized: could not retrieve user id from context: %w", err)
+		return nil, sharedErrors.WrapError(sharedErrors.ErrUnauthorized, "could not retrieve user id from context")
 	}
 
-	user, err := s.userRepo.GetByID(ctx, mongoID)
+	user, err := s.userRepo.FindByID(ctx, mongoID)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving user: %w", err)
-	}
-	if user == nil {
-		return nil, errors.New("user not found")
+		if sharedErrors.IsNotFoundError(err) {
+			return nil, sharedErrors.ErrNotFound
+		}
+		return nil, sharedErrors.WrapError(err, "error retrieving user")
 	}
 
 	return user, nil
@@ -45,12 +47,12 @@ func (s *userService) Me(ctx context.Context) (*model.User, error) {
 
 // GetUser retrieves a user's profile by their unique ID.
 func (s *userService) GetUser(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
-	user, err := s.userRepo.GetByID(ctx, id)
+	user, err := s.userRepo.FindByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("error retrieving user by ID: %w", err)
-	}
-	if user == nil {
-		return nil, errors.New("user not found")
+		if sharedErrors.IsNotFoundError(err) {
+			return nil, sharedErrors.ErrNotFound
+		}
+		return nil, sharedErrors.WrapError(err, "error retrieving user by ID")
 	}
 
 	return user, nil
@@ -61,17 +63,85 @@ func (s *userService) UpdateUser(ctx context.Context, input *model.UpdateUserInp
 	// Extract user id from context
 	mongoID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("unauthorized: could not retrieve user id from context: %w", err)
+		return nil, sharedErrors.WrapError(sharedErrors.ErrUnauthorized, "could not retrieve user id from context")
 	}
 
-	// Attempt to update the user in the repository
-	updatedUser, err := s.userRepo.UpdateUser(ctx, mongoID, input)
-	if err != nil {
-		return nil, fmt.Errorf("error updating user: %w", err)
+	// Create a map for fields to update
+	updateFields := bson.M{}
+
+	// Conditionally add fields if they are provided
+	if input.FirstName != nil && input.LastName != nil {
+		updateFields["firstName"] = *input.FirstName
+		updateFields["lastName"] = *input.LastName
+		updateFields["displayName"] = fmt.Sprintf("%s %s", *input.FirstName, *input.LastName)
 	}
-	if updatedUser == nil {
-		// If nil is returned, it might mean no user was found to update
-		return nil, errors.New("user not found")
+
+	if input.DateOfBirth != nil {
+		updateFields["dateOfBirth"] = *input.DateOfBirth
+	}
+	if input.Bio != nil {
+		updateFields["bio"] = *input.Bio
+	}
+	if input.Username != nil {
+		updateFields["username"] = *input.Username
+	}
+	if input.Gender != nil {
+		updateFields["gender"] = *input.Gender
+	}
+
+	if input.FcmTokens != nil {
+		var tokens []string
+		for _, tokenPtr := range input.FcmTokens {
+			if tokenPtr != nil {
+				tokens = append(tokens, *tokenPtr)
+			}
+		}
+		updateFields["fcmTokens"] = tokens
+	}
+
+	updateFields["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+
+	// Handle location if provided
+	if input.Location != nil {
+		locUpdate := bson.M{}
+		if input.Location.City != nil {
+			locUpdate["city"] = *input.Location.City
+		}
+		if input.Location.State != nil {
+			locUpdate["state"] = *input.Location.State
+		}
+		if input.Location.Country != nil {
+			locUpdate["country"] = *input.Location.Country
+		}
+		if input.Location.Latitude != nil {
+			locUpdate["latitude"] = *input.Location.Latitude
+		}
+		if input.Location.Longitude != nil {
+			locUpdate["longitude"] = *input.Location.Longitude
+		}
+
+		// Only set 'location' if at least one subfield was provided
+		if len(locUpdate) > 0 {
+			updateFields["location"] = locUpdate
+		}
+	}
+
+	// If no fields to update, just retrieve and return the current user
+	if len(updateFields) == 0 {
+		return s.GetUser(ctx, mongoID)
+	}
+
+	// Use the repository's FindOneAndUpdate method
+	filter := bson.M{"_id": mongoID}
+	update := bson.M{"$set": updateFields}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	updatedUser, err := s.userRepo.FindOneAndUpdate(ctx, filter, update, opts)
+	if err != nil {
+		if sharedErrors.IsNotFoundError(err) {
+			return nil, sharedErrors.ErrNotFound
+		}
+		return nil, sharedErrors.WrapError(err, "error updating user")
 	}
 
 	return updatedUser, nil
@@ -79,18 +149,14 @@ func (s *userService) UpdateUser(ctx context.Context, input *model.UpdateUserInp
 
 // IsUsernameAvailable checks if the given username is available.
 func (s *userService) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
-	filterFields := bson.M{}
+	filter := bson.M{"username": username}
 
-	filterFields["username"] = username
-
-	// Check if the username is available
-	available, err := s.userRepo.Count(ctx, filterFields)
+	// Check if the username is already taken
+	count, err := s.userRepo.Count(ctx, filter)
 	if err != nil {
-		return false, fmt.Errorf("error checking username availability: %w", err)
+		return false, sharedErrors.WrapError(err, "error checking username availability")
 	}
 
 	// If the count is 0, the username is available
-	isAvailable := available == 0
-
-	return isAvailable, nil
+	return count == 0, nil
 }

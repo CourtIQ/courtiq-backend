@@ -44,9 +44,9 @@ func NewMatchUpFromInitiateInput(
 	// 4) Handle optional fields with defaults
 	// Set TrackingStyle (default to empty string if nil)
 	if input.TrackingStyle == nil {
-		mu.TrackingStyle = "" // Default to empty string
+		mu.TrackingStyle = nil // Default to empty string
 	} else {
-		mu.TrackingStyle = *input.TrackingStyle
+		mu.TrackingStyle = input.TrackingStyle
 	}
 
 	// Set Visibility (default to PRIVATE if nil)
