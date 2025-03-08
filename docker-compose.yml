@@ -9,6 +9,7 @@ services:
       - ./api-gateway/.env
     ports:
       - "${PORT:-3000}:${PORT:-3000}"  # Use default 3000 if PORT is not set
+      - "3001:3001"  # Expose metrics port
     networks:
       - court-iq-network
 

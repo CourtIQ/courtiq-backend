@@ -23,14 +23,15 @@ func NewRepository[T any](factory *RepositoryFactory, collectionName string) *Ba
 }
 
 // Alternative approach: Use a method that takes a type as a parameter, not a generic method
-func (f *RepositoryFactory) CreateRepository(collectionName string) interface{} {
-	collection := f.db.GetCollection(collectionName)
-	// You'd need to implement logic to determine which type of repository to create
+func (factory *RepositoryFactory) CreateRepository(collectionName string) interface{} {
+	collection := factory.db.GetCollection(collectionName)
+	// TODO: Implement logic to determine which type of repository to create
 	// based on other parameters or context
+	// return NewBaseRepository(collection)
 	return collection
 }
 
 // GetCollection returns a mongo.Collection for the given name
-func (f *RepositoryFactory) GetCollection(name string) *mongo.Collection {
-	return f.db.GetCollection(name)
+func (factory *RepositoryFactory) GetCollection(name string) *mongo.Collection {
+	return factory.db.GetCollection(name)
 }
