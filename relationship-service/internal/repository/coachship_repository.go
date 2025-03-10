@@ -37,21 +37,12 @@ func (r *CoachshipRepositoryImpl) FindByID(ctx context.Context, id primitive.Obj
 }
 
 // FindBetweenUsers finds a coachship between two users
-func (r *CoachshipRepositoryImpl) FindBetweenUsers(ctx context.Context, userID1, userID2 primitive.ObjectID) (*model.Coachship, error) {
+func (r *CoachshipRepositoryImpl) FindBetweenUsers(ctx context.Context, coachID, studentID primitive.ObjectID) (*model.Coachship, error) {
 	filter := bson.M{
-		"$or": []bson.M{
-			{
-				"coach":   userID1,
-				"student": userID2,
-			},
-			{
-				"coach":   userID2,
-				"student": userID1,
-			},
-		},
-		"type": model.RelationshipTypeCoachship,
+		"coach":   coachID,
+		"student": studentID,
+		"type":    model.RelationshipTypeCoachship,
 	}
-
 	coachship, err := r.baseRepo.FindOne(ctx, filter)
 	if err != nil {
 		return nil, WrapRepositoryError(err, "find between users", "coachship")

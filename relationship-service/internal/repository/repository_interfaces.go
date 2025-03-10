@@ -29,7 +29,7 @@ type FriendshipRepository interface {
 // CoachshipRepository defines the interface for coachship repository operations
 type CoachshipRepository interface {
 	FindByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error)
-	FindBetweenUsers(ctx context.Context, userID1, userID2 primitive.ObjectID) (*model.Coachship, error)
+	FindBetweenUsers(ctx context.Context, coachID, studentID primitive.ObjectID) (*model.Coachship, error)
 	GetCoachships(ctx context.Context, userID primitive.ObjectID, status model.RelationshipStatus, limit, offset *int) ([]*model.Coachship, error)
 	GetCoaches(ctx context.Context, studentID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error)
 	GetStudents(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error)

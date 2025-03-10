@@ -109,9 +109,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		CheckFriendshipStatus      func(childComplexity int, withUser primitive.ObjectID) int
-		GetCoachship               func(childComplexity int, userID primitive.ObjectID) int
 		GetCoachships              func(childComplexity int, limit *int, offset *int) int
-		GetFriendship              func(childComplexity int, friendID primitive.ObjectID) int
 		GetMyCoaches               func(childComplexity int, limit *int, offset *int) int
 		GetMyFriends               func(childComplexity int, limit *int, offset *int) int
 		GetMyStudents              func(childComplexity int, limit *int, offset *int) int
@@ -160,7 +158,6 @@ type MutationResolver interface {
 	UnblockUser(ctx context.Context, userID primitive.ObjectID) (*model.Friendship, error)
 }
 type QueryResolver interface {
-	GetCoachship(ctx context.Context, userID primitive.ObjectID) (*model.Coachship, error)
 	IsCoachOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error)
 	IsStudentOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error)
 	GetCoachships(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
@@ -170,7 +167,6 @@ type QueryResolver interface {
 	GetReceivedCoachRequests(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
 	GetSentStudentRequests(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
 	GetReceivedStudentRequests(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)
-	GetFriendship(ctx context.Context, friendID primitive.ObjectID) (*model.Friendship, error)
 	CheckFriendshipStatus(ctx context.Context, withUser primitive.ObjectID) (model.RelationshipStatus, error)
 	GetMyFriends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error)
 	GetSentFriendRequests(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error)
@@ -583,18 +579,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.CheckFriendshipStatus(childComplexity, args["withUser"].(primitive.ObjectID)), true
 
-	case "Query.getCoachship":
-		if e.complexity.Query.GetCoachship == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getCoachship_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetCoachship(childComplexity, args["userId"].(primitive.ObjectID)), true
-
 	case "Query.getCoachships":
 		if e.complexity.Query.GetCoachships == nil {
 			break
@@ -606,18 +590,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetCoachships(childComplexity, args["limit"].(*int), args["offset"].(*int)), true
-
-	case "Query.getFriendship":
-		if e.complexity.Query.GetFriendship == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getFriendship_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetFriendship(childComplexity, args["friendId"].(primitive.ObjectID)), true
 
 	case "Query.getMyCoaches":
 		if e.complexity.Query.GetMyCoaches == nil {
@@ -1512,29 +1484,6 @@ func (ec *executionContext) field_Query_checkFriendshipStatus_argsWithUser(
 	return zeroVal, nil
 }
 
-func (ec *executionContext) field_Query_getCoachship_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Query_getCoachship_argsUserID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["userId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Query_getCoachship_argsUserID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-	if tmp, ok := rawArgs["userId"]; ok {
-		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-	}
-
-	var zeroVal primitive.ObjectID
-	return zeroVal, nil
-}
-
 func (ec *executionContext) field_Query_getCoachships_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -1573,29 +1522,6 @@ func (ec *executionContext) field_Query_getCoachships_argsOffset(
 	}
 
 	var zeroVal *int
-	return zeroVal, nil
-}
-
-func (ec *executionContext) field_Query_getFriendship_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := ec.field_Query_getFriendship_argsFriendID(ctx, rawArgs)
-	if err != nil {
-		return nil, err
-	}
-	args["friendId"] = arg0
-	return args, nil
-}
-func (ec *executionContext) field_Query_getFriendship_argsFriendID(
-	ctx context.Context,
-	rawArgs map[string]any,
-) (primitive.ObjectID, error) {
-	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("friendId"))
-	if tmp, ok := rawArgs["friendId"]; ok {
-		return ec.unmarshalNObjectID2goᚗmongodbᚗorgᚋmongoᚑdriverᚋbsonᚋprimitiveᚐObjectID(ctx, tmp)
-	}
-
-	var zeroVal primitive.ObjectID
 	return zeroVal, nil
 }
 
@@ -4331,78 +4257,6 @@ func (ec *executionContext) fieldContext_Mutation_unblockUser(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getCoachship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getCoachship(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetCoachship(rctx, fc.Args["userId"].(primitive.ObjectID))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Coachship)
-	fc.Result = res
-	return ec.marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getCoachship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Coachship_id(ctx, field)
-			case "type":
-				return ec.fieldContext_Coachship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Coachship_status(ctx, field)
-			case "initiatorId":
-				return ec.fieldContext_Coachship_initiatorId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Coachship_receiverId(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Coachship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Coachship_updatedAt(ctx, field)
-			case "coach":
-				return ec.fieldContext_Coachship_coach(ctx, field)
-			case "student":
-				return ec.fieldContext_Coachship_student(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Coachship", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getCoachship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_isCoachOf(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_isCoachOf(ctx, field)
 	if err != nil {
@@ -5032,74 +4886,6 @@ func (ec *executionContext) fieldContext_Query_getReceivedStudentRequests(ctx co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_getReceivedStudentRequests_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getFriendship(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getFriendship(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetFriendship(rctx, fc.Args["friendId"].(primitive.ObjectID))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Friendship)
-	fc.Result = res
-	return ec.marshalOFriendship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐFriendship(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getFriendship(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Friendship_id(ctx, field)
-			case "type":
-				return ec.fieldContext_Friendship_type(ctx, field)
-			case "status":
-				return ec.fieldContext_Friendship_status(ctx, field)
-			case "initiatorId":
-				return ec.fieldContext_Friendship_initiatorId(ctx, field)
-			case "receiverId":
-				return ec.fieldContext_Friendship_receiverId(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Friendship_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Friendship_updatedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Friendship", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getFriendship_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7994,25 +7780,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getCoachship":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getCoachship(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "isCoachOf":
 			field := field
 
@@ -8202,25 +7969,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getFriendship":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getFriendship(ctx, field)
 				return res
 			}
 
@@ -9532,13 +9280,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOCoachship2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋrelationshipᚑserviceᚋgraphᚋmodelᚐCoachship(ctx context.Context, sel ast.SelectionSet, v *model.Coachship) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Coachship(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalODateTime2ᚖtimeᚐTime(ctx context.Context, v any) (*time.Time, error) {

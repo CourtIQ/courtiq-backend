@@ -1,7 +1,4 @@
 extend type Query {
-  # Get a specific friendship by friend ID
-  getFriendship(friendId: ObjectID!): Friendship
-  
   # Check if a user is friends with another user
   checkFriendshipStatus(withUser: ObjectID!): RelationshipStatus!
   

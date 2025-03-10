@@ -44,21 +44,6 @@ func (s *RelationshipService) FindFriendshipByID(ctx context.Context, id primiti
 // Friendship Queries
 // ---------------------------------------------------------------------------
 
-// GetFriendship gets the friendship between the current user and another user
-func (s *RelationshipService) GetFriendship(ctx context.Context, friendID primitive.ObjectID) (*model.Friendship, error) {
-	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
-	if err != nil {
-		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
-	}
-
-	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, friendID)
-	if err != nil {
-		return nil, utils.NewFriendshipNotFoundError()
-	}
-
-	return friendship, nil
-}
-
 // CheckFriendshipStatus checks the friendship status between the current user and another user
 func (s *RelationshipService) CheckFriendshipStatus(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
@@ -333,21 +318,6 @@ func (s *RelationshipService) UnblockUser(ctx context.Context, userID primitive.
 // Coachship Queries
 // ---------------------------------------------------------------------------
 
-// GetCoachship gets the coaching relationship between the current user and another user
-func (s *RelationshipService) GetCoachship(ctx context.Context, userID primitive.ObjectID) (*model.Coachship, error) {
-	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
-	if err != nil {
-		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
-	}
-
-	coachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
-	if err != nil {
-		return nil, utils.NewCoachshipNotFoundError()
-	}
-
-	return coachship, nil
-}
-
 // IsCoachOf checks if the current user is a coach of the given user
 func (s *RelationshipService) IsCoachOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
@@ -377,7 +347,7 @@ func (s *RelationshipService) IsStudentOf(ctx context.Context, userID primitive.
 	}
 
 	// Find the coachship
-	coachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
+	coachship, err := s.coachshipRepo.FindBetweenUsers(ctx, userID, currentUserID)
 	if err != nil {
 		return model.RelationshipStatusNone, nil
 	}
@@ -471,6 +441,11 @@ func (s *RelationshipService) RequestToBeCoachOf(ctx context.Context, userID pri
 		return nil, err
 	}
 
+	// Check if trying to coach self
+	if currentUserID == userID {
+		return nil, utils.NewSelfRequestError("coach")
+	}
+
 	// Check if a coachship already exists
 	existingCoachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err == nil && existingCoachship != nil {
@@ -500,8 +475,13 @@ func (s *RelationshipService) RequestToBeCoachedBy(ctx context.Context, userID p
 		return nil, err
 	}
 
+	// Check if trying to be coached by self
+	if currentUserID == userID {
+		return nil, utils.NewSelfRequestError("be coached by")
+	}
+
 	// Check if a coachship already exists
-	existingCoachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
+	existingCoachship, err := s.coachshipRepo.FindBetweenUsers(ctx, userID, currentUserID)
 	if err == nil && existingCoachship != nil {
 		return nil, fmt.Errorf("a coaching relationship already exists between you and this user")
 	}

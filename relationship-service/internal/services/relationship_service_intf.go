@@ -18,7 +18,6 @@ type RelationshipServiceIntf interface {
 	// ---------------------------------------------------------------------------
 	// Friendship Queries
 	// ---------------------------------------------------------------------------
-	GetFriendship(ctx context.Context, friendID primitive.ObjectID) (*model.Friendship, error)
 	CheckFriendshipStatus(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error)
 	GetMyFriends(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error)
 	GetSentFriendRequests(ctx context.Context, limit *int, offset *int) ([]*model.Friendship, error)
@@ -38,7 +37,6 @@ type RelationshipServiceIntf interface {
 	// ---------------------------------------------------------------------------
 	// Coachship Queries
 	// ---------------------------------------------------------------------------
-	GetCoachship(ctx context.Context, userID primitive.ObjectID) (*model.Coachship, error)
 	IsCoachOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error)
 	IsStudentOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error)
 	GetCoachships(ctx context.Context, limit *int, offset *int) ([]*model.Coachship, error)

@@ -12,11 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// GetCoachship is the resolver for the getCoachship field.
-func (r *queryResolver) GetCoachship(ctx context.Context, userID primitive.ObjectID) (*model.Coachship, error) {
-	return r.RelationshipService.GetCoachship(ctx, userID)
-}
-
 // IsCoachOf is the resolver for the isCoachOf field.
 func (r *queryResolver) IsCoachOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error) {
 	return r.RelationshipService.IsCoachOf(ctx, userID)

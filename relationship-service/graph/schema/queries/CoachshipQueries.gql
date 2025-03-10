@@ -1,7 +1,4 @@
-extend type Query {
-  # Get a specific coaching relationship by the other user's ID
-  getCoachship(userId: ObjectID!): Coachship
-  
+extend type Query {  
   # Check if current user is a coach of the specified user
   isCoachOf(userId: ObjectID!): RelationshipStatus!
   

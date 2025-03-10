@@ -11,11 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// GetFriendship is the resolver for the getFriendship field.
-func (r *queryResolver) GetFriendship(ctx context.Context, friendID primitive.ObjectID) (*model.Friendship, error) {
-	return r.RelationshipService.GetFriendship(ctx, friendID)
-}
-
 // CheckFriendshipStatus is the resolver for the checkFriendshipStatus field.
 func (r *queryResolver) CheckFriendshipStatus(ctx context.Context, withUser primitive.ObjectID) (model.RelationshipStatus, error) {
 	return r.RelationshipService.CheckFriendshipStatus(ctx, withUser)
