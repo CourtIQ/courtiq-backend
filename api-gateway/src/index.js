@@ -50,6 +50,17 @@ function setupHttpServer() {
         return;
       }
       
+      // Simplified health check response when disabled
+      if (!config.HEALTH_CHECK_ENABLED) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          status: 'ok',
+          message: 'Health checks are disabled. Gateway is running.',
+          time: new Date().toISOString()
+        }));
+        return;
+      }
+      
       try {
         const servicesHealth = await checkAllServices();
         const allHealthy = Object.values(servicesHealth).every(status => status);
@@ -88,7 +99,7 @@ function setupHttpServer() {
   const httpPort = config.PORT + 1;
   httpServer.listen(httpPort, () => {
     logger.info(`Health and metrics server ready at http://localhost:${httpPort}`);
-    logger.info(`Health checks available at http://localhost:${httpPort}${config.HEALTH_CHECK_PATH}`);
+    logger.info(`Health checks ${config.HEALTH_CHECK_ENABLED ? 'enabled' : 'disabled'} at http://localhost:${httpPort}${config.HEALTH_CHECK_PATH}`);
     logger.info(`Metrics available at http://localhost:${httpPort}${config.METRICS_PATH}`);
   });
 
@@ -169,6 +180,11 @@ async function startApolloServer() {
     
     // Set up HTTP server for health and metrics
     const httpServer = setupHttpServer();
+    
+    // Log health check polling status
+    if (!config.HEALTH_CHECK_POLLING_ENABLED) {
+      logger.info('Health check polling is disabled to reduce costs');
+    }
     
     // Define plugins upfront
     const plugins = [{

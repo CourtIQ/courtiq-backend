@@ -11,6 +11,13 @@ const { retry } = require('../utils/retry');
  * @returns {Promise<boolean>} Whether the service is healthy
  */
 async function checkServiceHealth(serviceName, serviceUrl) {
+  // Skip actual health check if polling is disabled to reduce costs
+  // But make exception for initial startup checks
+  if (!config.HEALTH_CHECK_ENABLED || !config.HEALTH_CHECK_POLLING_ENABLED) {
+    logger.debug(`Health check polling disabled for ${serviceName}, skipping actual check`);
+    return true;
+  }
+
   const url = `${getServiceUrl(serviceName, serviceUrl)}/health`;
   
   try {
@@ -49,6 +56,19 @@ async function checkServiceHealth(serviceName, serviceUrl) {
  * @returns {Promise<Object>} Health status of all services
  */
 async function checkAllServices() {
+  // Skip intensive health checks if polling is disabled (still return a response for manual checks)
+  if (!config.HEALTH_CHECK_ENABLED || !config.HEALTH_CHECK_POLLING_ENABLED) {
+    const services = Object.values(config.SERVICES);
+    const healthStatus = {};
+    
+    // For all services, just return true to reduce API calls
+    services.forEach(service => {
+      healthStatus[service.name] = true;
+    });
+    
+    return healthStatus;
+  }
+  
   const services = Object.values(config.SERVICES);
   const healthStatus = {};
   

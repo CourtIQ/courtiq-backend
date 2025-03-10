@@ -6,7 +6,8 @@ const GRAPHQL_PLAYGROUND = process.env.GRAPHQL_PLAYGROUND === 'true';
 const LOG_LEVEL = process.env.LOG_LEVEL || (ENV === 'development' ? 'debug' : 'info');
 
 // Health check configuration
-const HEALTH_CHECK_ENABLED = process.env.HEALTH_CHECK_ENABLED !== 'false';
+const HEALTH_CHECK_ENABLED = process.env.HEALTH_CHECK_ENABLED === 'true'; // Default to false unless explicitly enabled
+const HEALTH_CHECK_POLLING_ENABLED = process.env.HEALTH_CHECK_POLLING_ENABLED === 'true'; // Disable polling by default
 const HEALTH_CHECK_PATH = process.env.HEALTH_CHECK_PATH || '/health';
 const METRICS_PATH = process.env.METRICS_PATH || '/metrics';
 
@@ -91,6 +92,7 @@ module.exports = {
   GRAPHQL_PLAYGROUND,
   LOG_LEVEL,
   HEALTH_CHECK_ENABLED,
+  HEALTH_CHECK_POLLING_ENABLED,
   HEALTH_CHECK_PATH,
   METRICS_PATH,
   STARTUP_DELAY,
