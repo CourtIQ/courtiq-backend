@@ -1,104 +1,101 @@
 package utils
 
-import "fmt"
+import (
+	"fmt"
+	sharedErrors "github.com/CourtIQ/courtiq-backend/shared/pkg/errors"
+)
 
-// UIError is a custom error type that implements `error`.
+// UIError is a custom error type for domain-specific errors with UI-friendly messages.
+// This complements the shared error package by adding domain context.
 type UIError struct {
 	Code    string // e.g. "COACHSHIP_NOT_FOUND"
 	Message string // e.g. "Coachship does not exist."
+	err     error  // Underlying error, often from shared package
 }
 
 func (e UIError) Error() string {
 	return fmt.Sprintf("[%s] %s", e.Code, e.Message)
 }
 
-// You can define as many error variables as you need:
-var (
-	ErrCoachshipNotFound = UIError{
+// Unwrap implements the errors.Unwrapper interface
+func (e UIError) Unwrap() error {
+	return e.err
+}
+
+// NewUIError creates a new UI error with an underlying error
+func NewUIError(code, message string, err error) UIError {
+	return UIError{
+		Code:    code,
+		Message: message,
+		err:     err,
+	}
+}
+
+// Domain-specific error wrappers that use shared errors underneath
+func NewCoachshipNotFoundError() error {
+	return UIError{
 		Code:    "COACHSHIP_NOT_FOUND",
 		Message: "Coachship does not exist.",
+		err:     sharedErrors.ErrNotFound,
 	}
-	ErrMissingCoachshipID = UIError{
-		Code:    "MISSING_COACHSHIP_ID",
-		Message: "Cannot update a coachship without an ID.",
-	}
-	ErrMissingFriendshipID = UIError{
-		Code:    "MISSING_FRIENDSHIP_ID",
-		Message: "Cannot update a friendship without an ID.",
-	}
-	ErrFriendshipNotFound = UIError{
+}
+
+func NewFriendshipNotFoundError() error {
+	return UIError{
 		Code:    "FRIENDSHIP_NOT_FOUND",
 		Message: "Friendship does not exist.",
+		err:     sharedErrors.ErrNotFound,
 	}
+}
 
-	// ----------------------------------------------------------------------
-	// Additional errors for forbidden access or permission-related issues.
-	// ----------------------------------------------------------------------
-
-	// ErrFriendshipForbidden is returned when a user tries to access or modify
-	// a friendship they are not part of.
-	ErrFriendshipForbidden = UIError{
-		Code:    "FRIENDSHIP_FORBIDDEN",
-		Message: "You do not have permission to view or modify this friendship.",
+func NewRelationshipForbiddenError(message string) error {
+	return UIError{
+		Code:    "RELATIONSHIP_FORBIDDEN",
+		Message: message,
+		err:     sharedErrors.ErrForbidden,
 	}
+}
 
-	// ErrCoachshipForbidden is returned when a user tries to access or modify
-	// a coachship they are not part of.
-	ErrCoachshipForbidden = UIError{
-		Code:    "COACHSHIP_FORBIDDEN",
-		Message: "You do not have permission to view or modify this coachship.",
+func NewSelfRequestError(action string) error {
+	return UIError{
+		Code:    "SELF_REQUEST_ERROR",
+		Message: fmt.Sprintf("Cannot %s yourself", action),
+		err:     sharedErrors.ErrInvalidInput,
 	}
+}
 
-	// ErrNotParticipantInRelationship can be used generically if you want a single
-	// error for any relationship type, indicating the user is not a participant.
-	ErrNotParticipantInRelationship = UIError{
-		Code:    "RELATIONSHIP_NOT_PARTICIPANT",
-		Message: "You are not a participant in this relationship.",
+func NewRelationshipAlreadyExistsError(relationshipType string) error {
+	return UIError{
+		Code:    fmt.Sprintf("%s_ALREADY_EXISTS", relationshipType),
+		Message: fmt.Sprintf("A %s relationship already exists or is pending", relationshipType),
+		err:     sharedErrors.ErrAlreadyExists,
 	}
+}
 
-	// ----------------------------------------------------------------------
-	// Error for attempting to send a friend request to oneself.
-	// ----------------------------------------------------------------------
-
-	ErrCannotSendFriendRequestToSelf = UIError{
-		Code:    "FRIENDSHIP_SELF_REQUEST",
-		Message: "Cannot send a friend request to yourself.",
+func NewMissingIDError(relationshipType string) error {
+	return UIError{
+		Code:    fmt.Sprintf("MISSING_%s_ID", relationshipType),
+		Message: fmt.Sprintf("Cannot update a %s without an ID.", relationshipType),
+		err:     sharedErrors.ErrInvalidInput,
 	}
+}
 
-	ErrCannotSendCoachRequestToSelf = UIError{
-		Code:    "COACH_SELF_REQUEST",
-		Message: "Cannot send a coach request to yourself.",
+// IsUIError checks if an error is a UI error and optionally with a specific code
+func IsUIError(err error, code ...string) bool {
+	uiErr, ok := err.(UIError)
+	if !ok {
+		return false
 	}
-
-	ErrCannotSendStudentRequestToSelf = UIError{
-		Code:    "STUDENT_SELF_REQUEST",
-		Message: "Cannot send a student request to yourself.",
+	
+	if len(code) == 0 {
+		return true
 	}
-
-	// ----------------------------------------------------------------------
-	// Error for indicating a friendship already exists between two users.
-	// ----------------------------------------------------------------------
-
-	ErrFriendshipAlreadyExists = UIError{
-		Code:    "FRIENDSHIP_ALREADY_EXISTS",
-		Message: "You are already a friend of this user or have a pending request.",
+	
+	for _, c := range code {
+		if uiErr.Code == c {
+			return true
+		}
 	}
-
-	// ----------------------------------------------------------------------
-	// Error indicating the user is already a coach or has a pending request.
-	// ----------------------------------------------------------------------
-
-	ErrAlreadyCoachOrPending = UIError{
-		Code:    "COACHSHIP_ALREADY_EXISTS",
-		Message: "You are already a coach for this user or have a pending request.",
-	}
-
-	// ----------------------------------------------------------------------
-	// Error indicating the user is already a student or has a pending request.
-	// ----------------------------------------------------------------------
-
-	ErrAlreadyStudentOrPending = UIError{
-		Code:    "COACHSHIP_ALREADY_EXISTS",
-		Message: "You are already a student of this user or have a pending request.",
-	}
-)
+	
+	return false
+}

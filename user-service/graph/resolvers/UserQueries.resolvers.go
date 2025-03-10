@@ -14,17 +14,17 @@ import (
 
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	return r.UserServiceIntf.Me(ctx)
+	return r.Me(ctx)
 }
 
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
-	return r.UserServiceIntf.GetUser(ctx, id)
+	return r.GetUser(ctx, id)
 }
 
 // IsUsernameAvailable is the resolver for the isUsernameAvailable field.
 func (r *queryResolver) IsUsernameAvailable(ctx context.Context, username string) (bool, error) {
-	return r.UserServiceIntf.IsUsernameAvailable(ctx, username)
+	return r.IsUsernameAvailable(ctx, username)
 }
 
 // Query returns graph.QueryResolver implementation.

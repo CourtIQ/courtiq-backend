@@ -22,21 +22,29 @@ type TestEntity struct {
 // TestRepository is a mock implementation for testing
 type TestRepository struct {
 	*BaseRepository[TestEntity]
-	findByIDFunc         func(ctx context.Context, id primitive.ObjectID) (*TestEntity, error)
-	findOneFunc          func(ctx context.Context, filter interface{}) (*TestEntity, error)
-	insertFunc           func(ctx context.Context, entity *TestEntity) (*TestEntity, error)
-	updateFunc           func(ctx context.Context, id primitive.ObjectID, entity *TestEntity) (*TestEntity, error)
-	deleteFunc           func(ctx context.Context, id primitive.ObjectID) error
-	findFunc             func(ctx context.Context, filter interface{}, opts ...*options.FindOptions) ([]*TestEntity, error)
-	countFunc            func(ctx context.Context, filter interface{}) (int64, error)
-	findOneAndUpdateFunc func(ctx context.Context, filter interface{}, update interface{}, opts ...*options.FindOneAndUpdateOptions) (*TestEntity, error)
-	findOneAndDeleteFunc func(ctx context.Context, filter interface{}, opts ...*options.FindOneAndDeleteOptions) (*TestEntity, error)
+	findByIDFunc             func(ctx context.Context, id primitive.ObjectID) (*TestEntity, error)
+	findByIDWithFiltersFunc  func(ctx context.Context, id primitive.ObjectID, additionalFilters bson.M) (*TestEntity, error)
+	findOneFunc              func(ctx context.Context, filter interface{}) (*TestEntity, error)
+	insertFunc               func(ctx context.Context, entity *TestEntity) (*TestEntity, error)
+	updateFunc               func(ctx context.Context, id primitive.ObjectID, entity *TestEntity) (*TestEntity, error)
+	deleteFunc               func(ctx context.Context, id primitive.ObjectID) error
+	findFunc                 func(ctx context.Context, filter interface{}, opts ...*options.FindOptions) ([]*TestEntity, error)
+	countFunc                func(ctx context.Context, filter interface{}) (int64, error)
+	findOneAndUpdateFunc     func(ctx context.Context, filter interface{}, update interface{}, opts ...*options.FindOneAndUpdateOptions) (*TestEntity, error)
+	findOneAndDeleteFunc     func(ctx context.Context, filter interface{}, opts ...*options.FindOneAndDeleteOptions) (*TestEntity, error)
 }
 
 // Override methods to use mock functions
 func (r *TestRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*TestEntity, error) {
 	if r.findByIDFunc != nil {
 		return r.findByIDFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+func (r *TestRepository) FindByIDWithFilters(ctx context.Context, id primitive.ObjectID, additionalFilters bson.M) (*TestEntity, error) {
+	if r.findByIDWithFiltersFunc != nil {
+		return r.findByIDWithFiltersFunc(ctx, id, additionalFilters)
 	}
 	return nil, nil
 }
@@ -241,6 +249,52 @@ func TestRepositoryUpdate(t *testing.T) {
 
 	// Test not found case
 	result, err = repo.Update(context.Background(), primitive.NewObjectID(), entity)
+	assert.Error(t, err)
+	assert.True(t, sharedErrors.IsNotFoundError(err))
+	assert.Nil(t, result)
+}
+
+func TestRepositoryFindByIDWithFilters(t *testing.T) {
+	// Create test repository
+	repo := NewTestRepository()
+	
+	// Create a test entity
+	id := primitive.NewObjectID()
+	entity := &TestEntity{
+		ID:   id,
+		Name: "Test User",
+		Age:  30,
+	}
+
+	// Set up mock function
+	repo.findByIDWithFiltersFunc = func(ctx context.Context, testID primitive.ObjectID, filters bson.M) (*TestEntity, error) {
+		if testID == id {
+			// Check if age filter matches
+			if age, ok := filters["age"]; ok && age == 30 {
+				return entity, nil
+			}
+			// If age filter doesn't match
+			return nil, sharedErrors.ErrNotFound
+		}
+		return nil, sharedErrors.ErrNotFound
+	}
+
+	// Test success case - ID and filter match
+	result, err := repo.FindByIDWithFilters(context.Background(), id, bson.M{"age": 30})
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, entity.ID, result.ID)
+	assert.Equal(t, entity.Name, result.Name)
+	assert.Equal(t, entity.Age, result.Age)
+
+	// Test not found case - ID matches but filter doesn't
+	result, err = repo.FindByIDWithFilters(context.Background(), id, bson.M{"age": 25})
+	assert.Error(t, err)
+	assert.True(t, sharedErrors.IsNotFoundError(err))
+	assert.Nil(t, result)
+
+	// Test not found case - ID doesn't match
+	result, err = repo.FindByIDWithFilters(context.Background(), primitive.NewObjectID(), bson.M{"age": 30})
 	assert.Error(t, err)
 	assert.True(t, sharedErrors.IsNotFoundError(err))
 	assert.Nil(t, result)

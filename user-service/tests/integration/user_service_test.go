@@ -21,22 +21,22 @@ func TestIntegration_UserService(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
-	
+
 	// Setup test database
 	mongodb := setupTestDB(t)
 	defer disconnectDB(t, mongodb)
-	
+
 	// Clean up test collection
 	cleanupCollection(t, mongodb, db.UsersCollection)
-	
+
 	// Create repository and service
 	userRepo := repository.NewBaseRepository[model.User](mongodb.GetCollection(db.UsersCollection))
 	userService := services.NewUserService(userRepo)
-	
+
 	// Create test user
 	ctx := context.Background()
 	testUser := createTestUser(t, ctx, userRepo)
-	
+
 	// Run tests
 	t.Run("GetUser", func(t *testing.T) {
 		user, err := userService.GetUser(ctx, testUser.ID)
@@ -44,23 +44,23 @@ func TestIntegration_UserService(t *testing.T) {
 		assert.Equal(t, testUser.ID, user.ID)
 		assert.Equal(t, testUser.Email, user.Email)
 	})
-	
+
 	t.Run("UpdateUser", func(t *testing.T) {
 		// Setup update data
 		firstName := "Updated"
 		lastName := "User"
 		bio := "Updated bio"
-		
+
 		input := &model.UpdateUserInput{
 			FirstName: &firstName,
 			LastName:  &lastName,
 			Bio:       &bio,
 		}
-		
+
 		// Update user
 		mockCtx := mocks.ContextWithMongoID(testUser.ID)
 		updatedUser, err := userService.UpdateUser(mockCtx, input)
-		
+
 		// Verify
 		require.NoError(t, err)
 		assert.Equal(t, testUser.ID, updatedUser.ID)
@@ -69,13 +69,13 @@ func TestIntegration_UserService(t *testing.T) {
 		assert.Equal(t, *input.Bio, *updatedUser.Bio)
 		assert.Equal(t, "Updated User", *updatedUser.DisplayName)
 	})
-	
+
 	t.Run("IsUsernameAvailable", func(t *testing.T) {
 		// Test username that should be available
 		available, err := userService.IsUsernameAvailable(ctx, "available_username")
 		require.NoError(t, err)
 		assert.True(t, available)
-		
+
 		// Set a username for our test user
 		username := "taken_username"
 		_, err = userRepo.FindOneAndUpdate(
@@ -84,7 +84,7 @@ func TestIntegration_UserService(t *testing.T) {
 			bson.M{"$set": bson.M{"username": username}},
 		)
 		require.NoError(t, err)
-		
+
 		// Test username that should be taken
 		available, err = userService.IsUsernameAvailable(ctx, username)
 		require.NoError(t, err)
@@ -96,7 +96,7 @@ func TestIntegration_UserService(t *testing.T) {
 func createTestUser(t *testing.T, ctx context.Context, repo repository.Repository[model.User]) *model.User {
 	now := time.Now()
 	displayName := "Test User"
-	
+
 	user := &model.User{
 		ID:          primitive.NewObjectID(),
 		FirebaseID:  "test-firebase-id",
@@ -105,10 +105,10 @@ func createTestUser(t *testing.T, ctx context.Context, repo repository.Repositor
 		CreatedAt:   &now,
 		LastUpdated: &now,
 	}
-	
+
 	insertedUser, err := repo.Insert(ctx, user)
 	require.NoError(t, err)
 	require.NotNil(t, insertedUser)
-	
+
 	return insertedUser
 }

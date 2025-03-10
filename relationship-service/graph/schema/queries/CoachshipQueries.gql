@@ -1,0 +1,31 @@
+extend type Query {
+  # Get a specific coaching relationship by the other user's ID
+  getCoachship(userId: ObjectID!): Coachship
+  
+  # Check if current user is a coach of the specified user
+  isCoachOf(userId: ObjectID!): RelationshipStatus!
+  
+  # Check if current user is a student of the specified user
+  isStudentOf(userId: ObjectID!): RelationshipStatus!
+  
+  # Get all coaching relationships for the current user (both as coach and student)
+  getCoachships(limit: Int = 10, offset: Int = 0): [Coachship!]!
+  
+  # Get all coaches of the current user
+  getMyCoaches(limit: Int = 10, offset: Int = 0): [Coachship!]!
+  
+  # Get all students of the current user
+  getMyStudents(limit: Int = 10, offset: Int = 0): [Coachship!]!
+  
+  # Get requests sent by the current user to be a coach of someone
+  getSentCoachRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
+  
+  # Get requests received by the current user from users who want to be coached by them
+  getReceivedCoachRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
+  
+  # Get requests sent by the current user to be coached by someone
+  getSentStudentRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
+  
+  # Get requests received by the current user from users who want to coach them
+  getReceivedStudentRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
+}

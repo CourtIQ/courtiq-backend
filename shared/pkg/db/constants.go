@@ -4,6 +4,7 @@ package db
 const (
 	DatabaseName                   = "courtiq-db"
 	UsersCollection                = "users"
+	RelationshipsCollection        = "relationships"
 	FriendshipsCollection          = "friendships"
 	CoachshipsCollection           = "coachships"
 	TennisRacketsCollection        = "tennis_rackets"

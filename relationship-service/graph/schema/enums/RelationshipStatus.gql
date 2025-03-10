@@ -1,16 +1,13 @@
-"""
-Represents the possible status of a relationship between users.
-"""
+# Status of a relationship between users
 enum RelationshipStatus {
-  """
-  The relationship is in a pending state, meaning a request has been sent but not yet accepted.
-  """
-  PENDING
-
-  """
-  The relationship is active, meaning the request has been accepted and the relationship is established.
-  """
-  ACTIVE
-
+  # No relationship exists
   NONE
+  # A relationship request has been sent but not accepted
+  PENDING
+  # A relationship request has been accepted
+  ACCEPTED
+  # A relationship request has been declined
+  DECLINED
+  # One user has blocked the other
+  BLOCKED
 }

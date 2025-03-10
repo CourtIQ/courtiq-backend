@@ -12,73 +12,57 @@ import (
 )
 
 type Relationship interface {
-	IsEntity()
 	IsRelationship()
 	GetID() primitive.ObjectID
-	GetParticipants() []primitive.ObjectID
 	GetType() RelationshipType
 	GetStatus() RelationshipStatus
+	GetInitiatorID() primitive.ObjectID
+	GetReceiverID() primitive.ObjectID
 	GetCreatedAt() time.Time
-	GetUpdatedAt() time.Time
+	GetUpdatedAt() *time.Time
 }
 
 type Coachship struct {
-	ID           primitive.ObjectID   `json:"id" bson:"_id"`
-	Participants []primitive.ObjectID `json:"participants" bson:"participants"`
-	Type         RelationshipType     `json:"type" bson:"type"`
-	Status       RelationshipStatus   `json:"status" bson:"status"`
-	CreatedAt    time.Time            `json:"createdAt" bson:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt" bson:"updatedAt"`
-	CoachID      primitive.ObjectID   `json:"coachId" bson:"coachId"`
-	StudentID    primitive.ObjectID   `json:"studentId" bson:"studentId"`
+	ID          primitive.ObjectID `json:"id" bson:"_id"`
+	Type        RelationshipType   `json:"type" bson:"type"`
+	Status      RelationshipStatus `json:"status" bson:"status"`
+	InitiatorID primitive.ObjectID `json:"initiatorId" bson:"initiatorId"`
+	ReceiverID  primitive.ObjectID `json:"receiverId" bson:"receiverId"`
+	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	Coach       primitive.ObjectID `json:"coach" bson:"coach"`
+	Student     primitive.ObjectID `json:"student" bson:"student"`
 }
 
-func (Coachship) IsRelationship()                {}
-func (this Coachship) GetID() primitive.ObjectID { return this.ID }
-func (this Coachship) GetParticipants() []primitive.ObjectID {
-	if this.Participants == nil {
-		return nil
-	}
-	interfaceSlice := make([]primitive.ObjectID, 0, len(this.Participants))
-	for _, concrete := range this.Participants {
-		interfaceSlice = append(interfaceSlice, concrete)
-	}
-	return interfaceSlice
-}
-func (this Coachship) GetType() RelationshipType     { return this.Type }
-func (this Coachship) GetStatus() RelationshipStatus { return this.Status }
-func (this Coachship) GetCreatedAt() time.Time       { return this.CreatedAt }
-func (this Coachship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
+func (Coachship) IsRelationship()                         {}
+func (this Coachship) GetID() primitive.ObjectID          { return this.ID }
+func (this Coachship) GetType() RelationshipType          { return this.Type }
+func (this Coachship) GetStatus() RelationshipStatus      { return this.Status }
+func (this Coachship) GetInitiatorID() primitive.ObjectID { return this.InitiatorID }
+func (this Coachship) GetReceiverID() primitive.ObjectID  { return this.ReceiverID }
+func (this Coachship) GetCreatedAt() time.Time            { return this.CreatedAt }
+func (this Coachship) GetUpdatedAt() *time.Time           { return this.UpdatedAt }
 
 func (Coachship) IsEntity() {}
 
 type Friendship struct {
-	ID           primitive.ObjectID   `json:"id" bson:"_id"`
-	Participants []primitive.ObjectID `json:"participants" bson:"participants"`
-	Type         RelationshipType     `json:"type" bson:"type"`
-	Status       RelationshipStatus   `json:"status" bson:"status"`
-	CreatedAt    time.Time            `json:"createdAt" bson:"createdAt"`
-	UpdatedAt    time.Time            `json:"updatedAt" bson:"updatedAt"`
-	SenderID     primitive.ObjectID   `json:"senderId" bson:"senderId"`
-	ReceiverID   primitive.ObjectID   `json:"receiverId" bson:"receiverId"`
+	ID          primitive.ObjectID `json:"id" bson:"_id"`
+	Type        RelationshipType   `json:"type" bson:"type"`
+	Status      RelationshipStatus `json:"status" bson:"status"`
+	InitiatorID primitive.ObjectID `json:"initiatorId" bson:"initiatorId"`
+	ReceiverID  primitive.ObjectID `json:"receiverId" bson:"receiverId"`
+	CreatedAt   time.Time          `json:"createdAt" bson:"createdAt"`
+	UpdatedAt   *time.Time         `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
 }
 
-func (Friendship) IsRelationship()                {}
-func (this Friendship) GetID() primitive.ObjectID { return this.ID }
-func (this Friendship) GetParticipants() []primitive.ObjectID {
-	if this.Participants == nil {
-		return nil
-	}
-	interfaceSlice := make([]primitive.ObjectID, 0, len(this.Participants))
-	for _, concrete := range this.Participants {
-		interfaceSlice = append(interfaceSlice, concrete)
-	}
-	return interfaceSlice
-}
-func (this Friendship) GetType() RelationshipType     { return this.Type }
-func (this Friendship) GetStatus() RelationshipStatus { return this.Status }
-func (this Friendship) GetCreatedAt() time.Time       { return this.CreatedAt }
-func (this Friendship) GetUpdatedAt() time.Time       { return this.UpdatedAt }
+func (Friendship) IsRelationship()                         {}
+func (this Friendship) GetID() primitive.ObjectID          { return this.ID }
+func (this Friendship) GetType() RelationshipType          { return this.Type }
+func (this Friendship) GetStatus() RelationshipStatus      { return this.Status }
+func (this Friendship) GetInitiatorID() primitive.ObjectID { return this.InitiatorID }
+func (this Friendship) GetReceiverID() primitive.ObjectID  { return this.ReceiverID }
+func (this Friendship) GetCreatedAt() time.Time            { return this.CreatedAt }
+func (this Friendship) GetUpdatedAt() *time.Time           { return this.UpdatedAt }
 
 func (Friendship) IsEntity() {}
 
@@ -98,38 +82,72 @@ type Mutation struct {
 type Query struct {
 }
 
-type User struct {
-	ID                   primitive.ObjectID `json:"id" bson:"_id"`
-	FriendsCount         int                `json:"friendsCount" bson:"friendsCount"`
-	CoachesCount         int                `json:"coachesCount" bson:"coachesCount"`
-	StudentsCount        int                `json:"studentsCount" bson:"studentsCount"`
-	FriendRequestsCount  int                `json:"friendRequestsCount" bson:"friendRequestsCount"`
-	CoachRequestsCount   int                `json:"coachRequestsCount" bson:"coachRequestsCount"`
-	StudentRequestsCount int                `json:"studentRequestsCount" bson:"studentRequestsCount"`
+type RelationshipQueries struct {
+	GetFriendship *Friendship `json:"getFriendship,omitempty" bson:"getFriendship,omitempty"`
 }
 
-func (User) IsEntity() {}
+type CoachshipRole string
 
-// Represents the possible status of a relationship between users.
+const (
+	CoachshipRoleCoach   CoachshipRole = "COACH"
+	CoachshipRoleStudent CoachshipRole = "STUDENT"
+)
+
+var AllCoachshipRole = []CoachshipRole{
+	CoachshipRoleCoach,
+	CoachshipRoleStudent,
+}
+
+func (e CoachshipRole) IsValid() bool {
+	switch e {
+	case CoachshipRoleCoach, CoachshipRoleStudent:
+		return true
+	}
+	return false
+}
+
+func (e CoachshipRole) String() string {
+	return string(e)
+}
+
+func (e *CoachshipRole) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CoachshipRole(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CoachshipRole", str)
+	}
+	return nil
+}
+
+func (e CoachshipRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type RelationshipStatus string
 
 const (
-	// The relationship is in a pending state, meaning a request has been sent but not yet accepted.
-	RelationshipStatusPending RelationshipStatus = "PENDING"
-	// The relationship is active, meaning the request has been accepted and the relationship is established.
-	RelationshipStatusActive RelationshipStatus = "ACTIVE"
-	RelationshipStatusNone   RelationshipStatus = "NONE"
+	RelationshipStatusNone     RelationshipStatus = "NONE"
+	RelationshipStatusPending  RelationshipStatus = "PENDING"
+	RelationshipStatusAccepted RelationshipStatus = "ACCEPTED"
+	RelationshipStatusDeclined RelationshipStatus = "DECLINED"
+	RelationshipStatusBlocked  RelationshipStatus = "BLOCKED"
 )
 
 var AllRelationshipStatus = []RelationshipStatus{
-	RelationshipStatusPending,
-	RelationshipStatusActive,
 	RelationshipStatusNone,
+	RelationshipStatusPending,
+	RelationshipStatusAccepted,
+	RelationshipStatusDeclined,
+	RelationshipStatusBlocked,
 }
 
 func (e RelationshipStatus) IsValid() bool {
 	switch e {
-	case RelationshipStatusPending, RelationshipStatusActive, RelationshipStatusNone:
+	case RelationshipStatusNone, RelationshipStatusPending, RelationshipStatusAccepted, RelationshipStatusDeclined, RelationshipStatusBlocked:
 		return true
 	}
 	return false
@@ -156,14 +174,11 @@ func (e RelationshipStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-// Represents the different types of relationships that can exist between users.
 type RelationshipType string
 
 const (
-	// A friendship relationship between two users.
 	RelationshipTypeFriendship RelationshipType = "FRIENDSHIP"
-	// A coaching relationship between a coach and a coachee.
-	RelationshipTypeCoachship RelationshipType = "COACHSHIP"
+	RelationshipTypeCoachship  RelationshipType = "COACHSHIP"
 )
 
 var AllRelationshipType = []RelationshipType{
@@ -197,50 +212,5 @@ func (e *RelationshipType) UnmarshalGQL(v any) error {
 }
 
 func (e RelationshipType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type Visibility string
-
-const (
-	VisibilityPublic  Visibility = "PUBLIC"
-	VisibilityPrivate Visibility = "PRIVATE"
-	VisibilityFriends Visibility = "FRIENDS"
-	VisibilityCoaches Visibility = "COACHES"
-)
-
-var AllVisibility = []Visibility{
-	VisibilityPublic,
-	VisibilityPrivate,
-	VisibilityFriends,
-	VisibilityCoaches,
-}
-
-func (e Visibility) IsValid() bool {
-	switch e {
-	case VisibilityPublic, VisibilityPrivate, VisibilityFriends, VisibilityCoaches:
-		return true
-	}
-	return false
-}
-
-func (e Visibility) String() string {
-	return string(e)
-}
-
-func (e *Visibility) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = Visibility(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid Visibility", str)
-	}
-	return nil
-}
-
-func (e Visibility) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

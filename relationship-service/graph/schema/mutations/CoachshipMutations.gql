@@ -1,0 +1,31 @@
+extend type Mutation {
+  # Send a request to be a coach of another user
+  requestToBeCoachOf(userId: ObjectID!): Coachship!
+  
+  # Send a request to be coached by another user
+  requestToBeCoachedBy(userId: ObjectID!): Coachship!
+  
+  # Accept a request to be a coach of another user
+  acceptToBeCoachOf(requestId: ObjectID!): Coachship!
+  
+  # Reject a request to be a coach of another user
+  rejectToBeCoachOf(requestId: ObjectID!): Coachship!
+  
+  # Accept a request to be coached by another user
+  acceptToBeCoachedBy(requestId: ObjectID!): Coachship!
+  
+  # Reject a request to be coached by another user
+  rejectToBeCoachedBy(requestId: ObjectID!): Coachship!
+  
+  # Cancel a sent request to be a coach of another user
+  cancelCoachRequest(requestId: ObjectID!): Coachship!
+  
+  # Cancel a sent request to be coached by another user
+  cancelStudentRequest(requestId: ObjectID!): Coachship!
+  
+  # End a coaching relationship where current user is the coach
+  endCoachingAsCoach(coachshipId: ObjectID!): Boolean!
+  
+  # End a coaching relationship where current user is the student
+  endCoachingAsStudent(coachshipId: ObjectID!): Boolean!
+}

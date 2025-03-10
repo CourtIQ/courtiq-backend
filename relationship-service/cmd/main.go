@@ -3,21 +3,16 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/handler/extension"
-	"github.com/99designs/gqlgen/graphql/handler/transport"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
-	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
+	sharedRepo "github.com/CourtIQ/courtiq-backend/shared/pkg/repository"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/server"
 )
 
 func main() {
@@ -27,53 +22,47 @@ func main() {
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Initialize MongoDB client
+	// Initialize MongoDB connection
 	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	// Create repositories
-	coachshipRepo := repository.NewCoachshipRepository(mongodb)
-	friendshipRepo := repository.NewFriendshipRepository(mongodb)
+	// Create repository factory from shared package
+	repoFactory := sharedRepo.NewRepositoryFactory(mongodb)
 
-	// Create the service with the repositories
+	// Initialize repositories using factory
+	friendshipRepo := repository.NewFriendshipRepository(repoFactory)
+	coachshipRepo := repository.NewCoachshipRepository(repoFactory)
+
+	// Initialize services
 	relationshipService := services.NewRelationshipService(friendshipRepo, coachshipRepo)
 
-	// Replace NewDefaultServer with explicitly configured server
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{
-			RelationshipServiceIntf: relationshipService,
-		},
+	// Initialize resolver with service dependency
+	resolver := &resolvers.Resolver{
+		RelationshipService: relationshipService,
+	}
+
+	// Initialize GraphQL server
+	serverConfig := server.DefaultServerConfig()
+	serverConfig.ServiceName = config.ServiceName
+	serverConfig.Port = config.Port
+	serverConfig.Environment = config.Environment
+	serverConfig.PlaygroundEnabled = config.PlaygroundEnabled
+	serverConfig.MongoDBURL = config.MongoDBURL
+	serverConfig.DatabaseName = db.DatabaseName // Use constant from shared package
+
+	// Create GraphQL server
+	gqlServer, err := server.NewServer(serverConfig, graph.NewExecutableSchema(graph.Config{
+		Resolvers: resolver,
 	}))
-
-	// Configure transports with specific order and options
-	srv.AddTransport(transport.POST{})    // Standard GraphQL POST requests
-	srv.AddTransport(transport.Options{}) // CORS preflight requests
-	srv.AddTransport(transport.GET{})     // Simple queries via GET
-
-	// Add basic extensions
-	srv.Use(extension.Introspection{}) // Enable schema introspection
-
-	// Rest of your code remains the same...
-	mux := http.NewServeMux()
-	mux.Handle("/graphql", middleware.WithUserClaims(srv))
-
-	// Setup playground if enabled
-	if config.PlaygroundEnabled {
-		mux.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-		log.Printf("GraphQL Playground enabled at /")
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
 	}
 
 	// Start server
-	address := fmt.Sprintf(":%d", config.Port)
-	log.Printf("%s running in %s mode on %s", config.ServiceName, config.Environment, address)
-	if config.PlaygroundEnabled {
-		log.Printf("GraphQL Playground available at http://localhost:%d", config.Port)
-	}
-	log.Printf("GraphQL endpoint available at http://localhost:%d/graphql", config.Port)
-
-	if err := http.ListenAndServe(address, mux); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	log.Printf("%s running in %s mode on port %d", config.ServiceName, config.Environment, config.Port)
+	if err := gqlServer.Serve(); err != nil {
+		log.Fatalf("Server error: %v", err)
 	}
 }

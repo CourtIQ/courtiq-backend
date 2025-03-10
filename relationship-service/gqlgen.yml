@@ -1,7 +1,7 @@
 # Where are all the schema files located? globs are supported eg  src/**/*.graphqls
 schema:
   - graph/schema/**/*.gql
-  - ../shared/graph/schema/*.gql
+  - ../shared/graph/schema/**/*.gql
 
 # Where should the generated server code go?
 exec:
@@ -100,3 +100,5 @@ models:
     model: github.com/99designs/gqlgen/graphql.Time
   ObjectID:
     model: github.com/CourtIQ/courtiq-backend/shared/pkg/scalar.ObjectID
+  JSON:
+    model: github.com/99designs/gqlgen/graphql.Map

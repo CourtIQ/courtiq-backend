@@ -1,33 +1,28 @@
-// cmd/main.go
 package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/graph/resolvers"
-
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/repository"
 	"github.com/CourtIQ/courtiq-backend/equipment-service/internal/services"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
-	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/server"
 )
 
 func main() {
 	// Load configuration
 	config := configs.LoadConfig()
 
-	// Setup logging
-	configs.SetupLogging(config)
+	// Create server config from shared config
+	serverConfig := server.DefaultServerConfig()
+	serverConfig.LoadFromSharedConfig(*config)
 
 	// Initialize MongoDB client
-	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
+	mongodb, err := db.NewMongoDB(context.Background(), serverConfig.MongoDBURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
@@ -36,36 +31,30 @@ func main() {
 	racketRepo := repository.NewTennisRacketMongoRepo(mongodb)
 	stringRepo := repository.NewTennisStringMongoRepo(mongodb)
 
-	// Create the service with the repositories
+	// Create equipment service
 	equipmentService := services.NewEquipmentService(racketRepo, stringRepo)
 
-	// Set up the GraphQL server with the resolver that has the service injected
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolvers.Resolver{
-			EquipmentServiceIntf: equipmentService,
-		},
-	}))
-
-	// Create router mux
-	mux := http.NewServeMux()
-
-	mux.Handle("/graphql", middleware.WithUserClaims(srv))
-
-	// Setup playground if enabled
-	if config.PlaygroundEnabled {
-		mux.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-		log.Printf("GraphQL Playground enabled at /")
+	// Initialize resolver
+	resolver := &resolvers.Resolver{
+		EquipmentServiceIntf: equipmentService,
 	}
 
-	// Start server
-	address := fmt.Sprintf(":%d", config.Port)
-	log.Printf("%s running in %s mode on %s", config.ServiceName, config.Environment, address)
-	if config.PlaygroundEnabled {
-		log.Printf("GraphQL Playground available at http://localhost:%d", config.Port)
-	}
-	log.Printf("GraphQL endpoint available at http://localhost:%d/graphql", config.Port)
+	// Create executable schema
+	execSchema := graph.NewExecutableSchema(graph.Config{
+		Resolvers: resolver,
+	})
 
-	if err := http.ListenAndServe(address, mux); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+	// Create and configure the server
+	srv, err := server.NewServer(serverConfig, execSchema)
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
+
+	// Register directives
+	srv.RegisterDirectives(server.GetDefaultDirectives())
+
+	// Start the server
+	if err := srv.Serve(); err != nil {
+		log.Fatalf("Server error: %v", err)
 	}
 }

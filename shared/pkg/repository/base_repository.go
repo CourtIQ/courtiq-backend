@@ -14,6 +14,7 @@ import (
 // Repository defines a generic interface for all repositories
 type Repository[T any] interface {
 	FindByID(ctx context.Context, id primitive.ObjectID) (*T, error)
+	FindByIDWithFilters(ctx context.Context, id primitive.ObjectID, additionalFilters bson.M) (*T, error)
 	FindOne(ctx context.Context, filter interface{}) (*T, error)
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) ([]*T, error)
 	Count(ctx context.Context, filter interface{}) (int64, error)
@@ -124,6 +125,28 @@ func (r *BaseRepository[T]) Update(ctx context.Context, id primitive.ObjectID, e
 	}
 
 	return &updatedEntity, nil
+}
+
+// FindByIDWithFilters finds an entity by its ObjectID with additional filters
+func (r *BaseRepository[T]) FindByIDWithFilters(ctx context.Context, id primitive.ObjectID, additionalFilters bson.M) (*T, error) {
+	// Start with the ID filter
+	filter := bson.M{"_id": id}
+
+	// Merge with additional filters
+	for k, v := range additionalFilters {
+		filter[k] = v
+	}
+
+	var entity T
+	err := r.collection.FindOne(ctx, filter).Decode(&entity)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, sharedErrors.ErrNotFound
+		}
+		return nil, sharedErrors.WrapError(err, "failed to find entity by ID with filters")
+	}
+
+	return &entity, nil
 }
 
 // Delete deletes an entity by its ID

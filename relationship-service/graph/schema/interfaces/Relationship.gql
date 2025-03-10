@@ -1,9 +1,10 @@
-# The Relationship interface represents a generic relationship between users.
-interface Relationship @key(fields: "id") {
-  id: ObjectID!                 # Unique identifier for the relationship
-  participants: [ObjectID!]!          # IDs of users participating in this relationship
-  type: RelationshipType!       # The type of relationship (e.g., FRIENDSHIP, COACHSHIP)
-  status: RelationshipStatus!   # Current status of the relationship (e.g., PENDING, ACTIVE)
-  createdAt: DateTime!          # Timestamp when the relationship was created
-  updatedAt: DateTime!          # Timestamp for the last update, if any
+# Relationship interface defines the common structure for all relationship types
+interface Relationship {
+  id: ObjectID!
+  type: RelationshipType!
+  status: RelationshipStatus!
+  initiatorId: ObjectID!
+  receiverId: ObjectID!
+  createdAt: DateTime!
+  updatedAt: DateTime
 }

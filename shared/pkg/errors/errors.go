@@ -96,3 +96,38 @@ func IsConflictError(err error) bool {
 func IsDatabaseOperationError(err error) bool {
 	return errors.Is(err, ErrDatabaseOperation)
 }
+
+// NewBadRequestError creates a new invalid input error with a message
+func NewBadRequestError(message string) error {
+	return WrapError(ErrInvalidInput, message)
+}
+
+// NewNotFoundError creates a new not found error with a message
+func NewNotFoundError(message string) error {
+	return WrapError(ErrNotFound, message)
+}
+
+// NewForbiddenError creates a new forbidden error with a message
+func NewForbiddenError(message string) error {
+	return WrapError(ErrForbidden, message)
+}
+
+// NewUnauthorizedError creates a new unauthorized error with a message
+func NewUnauthorizedError(message string) error {
+	return WrapError(ErrUnauthorized, message)
+}
+
+// NewInternalError creates a new internal server error with a message
+func NewInternalError(message string) error {
+	return WrapError(ErrInternalServer, message)
+}
+
+// NewAlreadyExistsError creates a new already exists error with a message
+func NewAlreadyExistsError(message string) error {
+	return WrapError(ErrAlreadyExists, message)
+}
+
+// NewConflictError creates a new conflict error with a message
+func NewConflictError(message string) error {
+	return WrapError(ErrConflict, message)
+}

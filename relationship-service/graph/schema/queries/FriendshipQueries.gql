@@ -1,0 +1,16 @@
+extend type Query {
+  # Get a specific friendship by friend ID
+  getFriendship(friendId: ObjectID!): Friendship
+  
+  # Check if a user is friends with another user
+  checkFriendshipStatus(withUser: ObjectID!): RelationshipStatus!
+  
+  # Get all friends of the current user with pagination
+  getMyFriends(limit: Int = 10, offset: Int = 0): [Friendship!]!
+  
+  # Get pending friend requests sent by the current user
+  getSentFriendRequests(limit: Int = 10, offset: Int = 0): [Friendship!]!
+  
+  # Get pending friend requests received by the current user
+  getReceivedFriendRequests(limit: Int = 10, offset: Int = 0): [Friendship!]!
+}

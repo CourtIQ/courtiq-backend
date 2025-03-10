@@ -1,0 +1,22 @@
+extend type Mutation {
+  # Send a friend request to another user
+  sendFriendRequest(userId: ObjectID!): Friendship!
+  
+  # Accept a friend request from another user
+  acceptFriendRequest(requestId: ObjectID!): Friendship!
+  
+  # Reject a friend request from another user
+  rejectFriendRequest(requestId: ObjectID!): Friendship!
+  
+  # Cancel a friend request sent to another user
+  cancelFriendRequest(requestId: ObjectID!): Friendship!
+  
+  # Remove a friendship with another user
+  removeFriend(friendId: ObjectID!): Boolean!
+  
+  # Block a user (creates or updates relationship with BLOCKED status)
+  blockUser(userId: ObjectID!): Friendship!
+  
+  # Unblock a previously blocked user
+  unblockUser(userId: ObjectID!): Friendship!
+}

@@ -13,7 +13,7 @@ import (
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
-	return r.UserServiceIntf.UpdateUser(ctx, &input)
+	return r.UserService.UpdateUser(ctx, &input)
 }
 
 // Mutation returns graph.MutationResolver implementation.

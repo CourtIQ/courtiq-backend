@@ -7,5 +7,5 @@ import "github.com/CourtIQ/courtiq-backend/user-service/internal/services"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	UserServiceIntf services.UserServiceIntf
+	UserService services.UserServiceIntf
 }

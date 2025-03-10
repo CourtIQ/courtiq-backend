@@ -2,159 +2,135 @@ package repository
 
 import (
 	"context"
-	"errors"
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/utils"
-	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/repository"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type friendshipRepository struct {
-	collection *mongo.Collection
+// FriendshipRepositoryImpl implements FriendshipRepository
+type FriendshipRepositoryImpl struct {
+	baseRepo *repository.BaseRepository[model.Friendship]
 }
 
-func NewFriendshipRepository(mdb *db.MongoDB) FriendshipRepository {
-	return &friendshipRepository{
-		collection: mdb.GetCollection(db.FriendshipsCollection),
+// NewFriendshipRepository creates a new instance of FriendshipRepository
+func NewFriendshipRepository(factory *repository.RepositoryFactory) FriendshipRepository {
+	baseRepo := repository.NewRepository[model.Friendship](factory, RelationshipsCollection)
+	return &FriendshipRepositoryImpl{
+		baseRepo: baseRepo,
 	}
 }
 
-// FindByID finds a Friendship by its ObjectID.
-func (r *friendshipRepository) FindByID(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error) {
-	filter := bson.M{"_id": id}
-
-	var friendship model.Friendship
-	err := r.collection.FindOne(ctx, filter).Decode(&friendship)
-	if err != nil {
-		// Check if the document was not found in Mongo
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, utils.ErrFriendshipNotFound
-		}
-		return nil, err
+// FindByID finds a friendship by its ID
+func (r *FriendshipRepositoryImpl) FindByID(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error) {
+	filter := bson.M{
+		"type": model.RelationshipTypeFriendship,
 	}
-	return &friendship, nil
+
+	return r.baseRepo.FindByIDWithFilters(ctx, id, filter)
 }
 
-// Insert creates a new Friendship document and returns the inserted record.
-func (r *friendshipRepository) Insert(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error) {
-	if friendship.ID.IsZero() {
+// FindBetweenUsers finds a friendship between two users
+func (r *FriendshipRepositoryImpl) FindBetweenUsers(ctx context.Context, userID1, userID2 primitive.ObjectID) (*model.Friendship, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{
+				"initiatorId": userID1,
+				"receiverId":  userID2,
+			},
+			{
+				"initiatorId": userID2,
+				"receiverId":  userID1,
+			},
+		},
+		"type": model.RelationshipTypeFriendship,
+	}
+
+	return r.baseRepo.FindOne(ctx, filter)
+}
+
+// GetFriendships gets all friendships for a user with a specific status
+func (r *FriendshipRepositoryImpl) GetFriendships(ctx context.Context, userID primitive.ObjectID, status model.RelationshipStatus, limit, offset *int) ([]*model.Friendship, error) {
+	filter := bson.M{
+		"$or": []bson.M{
+			{"initiatorId": userID},
+			{"receiverId": userID},
+		},
+		"status": status,
+		"type":   model.RelationshipTypeFriendship,
+	}
+
+	opts := options.Find()
+	if limit != nil {
+		opts.SetLimit(int64(*limit))
+	}
+	if offset != nil {
+		opts.SetSkip(int64(*offset))
+	}
+
+	return r.baseRepo.Find(ctx, filter, opts)
+}
+
+// GetSentRequests gets all friend requests sent by a user
+func (r *FriendshipRepositoryImpl) GetSentRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Friendship, error) {
+	filter := bson.M{
+		"initiatorId": userID,
+		"status":      model.RelationshipStatusPending,
+		"type":        model.RelationshipTypeFriendship,
+	}
+
+	opts := options.Find()
+	if limit != nil {
+		opts.SetLimit(int64(*limit))
+	}
+	if offset != nil {
+		opts.SetSkip(int64(*offset))
+	}
+
+	return r.baseRepo.Find(ctx, filter, opts)
+}
+
+// GetReceivedRequests gets all friend requests received by a user
+func (r *FriendshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Friendship, error) {
+	filter := bson.M{
+		"receiverId": userID,
+		"status":     model.RelationshipStatusPending,
+		"type":       model.RelationshipTypeFriendship,
+	}
+
+	opts := options.Find()
+	if limit != nil {
+		opts.SetLimit(int64(*limit))
+	}
+	if offset != nil {
+		opts.SetSkip(int64(*offset))
+	}
+
+	return r.baseRepo.Find(ctx, filter, opts)
+}
+
+// Create creates a new friendship
+func (r *FriendshipRepositoryImpl) Create(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error) {
+	// Set _id if not already set
+	if friendship.ID == primitive.NilObjectID {
 		friendship.ID = primitive.NewObjectID()
 	}
 
-	res, err := r.collection.InsertOne(ctx, friendship)
-	if err != nil {
-		return nil, err
-	}
+	// Ensure type is set to FRIENDSHIP
+	friendship.Type = model.RelationshipTypeFriendship
 
-	var insertedFriendship model.Friendship
-	if err := r.collection.FindOne(ctx, bson.M{"_id": res.InsertedID}).Decode(&insertedFriendship); err != nil {
-		return nil, err
-	}
-
-	return &insertedFriendship, nil
+	return r.baseRepo.Insert(ctx, friendship)
 }
 
-// Update updates an existing Friendship by its ObjectID and returns the updated record.
-func (r *friendshipRepository) Update(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error) {
-	if friendship.ID.IsZero() {
-		return nil, utils.ErrMissingFriendshipID
-	}
-
-	filter := bson.M{"_id": friendship.ID}
-	update := bson.M{"$set": friendship}
-
-	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
-
-	var updatedFriendship model.Friendship
-	err := r.collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedFriendship)
-	if err != nil {
-		// Again, check if the doc was not found
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, utils.ErrFriendshipNotFound
-		}
-		return nil, err
-	}
-
-	return &updatedFriendship, nil
+// Update updates an existing friendship
+func (r *FriendshipRepositoryImpl) Update(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error) {
+	return r.baseRepo.Update(ctx, friendship.ID, friendship)
 }
 
-// Delete deletes a Friendship by its ObjectID and returns the deleted document.
-func (r *friendshipRepository) Delete(ctx context.Context, id primitive.ObjectID) (*model.Friendship, error) {
-	filter := bson.M{"_id": id}
-
-	var deletedFriendship model.Friendship
-	err := r.collection.FindOneAndDelete(ctx, filter).Decode(&deletedFriendship)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, utils.ErrFriendshipNotFound
-		}
-		return nil, err
-	}
-
-	return &deletedFriendship, nil
-}
-
-// Find finds all Friendships matching the given filter, with optional limit and offset.
-func (r *friendshipRepository) Find(ctx context.Context, filter interface{}, limit *int, offset *int) ([]*model.Friendship, error) {
-	findOpts := utils.BuildFindOptions(limit, offset)
-
-	cursor, err := r.collection.Find(ctx, filter, findOpts)
-	if err != nil {
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var friendships []*model.Friendship
-	if err := cursor.All(ctx, &friendships); err != nil {
-		return nil, err
-	}
-
-	return friendships, nil
-}
-
-// FindOne finds a single Friendship matching the given filter.
-func (r *friendshipRepository) FindOne(ctx context.Context, filter interface{}) (*model.Friendship, error) {
-	var friendship model.Friendship
-	err := r.collection.FindOne(ctx, filter).Decode(&friendship)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &friendship, nil
-}
-
-// FindOneAndUpdate finds a single Friendship that matches `filter`, applies `update`,
-func (r *friendshipRepository) FindOneAndUpdate(ctx context.Context, filter interface{}, update interface{}) (*model.Friendship, error) {
-
-	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
-
-	var updatedFriendship model.Friendship
-	err := r.collection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&updatedFriendship)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, utils.ErrFriendshipNotFound
-		}
-		return nil, err
-	}
-
-	return &updatedFriendship, nil
-}
-
-// FindOneAndDelete finds a single Friendship matching `filter`, deletes it,
-func (r *friendshipRepository) FindOneAndDelete(ctx context.Context, filter interface{}) (*model.Friendship, error) {
-	var deletedFriendship model.Friendship
-	err := r.collection.FindOneAndDelete(ctx, filter).Decode(&deletedFriendship)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, utils.ErrFriendshipNotFound
-		}
-		return nil, err
-	}
-	return &deletedFriendship, nil
+// Delete deletes a friendship
+func (r *FriendshipRepositoryImpl) Delete(ctx context.Context, id primitive.ObjectID) (bool, error) {
+	err := r.baseRepo.Delete(ctx, id)
+	return err == nil, err
 }

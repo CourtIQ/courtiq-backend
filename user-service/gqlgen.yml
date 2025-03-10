@@ -2,6 +2,7 @@
 schema:
   - graph/schema/**/*.gql
   - ../shared/graph/schema/*.gql
+  - ../shared/graph/schema/**/*.gql
 
 # Where should the generated server code go?
 exec:
@@ -30,7 +31,7 @@ resolver:
   # Optional: turn on to not generate template comments above resolvers
   # omit_template_comment: false
 
-# Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
+# Optional: turn on use `gqlgen:"fieldName"` tags in your models
 # struct_tag: json
 
 # Optional: turn on to use []Thing instead of []*Thing
@@ -74,6 +75,11 @@ resolver:
 # argument values but to set them even if they're null.
 call_argument_directives_with_null: true
 
+# Configure gqlgen to use these directives
+directives:
+  accessControl:
+    skip_runtime: false
+
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
 autobind:
@@ -100,3 +106,5 @@ models:
     model: github.com/99designs/gqlgen/graphql.Time
   ObjectID:
     model: github.com/CourtIQ/courtiq-backend/shared/pkg/scalar.ObjectID
+  AccessLevel:
+    model: github.com/CourtIQ/courtiq-backend/shared/pkg/access.AccessLevel
