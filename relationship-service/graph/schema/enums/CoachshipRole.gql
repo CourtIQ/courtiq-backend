@@ -1,7 +1,0 @@
-# Role in a coaching relationship
-enum CoachshipRole {
-  # The person providing coaching
-  COACH
-  # The person receiving coaching
-  STUDENT
-}

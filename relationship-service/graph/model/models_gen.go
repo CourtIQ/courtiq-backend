@@ -86,47 +86,6 @@ type RelationshipQueries struct {
 	GetFriendship *Friendship `json:"getFriendship,omitempty" bson:"getFriendship,omitempty"`
 }
 
-type CoachshipRole string
-
-const (
-	CoachshipRoleCoach   CoachshipRole = "COACH"
-	CoachshipRoleStudent CoachshipRole = "STUDENT"
-)
-
-var AllCoachshipRole = []CoachshipRole{
-	CoachshipRoleCoach,
-	CoachshipRoleStudent,
-}
-
-func (e CoachshipRole) IsValid() bool {
-	switch e {
-	case CoachshipRoleCoach, CoachshipRoleStudent:
-		return true
-	}
-	return false
-}
-
-func (e CoachshipRole) String() string {
-	return string(e)
-}
-
-func (e *CoachshipRole) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = CoachshipRole(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid CoachshipRole", str)
-	}
-	return nil
-}
-
-func (e CoachshipRole) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type RelationshipStatus string
 
 const (

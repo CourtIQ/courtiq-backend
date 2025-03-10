@@ -892,7 +892,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/enums/CoachshipRole.gql" "schema/enums/RelationshipStatus.gql" "schema/enums/RelationshipType.gql" "schema/interfaces/Relationship.gql" "schema/mutations/CoachshipMutations.gql" "schema/mutations/FriendshipMutations.gql" "schema/queries/CoachshipQueries.gql" "schema/queries/FriendshipQueries.gql" "schema/queries/RelationshipQueries.gql" "schema/types/Coachship.gql" "schema/types/Friendship.gql"
+//go:embed "schema/enums/RelationshipStatus.gql" "schema/enums/RelationshipType.gql" "schema/interfaces/Relationship.gql" "schema/mutations/CoachshipMutations.gql" "schema/mutations/FriendshipMutations.gql" "schema/queries/CoachshipQueries.gql" "schema/queries/FriendshipQueries.gql" "schema/queries/RelationshipQueries.gql" "schema/types/Coachship.gql" "schema/types/Friendship.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -904,7 +904,6 @@ func sourceData(filename string) string {
 }
 
 var sources = []*ast.Source{
-	{Name: "schema/enums/CoachshipRole.gql", Input: sourceData("schema/enums/CoachshipRole.gql"), BuiltIn: false},
 	{Name: "schema/enums/RelationshipStatus.gql", Input: sourceData("schema/enums/RelationshipStatus.gql"), BuiltIn: false},
 	{Name: "schema/enums/RelationshipType.gql", Input: sourceData("schema/enums/RelationshipType.gql"), BuiltIn: false},
 	{Name: "schema/interfaces/Relationship.gql", Input: sourceData("schema/interfaces/Relationship.gql"), BuiltIn: false},
