@@ -11,15 +11,13 @@ env:
   GCP_PROJECT_ID: courtiq-backend
 
 jobs:
-  api_gateway:
-    env:
-      SVC_NAME: api-gateway
+  setup_environment:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+    outputs:
+      tag: ${{ steps.set_env.outputs.tag }}
     steps:
       - name: Set Environment Variables and Tags
+        id: set_env
         run: |
           TAG="latest"          
           BRANCH=${{ github.head_ref || github.ref_name }}
@@ -27,10 +25,31 @@ jobs:
             TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
             BRANCH=$TAG
           fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "TAG=$TAG"
 
-      - name: Checkout current repo
+  api_gateway:
+    needs: setup_environment
+    env:
+      SVC_NAME: api-gateway
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load 1Password Secrets
+        uses: 1Password/load-secrets-action@v2.0.0
+        with:
+          export-env: true
+          item: "Court IQ Production"
+          secrets: |
+            MONGODB_URL
+            FIREBASE_CONFIG
+            FIREBASE_SERVICE_ACCOUNT
+            GOOGLE_PLACES_API_KEY
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -48,7 +67,7 @@ jobs:
           context: ./${{ env.SVC_NAME }}
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ needs.setup_environment.outputs.tag }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -62,10 +81,11 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           cd ${{ env.SVC_NAME }}
-          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          sed -i "s/IMAGE_TAG/${{ needs.setup_environment.outputs.tag }}/g" service.yaml
           gcloud run services replace service.yaml
 
   equipment_service:
+    needs: setup_environment
     env:
       SVC_NAME: equipment-service
     runs-on: ubuntu-latest
@@ -73,18 +93,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set Environment Variables and Tags
-        run: |
-          TAG="latest"          
-          BRANCH=${{ github.head_ref || github.ref_name }}
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
-            BRANCH=$TAG
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Checkout current repo
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load 1Password Secrets
+        uses: 1Password/load-secrets-action@v2.0.0
+        with:
+          export-env: true
+          item: "Court IQ Production"
+          secrets: |
+            MONGODB_URL
+            FIREBASE_CONFIG
+            FIREBASE_SERVICE_ACCOUNT
+            GOOGLE_PLACES_API_KEY
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -102,7 +123,7 @@ jobs:
           context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ needs.setup_environment.outputs.tag }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -116,10 +137,11 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           cd ${{ env.SVC_NAME }}
-          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          sed -i "s/IMAGE_TAG/${{ needs.setup_environment.outputs.tag }}/g" service.yaml
           gcloud run services replace service.yaml
 
   matchup_service:
+    needs: setup_environment
     env:
       SVC_NAME: matchup-service
     runs-on: ubuntu-latest
@@ -127,18 +149,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set Environment Variables and Tags
-        run: |
-          TAG="latest"          
-          BRANCH=${{ github.head_ref || github.ref_name }}
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
-            BRANCH=$TAG
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Checkout current repo
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load 1Password Secrets
+        uses: 1Password/load-secrets-action@v2.0.0
+        with:
+          export-env: true
+          item: "Court IQ Production"
+          secrets: |
+            MONGODB_URL
+            FIREBASE_CONFIG
+            FIREBASE_SERVICE_ACCOUNT
+            GOOGLE_PLACES_API_KEY
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -156,7 +179,7 @@ jobs:
           context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ needs.setup_environment.outputs.tag }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -170,10 +193,11 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           cd ${{ env.SVC_NAME }}
-          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          sed -i "s/IMAGE_TAG/${{ needs.setup_environment.outputs.tag }}/g" service.yaml
           gcloud run services replace service.yaml
 
   relationship_service:
+    needs: setup_environment
     env:
       SVC_NAME: relationship-service
     runs-on: ubuntu-latest
@@ -181,18 +205,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set Environment Variables and Tags
-        run: |
-          TAG="latest"          
-          BRANCH=${{ github.head_ref || github.ref_name }}
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
-            BRANCH=$TAG
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Checkout current repo
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load 1Password Secrets
+        uses: 1Password/load-secrets-action@v2.0.0
+        with:
+          export-env: true
+          item: "Court IQ Production"
+          secrets: |
+            MONGODB_URL
+            FIREBASE_CONFIG
+            FIREBASE_SERVICE_ACCOUNT
+            GOOGLE_PLACES_API_KEY
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -210,7 +235,7 @@ jobs:
           context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ needs.setup_environment.outputs.tag }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -224,10 +249,11 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           cd ${{ env.SVC_NAME }}
-          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          sed -i "s/IMAGE_TAG/${{ needs.setup_environment.outputs.tag }}/g" service.yaml
           gcloud run services replace service.yaml
 
   user_service:
+    needs: setup_environment
     env:
       SVC_NAME: user-service
     runs-on: ubuntu-latest
@@ -235,18 +261,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set Environment Variables and Tags
-        run: |
-          TAG="latest"          
-          BRANCH=${{ github.head_ref || github.ref_name }}
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
-            BRANCH=$TAG
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Checkout current repo
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load 1Password Secrets
+        uses: 1Password/load-secrets-action@v2.0.0
+        with:
+          export-env: true
+          item: "Court IQ Production"
+          secrets: |
+            MONGODB_URL
+            FIREBASE_CONFIG
+            FIREBASE_SERVICE_ACCOUNT
+            GOOGLE_PLACES_API_KEY
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -264,7 +291,7 @@ jobs:
           context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ needs.setup_environment.outputs.tag }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -278,10 +305,11 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           cd ${{ env.SVC_NAME }}
-          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          sed -i "s/IMAGE_TAG/${{ needs.setup_environment.outputs.tag }}/g" service.yaml
           gcloud run services replace service.yaml
 
   search_service:
+    needs: setup_environment
     env:
       SVC_NAME: search-service
     runs-on: ubuntu-latest
@@ -289,18 +317,19 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set Environment Variables and Tags
-        run: |
-          TAG="latest"          
-          BRANCH=${{ github.head_ref || github.ref_name }}
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            TAG=$(echo ${{github.ref}} |  cut -d / -f 3)
-            BRANCH=$TAG
-          fi
-          echo "TAG=$TAG" >> $GITHUB_ENV
-
-      - name: Checkout current repo
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Load 1Password Secrets
+        uses: 1Password/load-secrets-action@v2.0.0
+        with:
+          export-env: true
+          item: "Court IQ Production"
+          secrets: |
+            MONGODB_URL
+            FIREBASE_CONFIG
+            FIREBASE_SERVICE_ACCOUNT
+            GOOGLE_PLACES_API_KEY
 
       - name: Login to GAR
         uses: docker/login-action@v3
@@ -318,7 +347,7 @@ jobs:
           context: .
           file: ./${{ env.SVC_NAME }}/Dockerfile
           push: true
-          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ env.TAG }}
+          tags: ${{ env.GCR_IMAGE_LOCATION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.SVC_NAME }}/${{ env.SVC_NAME }}:${{ needs.setup_environment.outputs.tag }}
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -332,5 +361,5 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           cd ${{ env.SVC_NAME }}
-          sed -i "s/IMAGE_TAG/${{ env.TAG }}/g" service.yaml
+          sed -i "s/IMAGE_TAG/${{ needs.setup_environment.outputs.tag }}/g" service.yaml
           gcloud run services replace service.yaml

@@ -3,7 +3,6 @@ kind: Service
 metadata:
   name: api-gateway
   namespace: '1080781728713'
-  selfLink: /apis/serving.knative.dev/v1/namespaces/1080781728713/services/api-gateway
   labels:
     cloud.googleapis.com/location: us-central1
 spec:
@@ -39,8 +38,6 @@ spec:
           value: 'true'
         - name: LOG_LEVEL
           value: warn
-        - name: API_GATEWAY_URL
-          value: https://api-gateway-zgctp7qz3q-uc.a.run.app
         - name: USER_SERVICE_URL
           value: https://user-service-zgctp7qz3q-uc.a.run.app
         - name: RELATIONSHIP_SERVICE_URL
@@ -54,18 +51,23 @@ spec:
         - name: MONGODB_URL
           valueFrom:
             secretKeyRef:
+              name: mongodb-url
               key: latest
-              name: MONGODB_URL
         - name: FIREBASE_CONFIG
           valueFrom:
             secretKeyRef:
+              name: firebase-config
               key: latest
-              name: FIREBASE_CONFIG
         - name: FIREBASE_SERVICE_ACCOUNT
           valueFrom:
             secretKeyRef:
+              name: firebase-service-account
               key: latest
-              name: FIREBASE_SERVICE_ACCOUNT
+        - name: GOOGLE_PLACES_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: google-places-api-key
+              key: latest
         resources:
           limits:
             cpu: 1000m
@@ -79,4 +81,3 @@ spec:
   traffic:
   - percent: 100
     latestRevision: true
-

@@ -1,178 +1,104 @@
-
 # Court IQ Backend
 
-This is the backend system for Court IQ, built with a microservices architecture and managed through Docker and Makefile commands. This document explains how to set up, build, and manage the environment for development, staging, and production.
+A microservices-based backend for Court IQ, providing GraphQL APIs for tennis players to manage matches, equipment, and relationships.
 
-## Table of Contents
-1. [Project Structure](#project-structure)
-2. [Requirements](#requirements)
-3. [Installation](#installation)
-4. [Environment Setup](#environment-setup)
-5. [Docker Commands](#docker-commands)
-6. [Logs & Monitoring](#logs--monitoring)
-7. [Cleanup Commands](#cleanup-commands)
-8. [Usage Examples](#usage-examples)
+## Architecture
 
----
+The system is built with several microservices:
 
-## Project Structure
+- **API Gateway**: Node.js-based API gateway that routes requests to appropriate services
+- **User Service**: Go service for user management
+- **Relationship Service**: Go service for managing relationships between users
+- **Matchup Service**: Go service for tennis match management
+- **Equipment Service**: Go service for managing tennis equipment
+- **Search Service**: Go service for search functionality
 
-The main directories and files for this project:
-- **api-gateway**: The API Gateway for routing requests across microservices.
-- **user-service, relationship-service, matchup-service, equipment-service**: Microservices that make up the backend.
-- **scripts**: Contains setup scripts for initializing environment files.
-- **Makefile**: Provides easy-to-use commands to build, manage, and monitor services.
-
----
-
-## Requirements
-
-Ensure you have the following installed:
-- **Docker**: For containerization and deployment.
-- **Make**: To use the `Makefile` commands.
-- **Node.js**: For running and managing the API Gateway.
-- **Go**: For building and running Go-based microservices.
-
-## Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/court-iq-backend.git
-   cd court-iq-backend
-   ```
-
-2. **Install Dependencies**:
-   Install Node.js dependencies in each microservice directory if required. Docker will also handle this during the build phase.
-
----
+All services use MongoDB for persistence and communicate via GraphQL with Apollo Federation.
 
 ## Environment Setup
 
-Before running the services, you need to initialize environment files. The `Makefile` provides commands to set up environments for development, staging, and production.
+The project uses 1Password for secure credential management in all environments.
 
-### Initialize Environment
+### Prerequisites
 
-To initialize environment files:
-```bash
-make init ENV=development
+- Docker and Docker Compose
+- Node.js (v18+)
+- Go (v1.23+)
+- 1Password CLI (`op`) installed and configured
+- Make
+
+### Initial Setup
+
+1. Log in to 1Password CLI:
+   ```
+   op signin
+   ```
+
+2. Initialize your development environment:
+   ```
+   make init-dev
+   ```
+
+   This command will:
+   - Fetch secrets from 1Password
+   - Generate `.env` files for all services
+   - Configure Docker environment
+
+3. Build and start all services:
+   ```
+   make build-all
+   make start-all
+   ```
+
+4. Access the GraphQL playground at http://localhost:3000/graphql
+
+### Environment Management
+
+- **Development**: `make init-dev`
+- **Staging**: `make init-staging`
+- **Production**: `make init-prod`
+
+### Common Commands
+
 ```
-
-Alternatively, you can use:
-```bash
-make init-dev       # Initializes the development environment
-make init-staging   # Initializes the staging environment
-make init-prod      # Initializes the production environment
-```
-
----
-
-## Docker Commands
-
-The Makefile includes Docker commands to manage services.
-
-### Build a Specific Service
-
-```bash
-make build SERVICE=<service-name>
-```
-
-For example, to build the `api-gateway` service:
-```bash
-make build SERVICE=api-gateway
-```
-
-### Build All Services
-
-```bash
-make build-all
-```
-
-### Start a Specific Service
-
-```bash
-make start-service SERVICE=<service-name>
-```
-
-### Start All Services
-
-```bash
+# Start all services
 make start-all
-```
 
-### Stop a Specific Service
+# Start a specific service
+make start-service SERVICE=api-gateway
 
-```bash
-make stop-service SERVICE=<service-name>
-```
-
-### Stop All Services
-
-```bash
-make stop-all
-```
-
----
-
-## Logs & Monitoring
-
-### View Logs for a Specific Service
-
-```bash
-make logs SERVICE=<service-name>
-```
-
-### View Logs for All Services
-
-```bash
+# View logs
 make logs-all
-```
+make logs SERVICE=user-service
 
-### Show Docker Container Status
+# Stop all services
+make stop-all
 
-```bash
-make ps
-```
-
----
-
-## Cleanup Commands
-
-### Clean Environment Files
-
-```bash
-make clean
-```
-
-### Clean Docker Resources
-
-```bash
-make docker-clean
-```
-
-### Full Cleanup (Environment Files and Docker Resources)
-
-```bash
+# Clean environment
 make clean-all
 ```
 
----
+See `make help` for more commands.
 
-## Usage Examples
+## Secret Management
 
-To start the development environment with all services running:
-```bash
-make start-all ENV=development
-```
+All secrets are stored in 1Password. The required secret structure in 1Password vault items:
 
-To build and start a single service in staging:
-```bash
-make build SERVICE=api-gateway ENV=staging
-make start-service SERVICE=api-gateway ENV=staging
-```
+- `MONGODB_URL`: MongoDB connection string
+- `FIREBASE_CONFIG`: Firebase configuration JSON
+- `FIREBASE_SERVICE_ACCOUNT`: Firebase service account JSON
+- `GOOGLE_PLACES_API_KEY`: Google Places API key
 
-To view logs for `user-service`:
-```bash
-make logs SERVICE=user-service
-```
+## CI/CD Pipeline
 
-For more information on each command, refer to the `Makefile`.
+The project uses GitHub Actions for CI/CD:
+
+1. **Pull Request**: Runs tests and checks builds
+2. **Merge to Main**: Runs tests
+3. **Tag Release**: Builds and deploys to Google Cloud Run
+
+Secrets for CI/CD are loaded from 1Password into GitHub Actions.
+
+## License
+
+Proprietary, all rights reserved.

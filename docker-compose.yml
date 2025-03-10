@@ -8,10 +8,15 @@ services:
     env_file:
       - ./api-gateway/.env
     ports:
-      - "${PORT:-3000}:${PORT:-3000}"  # Use default 3000 if PORT is not set
-      - "3001:3001"  # Expose metrics port
+      - "${API_GATEWAY_PORT:-3000}:3000"
     networks:
       - court-iq-network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   user-service:
     build:
@@ -20,9 +25,17 @@ services:
     env_file:
       - ./user-service/.env
     ports:
-      - "${PORT:-8081}:${INTERNAL_PORT:-8080}"  # Use 8081:8080 as default
+      - "${USER_SERVICE_PORT:-8081}:8080"
     networks:
       - court-iq-network
+    depends_on:
+      - api-gateway
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   relationship-service:
     build:
@@ -31,9 +44,17 @@ services:
     env_file:
       - ./relationship-service/.env
     ports:
-      - "${PORT:-8082}:${INTERNAL_PORT:-8080}"
+      - "${RELATIONSHIP_SERVICE_PORT:-8082}:8080"
     networks:
       - court-iq-network
+    depends_on:
+      - api-gateway
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   matchup-service:
     build:
@@ -42,9 +63,17 @@ services:
     env_file:
       - ./matchup-service/.env
     ports:
-      - "${PORT:-8083}:${INTERNAL_PORT:-8080}"
+      - "${MATCHUP_SERVICE_PORT:-8083}:8080"
     networks:
       - court-iq-network
+    depends_on:
+      - api-gateway
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   equipment-service:
     build:
@@ -53,9 +82,18 @@ services:
     env_file:
       - ./equipment-service/.env
     ports:
-      - "${PORT:-8084}:${INTERNAL_PORT:-8080}"
+      - "${EQUIPMENT_SERVICE_PORT:-8084}:8080"
     networks:
       - court-iq-network
+    depends_on:
+      - api-gateway
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
   search-service:
     build:
       context: .
@@ -63,9 +101,17 @@ services:
     env_file:
       - ./search-service/.env
     ports:
-      - "${PORT:-8085}:${INTERNAL_PORT:-8080}"
+      - "${SEARCH_SERVICE_PORT:-8085}:8080"
     networks:
       - court-iq-network
+    depends_on:
+      - api-gateway
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   court-iq-network:
