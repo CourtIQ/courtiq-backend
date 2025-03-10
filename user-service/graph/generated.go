@@ -482,6 +482,10 @@ var sources = []*ast.Source{
 	{Name: "schema/mutations/UserMutations.gql", Input: sourceData("schema/mutations/UserMutations.gql"), BuiltIn: false},
 	{Name: "schema/queries/UserQueries.gql", Input: sourceData("schema/queries/UserQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/User.gql", Input: sourceData("schema/types/User.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/scalars/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID
+scalar GeoPoint
+scalar JSON`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/types/Location.gql", Input: `"""
 Provides structured geographical details about a user's location.
 All fields are optional and can be omitted if unknown.
@@ -493,10 +497,6 @@ type Location {
   latitude: Float
   longitude: Float
 }`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/types/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID
-scalar GeoPoint
-scalar JSON`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA

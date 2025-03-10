@@ -6,7 +6,6 @@ type TennisRacket implements Equipment @key(fields: "id") {
     type: EquipmentType!                  # Equipment type (e.g., TENNIS_RACKET)
     createdAt: DateTime!                  # Timestamp for when the racket was created
     updatedAt: DateTime!                  # Timestamp for the last update
-    visibility: Visibility                # Visibility of the racket (PUBLIC, PRIVATE, FRIENDS)
 
 
     # Racket-specific fields

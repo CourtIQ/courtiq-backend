@@ -49,13 +49,6 @@ func NewMatchUpFromInitiateInput(
 		mu.TrackingStyle = input.TrackingStyle
 	}
 
-	// Set Visibility (default to PRIVATE if nil)
-	if input.Visibility == nil {
-		mu.Visibility = model.VisibilityPrivate // Default to PRIVATE
-	} else {
-		mu.Visibility = *input.Visibility
-	}
-
 	// 5) Validate and build MatchUpFormat
 	if input.MatchUpFormat == nil {
 		return nil, errors.New("matchUpFormat is required (cannot be null)")

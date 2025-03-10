@@ -915,6 +915,10 @@ var sources = []*ast.Source{
 	{Name: "schema/queries/RelationshipQueries.gql", Input: sourceData("schema/queries/RelationshipQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/Coachship.gql", Input: sourceData("schema/types/Coachship.gql"), BuiltIn: false},
 	{Name: "schema/types/Friendship.gql", Input: sourceData("schema/types/Friendship.gql"), BuiltIn: false},
+	{Name: "../../shared/graph/schema/scalars/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID
+scalar GeoPoint
+scalar JSON`, BuiltIn: false},
 	{Name: "../../shared/graph/schema/types/Location.gql", Input: `"""
 Provides structured geographical details about a user's location.
 All fields are optional and can be omitted if unknown.
@@ -926,10 +930,6 @@ type Location {
   latitude: Float
   longitude: Float
 }`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/types/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID
-scalar GeoPoint
-scalar JSON`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
 	directive @composeDirective(name: String!) repeatable on SCHEMA

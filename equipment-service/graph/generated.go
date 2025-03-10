@@ -104,7 +104,6 @@ type ComplexityRoot struct {
 		OwnerID         func(childComplexity int) int
 		Type            func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
-		Visibility      func(childComplexity int) int
 		Weight          func(childComplexity int) int
 	}
 
@@ -123,7 +122,6 @@ type ComplexityRoot struct {
 		Tension       func(childComplexity int) int
 		Type          func(childComplexity int) int
 		UpdatedAt     func(childComplexity int) int
-		Visibility    func(childComplexity int) int
 	}
 
 	User struct {
@@ -532,13 +530,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TennisRacket.UpdatedAt(childComplexity), true
 
-	case "TennisRacket.visibility":
-		if e.complexity.TennisRacket.Visibility == nil {
-			break
-		}
-
-		return e.complexity.TennisRacket.Visibility(childComplexity), true
-
 	case "TennisRacket.weight":
 		if e.complexity.TennisRacket.Weight == nil {
 			break
@@ -643,13 +634,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.TennisString.UpdatedAt(childComplexity), true
-
-	case "TennisString.visibility":
-		if e.complexity.TennisString.Visibility == nil {
-			break
-		}
-
-		return e.complexity.TennisString.Visibility(childComplexity), true
 
 	case "User.id":
 		if e.complexity.User.ID == nil {
@@ -818,7 +802,11 @@ var sources = []*ast.Source{
 	{Name: "schema/queries/EquipmentQueries.gql", Input: sourceData("schema/queries/EquipmentQueries.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisRacket.gql", Input: sourceData("schema/types/TennisRacket.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisString.gql", Input: sourceData("schema/types/TennisString.gql"), BuiltIn: false},
-	{Name: "../../shared/graph/schema/Location.gql", Input: `"""
+	{Name: "../../shared/graph/schema/scalars/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID
+scalar GeoPoint
+scalar JSON`, BuiltIn: false},
+	{Name: "../../shared/graph/schema/types/Location.gql", Input: `"""
 Provides structured geographical details about a user's location.
 All fields are optional and can be omitted if unknown.
 """
@@ -828,16 +816,6 @@ type Location {
   country: String
   latitude: Float
   longitude: Float
-}`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID
-scalar GeoPoint
-`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
-  PUBLIC
-  PRIVATE
-  FRIENDS
-  COACHES
 }`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
@@ -1701,8 +1679,6 @@ func (ec *executionContext) fieldContext_Entity_findTennisRacketByID(ctx context
 				return ec.fieldContext_TennisRacket_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisRacket_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			case "currentStringId":
 				return ec.fieldContext_TennisRacket_currentStringId(ctx, field)
 			case "brand":
@@ -1784,8 +1760,6 @@ func (ec *executionContext) fieldContext_Entity_findTennisStringByID(ctx context
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -2139,8 +2113,6 @@ func (ec *executionContext) fieldContext_Mutation_createTennisRacket(ctx context
 				return ec.fieldContext_TennisRacket_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisRacket_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			case "currentStringId":
 				return ec.fieldContext_TennisRacket_currentStringId(ctx, field)
 			case "brand":
@@ -2222,8 +2194,6 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisRacket(ctx conte
 				return ec.fieldContext_TennisRacket_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisRacket_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			case "currentStringId":
 				return ec.fieldContext_TennisRacket_currentStringId(ctx, field)
 			case "brand":
@@ -2360,8 +2330,6 @@ func (ec *executionContext) fieldContext_Mutation_createTennisString(ctx context
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -2447,8 +2415,6 @@ func (ec *executionContext) fieldContext_Mutation_updateMyTennisString(ctx conte
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -2589,8 +2555,6 @@ func (ec *executionContext) fieldContext_Mutation_assignRacketToString(ctx conte
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -2673,8 +2637,6 @@ func (ec *executionContext) fieldContext_Query_myTennisRacket(ctx context.Contex
 				return ec.fieldContext_TennisRacket_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisRacket_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			case "currentStringId":
 				return ec.fieldContext_TennisRacket_currentStringId(ctx, field)
 			case "brand":
@@ -2756,8 +2718,6 @@ func (ec *executionContext) fieldContext_Query_myStringHistory(ctx context.Conte
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -2840,8 +2800,6 @@ func (ec *executionContext) fieldContext_Query_myTennisString(ctx context.Contex
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -3509,47 +3467,6 @@ func (ec *executionContext) fieldContext_TennisRacket_updatedAt(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _TennisRacket_visibility(ctx context.Context, field graphql.CollectedField, obj *model.TennisRacket) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TennisRacket_visibility(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Visibility, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Visibility)
-	fc.Result = res
-	return ec.marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TennisRacket_visibility(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TennisRacket",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Visibility does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _TennisRacket_currentStringId(ctx context.Context, field graphql.CollectedField, obj *model.TennisRacket) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TennisRacket_currentStringId(ctx, field)
 	if err != nil {
@@ -4060,47 +3977,6 @@ func (ec *executionContext) fieldContext_TennisString_updatedAt(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _TennisString_visibility(ctx context.Context, field graphql.CollectedField, obj *model.TennisString) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TennisString_visibility(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Visibility, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Visibility)
-	fc.Result = res
-	return ec.marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TennisString_visibility(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TennisString",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Visibility does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _TennisString_racket(ctx context.Context, field graphql.CollectedField, obj *model.TennisString) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_TennisString_racket(ctx, field)
 	if err != nil {
@@ -4530,8 +4406,6 @@ func (ec *executionContext) fieldContext_User_myTennisRackets(ctx context.Contex
 				return ec.fieldContext_TennisRacket_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisRacket_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisRacket_visibility(ctx, field)
 			case "currentStringId":
 				return ec.fieldContext_TennisRacket_currentStringId(ctx, field)
 			case "brand":
@@ -4613,8 +4487,6 @@ func (ec *executionContext) fieldContext_User_myTennisStrings(ctx context.Contex
 				return ec.fieldContext_TennisString_createdAt(ctx, field)
 			case "updatedAt":
 				return ec.fieldContext_TennisString_updatedAt(ctx, field)
-			case "visibility":
-				return ec.fieldContext_TennisString_visibility(ctx, field)
 			case "racket":
 				return ec.fieldContext_TennisString_racket(ctx, field)
 			case "brand":
@@ -6470,7 +6342,7 @@ func (ec *executionContext) unmarshalInputCreateTennisRacketInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "weight", "visibility"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6519,13 +6391,6 @@ func (ec *executionContext) unmarshalInputCreateTennisRacketInput(ctx context.Co
 				return it, err
 			}
 			it.Weight = data
-		case "visibility":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			data, err := ec.unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Visibility = data
 		}
 	}
 
@@ -6539,7 +6404,7 @@ func (ec *executionContext) unmarshalInputCreateTennisStringInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "tension", "stringingDate", "burstDate", "visibility"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "tension", "stringingDate", "burstDate"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6602,13 +6467,6 @@ func (ec *executionContext) unmarshalInputCreateTennisStringInput(ctx context.Co
 				return it, err
 			}
 			it.BurstDate = data
-		case "visibility":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			data, err := ec.unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Visibility = data
 		}
 	}
 
@@ -6656,7 +6514,7 @@ func (ec *executionContext) unmarshalInputUpdateTennisRacketInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "weight", "visibility"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "weight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6705,13 +6563,6 @@ func (ec *executionContext) unmarshalInputUpdateTennisRacketInput(ctx context.Co
 				return it, err
 			}
 			it.Weight = data
-		case "visibility":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			data, err := ec.unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Visibility = data
 		}
 	}
 
@@ -6725,7 +6576,7 @@ func (ec *executionContext) unmarshalInputUpdateTennisStringInput(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "tension", "stringingDate", "burstDate", "visibility"}
+	fieldsInOrder := [...]string{"name", "brand", "brandId", "model", "modelId", "tension", "stringingDate", "burstDate"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6788,13 +6639,6 @@ func (ec *executionContext) unmarshalInputUpdateTennisStringInput(ctx context.Co
 				return it, err
 			}
 			it.BurstDate = data
-		case "visibility":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			data, err := ec.unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Visibility = data
 		}
 	}
 
@@ -7382,8 +7226,6 @@ func (ec *executionContext) _TennisRacket(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "visibility":
-			out.Values[i] = ec._TennisRacket_visibility(ctx, field, obj)
 		case "currentStringId":
 			out.Values[i] = ec._TennisRacket_currentStringId(ctx, field, obj)
 		case "brand":
@@ -7460,8 +7302,6 @@ func (ec *executionContext) _TennisString(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "visibility":
-			out.Values[i] = ec._TennisString_visibility(ctx, field, obj)
 		case "racket":
 			out.Values[i] = ec._TennisString_racket(ctx, field, obj)
 		case "brand":
@@ -8950,22 +8790,6 @@ func (ec *executionContext) marshalOTennisString2ᚖgithubᚗcomᚋCourtIQᚋcou
 		return graphql.Null
 	}
 	return ec._TennisString(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, v any) (*model.Visibility, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(model.Visibility)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋequipmentᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *model.Visibility) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) marshalO_Entity2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐEntity(ctx context.Context, sel ast.SelectionSet, v fedruntime.Entity) graphql.Marshaler {

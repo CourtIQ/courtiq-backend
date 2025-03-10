@@ -20,17 +20,15 @@ type Equipment interface {
 	GetType() EquipmentType
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
-	GetVisibility() *Visibility
 }
 
 type CreateTennisRacketInput struct {
-	Name       string      `json:"name" bson:"name"`
-	Brand      *string     `json:"brand,omitempty" bson:"brand,omitempty"`
-	BrandID    *int        `json:"brandId,omitempty" bson:"brandId,omitempty"`
-	Model      *string     `json:"model,omitempty" bson:"model,omitempty"`
-	ModelID    *int        `json:"modelId,omitempty" bson:"modelId,omitempty"`
-	Weight     *float64    `json:"weight,omitempty" bson:"weight,omitempty"`
-	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
+	Name    string   `json:"name" bson:"name"`
+	Brand   *string  `json:"brand,omitempty" bson:"brand,omitempty"`
+	BrandID *int     `json:"brandId,omitempty" bson:"brandId,omitempty"`
+	Model   *string  `json:"model,omitempty" bson:"model,omitempty"`
+	ModelID *int     `json:"modelId,omitempty" bson:"modelId,omitempty"`
+	Weight  *float64 `json:"weight,omitempty" bson:"weight,omitempty"`
 }
 
 type CreateTennisStringInput struct {
@@ -42,7 +40,6 @@ type CreateTennisStringInput struct {
 	Tension       *StringTensionInput `json:"tension,omitempty" bson:"tension,omitempty"`
 	StringingDate *time.Time          `json:"stringingDate,omitempty" bson:"stringingDate,omitempty"`
 	BurstDate     *time.Time          `json:"burstDate,omitempty" bson:"burstDate,omitempty"`
-	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 // Provides structured geographical details about a user's location.
@@ -78,7 +75,6 @@ type TennisRacket struct {
 	Type            EquipmentType       `json:"type" bson:"type"`
 	CreatedAt       time.Time           `json:"createdAt" bson:"createdAt"`
 	UpdatedAt       time.Time           `json:"updatedAt" bson:"updatedAt"`
-	Visibility      *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 	CurrentStringID *primitive.ObjectID `json:"currentStringId,omitempty" bson:"currentStringId,omitempty"`
 	Brand           *string             `json:"brand,omitempty" bson:"brand,omitempty"`
 	BrandID         *int                `json:"brandId,omitempty" bson:"brandId,omitempty"`
@@ -94,7 +90,6 @@ func (this TennisRacket) GetName() string                { return this.Name }
 func (this TennisRacket) GetType() EquipmentType         { return this.Type }
 func (this TennisRacket) GetCreatedAt() time.Time        { return this.CreatedAt }
 func (this TennisRacket) GetUpdatedAt() time.Time        { return this.UpdatedAt }
-func (this TennisRacket) GetVisibility() *Visibility     { return this.Visibility }
 
 func (TennisRacket) IsEntity() {}
 
@@ -105,7 +100,6 @@ type TennisString struct {
 	Type          EquipmentType       `json:"type" bson:"type"`
 	CreatedAt     time.Time           `json:"createdAt" bson:"createdAt"`
 	UpdatedAt     time.Time           `json:"updatedAt" bson:"updatedAt"`
-	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 	Racket        *primitive.ObjectID `json:"racket,omitempty" bson:"racket,omitempty"`
 	Brand         *string             `json:"brand,omitempty" bson:"brand,omitempty"`
 	BrandID       *int                `json:"brandId,omitempty" bson:"brandId,omitempty"`
@@ -123,18 +117,16 @@ func (this TennisString) GetName() string                { return this.Name }
 func (this TennisString) GetType() EquipmentType         { return this.Type }
 func (this TennisString) GetCreatedAt() time.Time        { return this.CreatedAt }
 func (this TennisString) GetUpdatedAt() time.Time        { return this.UpdatedAt }
-func (this TennisString) GetVisibility() *Visibility     { return this.Visibility }
 
 func (TennisString) IsEntity() {}
 
 type UpdateTennisRacketInput struct {
-	Name       *string     `json:"name,omitempty" bson:"name,omitempty"`
-	Brand      *string     `json:"brand,omitempty" bson:"brand,omitempty"`
-	BrandID    *int        `json:"brandId,omitempty" bson:"brandId,omitempty"`
-	Model      *string     `json:"model,omitempty" bson:"model,omitempty"`
-	ModelID    *int        `json:"modelId,omitempty" bson:"modelId,omitempty"`
-	Weight     *float64    `json:"weight,omitempty" bson:"weight,omitempty"`
-	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
+	Name    *string  `json:"name,omitempty" bson:"name,omitempty"`
+	Brand   *string  `json:"brand,omitempty" bson:"brand,omitempty"`
+	BrandID *int     `json:"brandId,omitempty" bson:"brandId,omitempty"`
+	Model   *string  `json:"model,omitempty" bson:"model,omitempty"`
+	ModelID *int     `json:"modelId,omitempty" bson:"modelId,omitempty"`
+	Weight  *float64 `json:"weight,omitempty" bson:"weight,omitempty"`
 }
 
 type UpdateTennisStringInput struct {
@@ -146,7 +138,6 @@ type UpdateTennisStringInput struct {
 	Tension       *StringTensionInput `json:"tension,omitempty" bson:"tension,omitempty"`
 	StringingDate *time.Time          `json:"stringingDate,omitempty" bson:"stringingDate,omitempty"`
 	BurstDate     *time.Time          `json:"burstDate,omitempty" bson:"burstDate,omitempty"`
-	Visibility    *Visibility         `json:"visibility,omitempty" bson:"visibility,omitempty"`
 }
 
 type User struct {
@@ -246,50 +237,5 @@ func (e *StringGauge) UnmarshalGQL(v any) error {
 }
 
 func (e StringGauge) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type Visibility string
-
-const (
-	VisibilityPublic  Visibility = "PUBLIC"
-	VisibilityPrivate Visibility = "PRIVATE"
-	VisibilityFriends Visibility = "FRIENDS"
-	VisibilityCoaches Visibility = "COACHES"
-)
-
-var AllVisibility = []Visibility{
-	VisibilityPublic,
-	VisibilityPrivate,
-	VisibilityFriends,
-	VisibilityCoaches,
-}
-
-func (e Visibility) IsValid() bool {
-	switch e {
-	case VisibilityPublic, VisibilityPrivate, VisibilityFriends, VisibilityCoaches:
-		return true
-	}
-	return false
-}
-
-func (e Visibility) String() string {
-	return string(e)
-}
-
-func (e *Visibility) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = Visibility(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid Visibility", str)
-	}
-	return nil
-}
-
-func (e Visibility) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

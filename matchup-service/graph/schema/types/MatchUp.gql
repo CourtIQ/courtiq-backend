@@ -22,5 +22,4 @@ type MatchUp {
 
     createdAt: DateTime!
     lastUpdated: DateTime!
-    visibility: Visibility!
 }

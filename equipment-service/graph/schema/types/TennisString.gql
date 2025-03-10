@@ -6,7 +6,6 @@ type TennisString implements Equipment @key(fields: "id") {
     type: EquipmentType!    # Equipment type (e.g., TENNIS_STRING)
     createdAt: DateTime!    # Timestamp for when the string was created
     updatedAt: DateTime!    # Timestamp for the last update
-    visibility: Visibility                # Visibility of the string (PUBLIC, PRIVATE, FRIENDS)
 
     # String-specific fields
     racket: ObjectID        # ID of the racket the string is currently in (optional)

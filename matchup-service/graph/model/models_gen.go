@@ -60,8 +60,6 @@ type InitiateMatchUpInput struct {
 	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
 	// The participant (by ObjectID) who will serve first.
 	InitialServer primitive.ObjectID `json:"initialServer" bson:"initialServer"`
-	// Determines who can view or access details of the match; defaults to PRIVATE.
-	Visibility *Visibility `json:"visibility,omitempty" bson:"visibility,omitempty"`
 	// The style of tracking make used to record match data.
 	TrackingStyle *MatchUpTrackingStyle `json:"trackingStyle,omitempty" bson:"trackingStyle,omitempty"`
 }
@@ -95,7 +93,6 @@ type MatchUp struct {
 	EndTime            *time.Time            `json:"endTime,omitempty" bson:"endTime,omitempty"`
 	CreatedAt          time.Time             `json:"createdAt" bson:"createdAt"`
 	LastUpdated        time.Time             `json:"lastUpdated" bson:"lastUpdated"`
-	Visibility         Visibility            `json:"visibility" bson:"visibility"`
 }
 
 // Overall "ruleset" of a tennis match:
@@ -965,50 +962,5 @@ func (e *TeamSide) UnmarshalGQL(v any) error {
 }
 
 func (e TeamSide) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-type Visibility string
-
-const (
-	VisibilityPublic  Visibility = "PUBLIC"
-	VisibilityPrivate Visibility = "PRIVATE"
-	VisibilityFriends Visibility = "FRIENDS"
-	VisibilityCoaches Visibility = "COACHES"
-)
-
-var AllVisibility = []Visibility{
-	VisibilityPublic,
-	VisibilityPrivate,
-	VisibilityFriends,
-	VisibilityCoaches,
-}
-
-func (e Visibility) IsValid() bool {
-	switch e {
-	case VisibilityPublic, VisibilityPrivate, VisibilityFriends, VisibilityCoaches:
-		return true
-	}
-	return false
-}
-
-func (e Visibility) String() string {
-	return string(e)
-}
-
-func (e *Visibility) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = Visibility(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid Visibility", str)
-	}
-	return nil
-}
-
-func (e Visibility) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

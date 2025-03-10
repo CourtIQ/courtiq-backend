@@ -78,7 +78,6 @@ type ComplexityRoot struct {
 		ScheduledStartTime func(childComplexity int) int
 		StartTime          func(childComplexity int) int
 		TrackingStyle      func(childComplexity int) int
-		Visibility         func(childComplexity int) int
 		Winner             func(childComplexity int) int
 	}
 
@@ -349,13 +348,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.MatchUp.TrackingStyle(childComplexity), true
-
-	case "MatchUp.visibility":
-		if e.complexity.MatchUp.Visibility == nil {
-			break
-		}
-
-		return e.complexity.MatchUp.Visibility(childComplexity), true
 
 	case "MatchUp.winner":
 		if e.complexity.MatchUp.Winner == nil {
@@ -872,7 +864,11 @@ var sources = []*ast.Source{
 	{Name: "schema/types/MatchUpPoint.gql", Input: sourceData("schema/types/MatchUpPoint.gql"), BuiltIn: false},
 	{Name: "schema/types/MatchUpScore.gql", Input: sourceData("schema/types/MatchUpScore.gql"), BuiltIn: false},
 	{Name: "schema/types/Participant.gql", Input: sourceData("schema/types/Participant.gql"), BuiltIn: false},
-	{Name: "../../shared/graph/schema/Location.gql", Input: `"""
+	{Name: "../../shared/graph/schema/scalars/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID
+scalar GeoPoint
+scalar JSON`, BuiltIn: false},
+	{Name: "../../shared/graph/schema/types/Location.gql", Input: `"""
 Provides structured geographical details about a user's location.
 All fields are optional and can be omitted if unknown.
 """
@@ -882,16 +878,6 @@ type Location {
   country: String
   latitude: Float
   longitude: Float
-}`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID
-scalar GeoPoint
-`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
-  PUBLIC
-  PRIVATE
-  FRIENDS
-  COACHES
 }`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
@@ -2193,50 +2179,6 @@ func (ec *executionContext) fieldContext_MatchUp_lastUpdated(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _MatchUp_visibility(ctx context.Context, field graphql.CollectedField, obj *model.MatchUp) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MatchUp_visibility(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Visibility, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(model.Visibility)
-	fc.Result = res
-	return ec.marshalNVisibility2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_MatchUp_visibility(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "MatchUp",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Visibility does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _MatchUpFormat_numberOfSets(ctx context.Context, field graphql.CollectedField, obj *model.MatchUpFormat) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_MatchUpFormat_numberOfSets(ctx, field)
 	if err != nil {
@@ -3224,8 +3166,6 @@ func (ec *executionContext) fieldContext_Mutation_initiateMatchUp(ctx context.Co
 				return ec.fieldContext_MatchUp_createdAt(ctx, field)
 			case "lastUpdated":
 				return ec.fieldContext_MatchUp_lastUpdated(ctx, field)
-			case "visibility":
-				return ec.fieldContext_MatchUp_visibility(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type MatchUp", field.Name)
 		},
@@ -6492,14 +6432,11 @@ func (ec *executionContext) unmarshalInputInitiateMatchUpInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	if _, present := asMap["visibility"]; !present {
-		asMap["visibility"] = "PRIVATE"
-	}
 	if _, present := asMap["trackingStyle"]; !present {
 		asMap["trackingStyle"] = "BEGINNER"
 	}
 
-	fieldsInOrder := [...]string{"matchUpType", "matchUpFormat", "participants", "matchUpTracker", "initialServer", "visibility", "trackingStyle"}
+	fieldsInOrder := [...]string{"matchUpType", "matchUpFormat", "participants", "matchUpTracker", "initialServer", "trackingStyle"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6541,13 +6478,6 @@ func (ec *executionContext) unmarshalInputInitiateMatchUpInput(ctx context.Conte
 				return it, err
 			}
 			it.InitialServer = data
-		case "visibility":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visibility"))
-			data, err := ec.unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐVisibility(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Visibility = data
 		case "trackingStyle":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("trackingStyle"))
 			data, err := ec.unmarshalOMatchUpTrackingStyle2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐMatchUpTrackingStyle(ctx, v)
@@ -6861,11 +6791,6 @@ func (ec *executionContext) _MatchUp(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "lastUpdated":
 			out.Values[i] = ec._MatchUp_lastUpdated(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "visibility":
-			out.Values[i] = ec._MatchUp_visibility(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -8447,16 +8372,6 @@ func (ec *executionContext) marshalNTiebreakPoints2string(ctx context.Context, s
 	return res
 }
 
-func (ec *executionContext) unmarshalNVisibility2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, v any) (model.Visibility, error) {
-	var res model.Visibility
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNVisibility2githubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, sel ast.SelectionSet, v model.Visibility) graphql.Marshaler {
-	return v
-}
-
 func (ec *executionContext) marshalN_Service2githubᚗcomᚋ99designsᚋgqlgenᚋpluginᚋfederationᚋfedruntimeᚐService(ctx context.Context, sel ast.SelectionSet, v fedruntime.Service) graphql.Marshaler {
 	return ec.__Service(ctx, sel, &v)
 }
@@ -9257,22 +9172,6 @@ func (ec *executionContext) marshalOTiebreakPoints2ᚖstring(ctx context.Context
 	}
 	res := graphql.MarshalString(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, v any) (*model.Visibility, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(model.Visibility)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOVisibility2ᚖgithubᚗcomᚋCourtIQᚋcourtiqᚑbackendᚋmatchupᚑserviceᚋgraphᚋmodelᚐVisibility(ctx context.Context, sel ast.SelectionSet, v *model.Visibility) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

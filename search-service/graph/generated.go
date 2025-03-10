@@ -668,7 +668,11 @@ var sources = []*ast.Source{
 	{Name: "schema/types/TennisCourt.gql", Input: sourceData("schema/types/TennisCourt.gql"), BuiltIn: false},
 	{Name: "schema/types/TennisCourtSearchResult.gql", Input: sourceData("schema/types/TennisCourtSearchResult.gql"), BuiltIn: false},
 	{Name: "schema/types/UserSearchResult.gql", Input: sourceData("schema/types/UserSearchResult.gql"), BuiltIn: false},
-	{Name: "../../shared/graph/schema/Location.gql", Input: `"""
+	{Name: "../../shared/graph/schema/scalars/Scalars.gql", Input: `scalar DateTime
+scalar ObjectID
+scalar GeoPoint
+scalar JSON`, BuiltIn: false},
+	{Name: "../../shared/graph/schema/types/Location.gql", Input: `"""
 Provides structured geographical details about a user's location.
 All fields are optional and can be omitted if unknown.
 """
@@ -678,16 +682,6 @@ type Location {
   country: String
   latitude: Float
   longitude: Float
-}`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/Scalars.gql", Input: `scalar DateTime
-scalar ObjectID
-scalar GeoPoint
-`, BuiltIn: false},
-	{Name: "../../shared/graph/schema/Visibility.gql", Input: `enum Visibility {
-  PUBLIC
-  PRIVATE
-  FRIENDS
-  COACHES
 }`, BuiltIn: false},
 	{Name: "../federation/directives.graphql", Input: `
 	directive @authenticated on FIELD_DEFINITION | OBJECT | INTERFACE | SCALAR | ENUM
