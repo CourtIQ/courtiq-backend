@@ -7,6 +7,7 @@ import (
 
 	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/utils"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -47,10 +48,15 @@ func (s *RelationshipService) FindFriendshipByID(ctx context.Context, id primiti
 func (s *RelationshipService) GetFriendship(ctx context.Context, friendID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
-	return s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, friendID)
+	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, friendID)
+	if err != nil {
+		return nil, utils.NewFriendshipNotFoundError()
+	}
+
+	return friendship, nil
 }
 
 // CheckFriendshipStatus checks the friendship status between the current user and another user
@@ -106,20 +112,25 @@ func (s *RelationshipService) GetReceivedFriendRequests(ctx context.Context, lim
 func (s *RelationshipService) SendFriendRequest(ctx context.Context, userID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
+	}
+
+	// Check if trying to friend self
+	if currentUserID == userID {
+		return nil, utils.NewSelfRequestError("friend")
 	}
 
 	// Check if a friendship already exists
 	existingFriendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err == nil && existingFriendship != nil {
 		if existingFriendship.Status == model.RelationshipStatusPending {
-			return nil, fmt.Errorf("a pending friend request already exists")
+			return nil, utils.NewRelationshipAlreadyExistsError("FRIENDSHIP")
 		}
 		if existingFriendship.Status == model.RelationshipStatusAccepted {
-			return nil, fmt.Errorf("you are already friends with this user")
+			return nil, utils.NewUIError("FRIENDSHIP_ALREADY_ACCEPTED", "You are already friends with this user", nil)
 		}
 		if existingFriendship.Status == model.RelationshipStatusBlocked {
-			return nil, fmt.Errorf("unable to send friend request")
+			return nil, utils.NewRelationshipForbiddenError("Unable to send friend request")
 		}
 	}
 
@@ -141,23 +152,23 @@ func (s *RelationshipService) SendFriendRequest(ctx context.Context, userID prim
 func (s *RelationshipService) AcceptFriendRequest(ctx context.Context, requestID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
 	// Get the friendship
 	friendship, err := s.friendshipRepo.FindByID(ctx, requestID)
 	if err != nil {
-		return nil, fmt.Errorf("friend request not found: %v", err)
+		return nil, utils.NewFriendshipNotFoundError()
 	}
 
 	// Verify that the current user is the receiver of the request
 	if friendship.ReceiverID != currentUserID {
-		return nil, fmt.Errorf("you can only accept friend requests sent to you")
+		return nil, utils.NewRelationshipForbiddenError("You can only accept friend requests sent to you")
 	}
 
 	// Verify that the friendship is pending
 	if friendship.Status != model.RelationshipStatusPending {
-		return nil, fmt.Errorf("you can only accept pending friend requests")
+		return nil, utils.NewUIError("INVALID_REQUEST_STATUS", "You can only accept pending friend requests", nil)
 	}
 
 	// Update the friendship status
@@ -172,23 +183,23 @@ func (s *RelationshipService) AcceptFriendRequest(ctx context.Context, requestID
 func (s *RelationshipService) RejectFriendRequest(ctx context.Context, requestID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
 	// Get the friendship
 	friendship, err := s.friendshipRepo.FindByID(ctx, requestID)
 	if err != nil {
-		return nil, fmt.Errorf("friend request not found: %v", err)
+		return nil, utils.NewFriendshipNotFoundError()
 	}
 
 	// Verify that the current user is the receiver of the request
 	if friendship.ReceiverID != currentUserID {
-		return nil, fmt.Errorf("you can only reject friend requests sent to you")
+		return nil, utils.NewRelationshipForbiddenError("You can only reject friend requests sent to you")
 	}
 
 	// Verify that the friendship is pending
 	if friendship.Status != model.RelationshipStatusPending {
-		return nil, fmt.Errorf("you can only reject pending friend requests")
+		return nil, utils.NewUIError("INVALID_REQUEST_STATUS", "You can only reject pending friend requests", nil)
 	}
 
 	// Update the friendship status
@@ -203,23 +214,23 @@ func (s *RelationshipService) RejectFriendRequest(ctx context.Context, requestID
 func (s *RelationshipService) CancelFriendRequest(ctx context.Context, requestID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
 	// Get the friendship
 	friendship, err := s.friendshipRepo.FindByID(ctx, requestID)
 	if err != nil {
-		return nil, fmt.Errorf("friend request not found: %v", err)
+		return nil, utils.NewFriendshipNotFoundError()
 	}
 
 	// Verify that the current user is the initiator of the request
 	if friendship.InitiatorID != currentUserID {
-		return nil, fmt.Errorf("you can only cancel friend requests you sent")
+		return nil, utils.NewRelationshipForbiddenError("You can only cancel friend requests you sent")
 	}
 
 	// Verify that the friendship is pending
 	if friendship.Status != model.RelationshipStatusPending {
-		return nil, fmt.Errorf("you can only cancel pending friend requests")
+		return nil, utils.NewUIError("INVALID_REQUEST_STATUS", "You can only cancel pending friend requests", nil)
 	}
 
 	// Update the friendship status
@@ -234,18 +245,18 @@ func (s *RelationshipService) CancelFriendRequest(ctx context.Context, requestID
 func (s *RelationshipService) RemoveFriend(ctx context.Context, friendID primitive.ObjectID) (bool, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return false, err
+		return false, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
 	// Get the friendship
 	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, friendID)
 	if err != nil {
-		return false, fmt.Errorf("friendship not found: %v", err)
+		return false, utils.NewFriendshipNotFoundError()
 	}
 
 	// Verify that the friendship is accepted
 	if friendship.Status != model.RelationshipStatusAccepted {
-		return false, fmt.Errorf("you are not friends with this user")
+		return false, utils.NewUIError("NOT_FRIENDS", "You are not friends with this user", nil)
 	}
 
 	// Delete the friendship
@@ -256,7 +267,12 @@ func (s *RelationshipService) RemoveFriend(ctx context.Context, friendID primiti
 func (s *RelationshipService) BlockUser(ctx context.Context, userID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
+	}
+
+	// Check if trying to block self
+	if currentUserID == userID {
+		return nil, utils.NewSelfRequestError("block")
 	}
 
 	// Check if a friendship already exists
@@ -286,23 +302,23 @@ func (s *RelationshipService) BlockUser(ctx context.Context, userID primitive.Ob
 func (s *RelationshipService) UnblockUser(ctx context.Context, userID primitive.ObjectID) (*model.Friendship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
 	// Find the blocked relationship
 	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err != nil {
-		return nil, fmt.Errorf("relationship not found: %v", err)
+		return nil, utils.NewFriendshipNotFoundError()
 	}
 
 	// Verify that the relationship is blocked
 	if friendship.Status != model.RelationshipStatusBlocked {
-		return nil, fmt.Errorf("user is not blocked")
+		return nil, utils.NewUIError("NOT_BLOCKED", "User is not blocked", nil)
 	}
 
 	// Verify that the current user is the one who blocked the other user
 	if friendship.InitiatorID != currentUserID {
-		return nil, fmt.Errorf("you cannot unblock this user")
+		return nil, utils.NewRelationshipForbiddenError("You cannot unblock this user")
 	}
 
 	// Update the relationship status
@@ -321,10 +337,15 @@ func (s *RelationshipService) UnblockUser(ctx context.Context, userID primitive.
 func (s *RelationshipService) GetCoachship(ctx context.Context, userID primitive.ObjectID) (*model.Coachship, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
-		return nil, err
+		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
 
-	return s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
+	coachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
+	if err != nil {
+		return nil, utils.NewCoachshipNotFoundError()
+	}
+
+	return coachship, nil
 }
 
 // IsCoachOf checks if the current user is a coach of the given user

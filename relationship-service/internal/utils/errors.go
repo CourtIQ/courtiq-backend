@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+
 	sharedErrors "github.com/CourtIQ/courtiq-backend/shared/pkg/errors"
 )
 
@@ -35,7 +36,7 @@ func NewUIError(code, message string, err error) UIError {
 func NewCoachshipNotFoundError() error {
 	return UIError{
 		Code:    "COACHSHIP_NOT_FOUND",
-		Message: "Coachship does not exist.",
+		Message: "Coaching relationship does not exist.",
 		err:     sharedErrors.ErrNotFound,
 	}
 }
@@ -86,16 +87,60 @@ func IsUIError(err error, code ...string) bool {
 	if !ok {
 		return false
 	}
-	
+
 	if len(code) == 0 {
 		return true
 	}
-	
+
 	for _, c := range code {
 		if uiErr.Code == c {
 			return true
 		}
 	}
-	
+
 	return false
+}
+
+// GetUIErrorCode extracts the code from a UIError
+func GetUIErrorCode(err error) string {
+	if uiErr, ok := err.(UIError); ok {
+		return uiErr.Code
+	}
+	return ""
+}
+
+// GetUIErrorMessage extracts the message from a UIError
+func GetUIErrorMessage(err error) string {
+	if uiErr, ok := err.(UIError); ok {
+		return uiErr.Message
+	}
+	return err.Error()
+}
+
+// StandardizeError converts any error to a UIError with appropriate code
+func StandardizeError(err error) error {
+	// If already a UIError, return as is
+	if IsUIError(err) {
+		return err
+	}
+
+	// Map standard errors to domain-specific UI errors
+	switch {
+	case sharedErrors.IsNotFoundError(err):
+		return NewUIError("NOT_FOUND", "Resource not found", err)
+	case sharedErrors.IsForbiddenError(err):
+		return NewUIError("FORBIDDEN", "Permission denied", err)
+	case sharedErrors.IsUnauthorizedError(err):
+		return NewUIError("UNAUTHORIZED", "Authentication required", err)
+	case sharedErrors.IsInvalidInputError(err):
+		return NewUIError("INVALID_INPUT", "Invalid input provided", err)
+	case sharedErrors.IsAlreadyExistsError(err):
+		return NewUIError("ALREADY_EXISTS", "Resource already exists", err)
+	case sharedErrors.IsConflictError(err):
+		return NewUIError("CONFLICT", "Operation would conflict with current state", err)
+	case sharedErrors.IsDatabaseOperationError(err):
+		return NewUIError("DATABASE_ERROR", "Database operation failed", err)
+	default:
+		return NewUIError("INTERNAL_ERROR", "An unexpected error occurred", err)
+	}
 }

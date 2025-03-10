@@ -29,7 +29,11 @@ func (r *FriendshipRepositoryImpl) FindByID(ctx context.Context, id primitive.Ob
 		"type": model.RelationshipTypeFriendship,
 	}
 
-	return r.baseRepo.FindByIDWithFilters(ctx, id, filter)
+	friendship, err := r.baseRepo.FindByIDWithFilters(ctx, id, filter)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "find by ID", "friendship")
+	}
+	return friendship, nil
 }
 
 // FindBetweenUsers finds a friendship between two users
@@ -48,7 +52,11 @@ func (r *FriendshipRepositoryImpl) FindBetweenUsers(ctx context.Context, userID1
 		"type": model.RelationshipTypeFriendship,
 	}
 
-	return r.baseRepo.FindOne(ctx, filter)
+	friendship, err := r.baseRepo.FindOne(ctx, filter)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "find between users", "friendship")
+	}
+	return friendship, nil
 }
 
 // GetFriendships gets all friendships for a user with a specific status
@@ -121,16 +129,27 @@ func (r *FriendshipRepositoryImpl) Create(ctx context.Context, friendship *model
 	// Ensure type is set to FRIENDSHIP
 	friendship.Type = model.RelationshipTypeFriendship
 
-	return r.baseRepo.Insert(ctx, friendship)
+	created, err := r.baseRepo.Insert(ctx, friendship)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "create", "friendship")
+	}
+	return created, nil
 }
 
 // Update updates an existing friendship
 func (r *FriendshipRepositoryImpl) Update(ctx context.Context, friendship *model.Friendship) (*model.Friendship, error) {
-	return r.baseRepo.Update(ctx, friendship.ID, friendship)
+	updated, err := r.baseRepo.Update(ctx, friendship.ID, friendship)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "update", "friendship")
+	}
+	return updated, nil
 }
 
 // Delete deletes a friendship
 func (r *FriendshipRepositoryImpl) Delete(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	err := r.baseRepo.Delete(ctx, id)
-	return err == nil, err
+	if err != nil {
+		return false, WrapRepositoryError(err, "delete", "friendship")
+	}
+	return true, nil
 }

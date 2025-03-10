@@ -29,7 +29,11 @@ func (r *CoachshipRepositoryImpl) FindByID(ctx context.Context, id primitive.Obj
 	filter := bson.M{
 		"type": model.RelationshipTypeCoachship,
 	}
-	return r.baseRepo.FindByIDWithFilters(ctx, id, filter)
+	coachship, err := r.baseRepo.FindByIDWithFilters(ctx, id, filter)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "find by ID", "coachship")
+	}
+	return coachship, nil
 }
 
 // FindBetweenUsers finds a coachship between two users
@@ -48,7 +52,11 @@ func (r *CoachshipRepositoryImpl) FindBetweenUsers(ctx context.Context, userID1,
 		"type": model.RelationshipTypeCoachship,
 	}
 
-	return r.baseRepo.FindOne(ctx, filter)
+	coachship, err := r.baseRepo.FindOne(ctx, filter)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "find between users", "coachship")
+	}
+	return coachship, nil
 }
 
 // GetCoachships gets all coachships for a user with a specific status
@@ -239,16 +247,27 @@ func (r *CoachshipRepositoryImpl) Create(ctx context.Context, coachship *model.C
 	// Ensure type is set to COACHSHIP
 	coachship.Type = model.RelationshipTypeCoachship
 
-	return r.baseRepo.Insert(ctx, coachship)
+	created, err := r.baseRepo.Insert(ctx, coachship)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "create", "coachship")
+	}
+	return created, nil
 }
 
 // Update updates an existing coachship
 func (r *CoachshipRepositoryImpl) Update(ctx context.Context, coachship *model.Coachship) (*model.Coachship, error) {
-	return r.baseRepo.Update(ctx, coachship.ID, coachship)
+	updated, err := r.baseRepo.Update(ctx, coachship.ID, coachship)
+	if err != nil {
+		return nil, WrapRepositoryError(err, "update", "coachship")
+	}
+	return updated, nil
 }
 
 // Delete deletes a coachship
 func (r *CoachshipRepositoryImpl) Delete(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	err := r.baseRepo.Delete(ctx, id)
-	return err == nil, err
+	if err != nil {
+		return false, WrapRepositoryError(err, "delete", "coachship")
+	}
+	return true, nil
 }
