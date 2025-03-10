@@ -1,12 +1,14 @@
 {
-  "name": "court-iq-scripts",
-  "version": "1.0.0",
-  "scripts": {
-    "gen:production": "APP_ENV=production node env.js",
-    "gen:staging": "APP_ENV=staging node env.js",
-    "gen:development": "APP_ENV=development node env.js"
-  },
-  "dependencies": {
-    "dotenv": "^16.0.0"
+    "name": "court-iq-scripts",
+    "version": "1.0.0",
+    "scripts": {
+      "gen:production": "APP_ENV=production ts-node generate-env.ts",
+      "gen:staging": "APP_ENV=staging ts-node generate-env.ts",
+      "gen:development": "APP_ENV=development ts-node generate-env.ts"
+    },
+    "dependencies": {
+      "@types/node": "^18.0.0",
+      "typescript": "^4.7.4",
+      "ts-node": "^10.8.1"
+    }
   }
-}

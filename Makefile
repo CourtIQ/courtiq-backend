@@ -5,6 +5,8 @@ ENV ?= development
 
 # Paths
 SCRIPTS_DIR := scripts
+NODE_BIN := node_modules/.bin
+TS_NODE := $(NODE_BIN)/ts-node
 
 # Colors for output
 YELLOW := \033[1;33m
@@ -50,7 +52,7 @@ init-prod:
 .PHONY: verify-env
 verify-env:
 	$(call log, "Verifying environment files")
-	@services=("api-gateway" "user-service" "relationship-service" "matchup-service" "equipment-service" "search-service"); \
+	@services=("api-gateway" "user-service" "relationship-service" "matchup-service" "equipment-service"); \
 	for service in $${services[@]}; do \
 		if [ ! -f "$$service/.env" ]; then \
 			$(call warn, "$$service missing .env file. Running initialization..."); \
