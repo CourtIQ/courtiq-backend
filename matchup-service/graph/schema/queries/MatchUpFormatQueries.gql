@@ -1,5 +1,3 @@
 extend type Query {
     testNumberOfSets(sets: NumberOfSets): NumberOfSets!
-    testNumberOfGames(games: NumberOfGames): NumberOfGames!
-    testTiebreakPoints(games: TiebreakPoints): TiebreakPoints!
 }

@@ -1,29 +1,61 @@
 """
-Input for adding a single shot to an existing in-progress point. 
-Some shots do not end the point or change the score 
-(e.g., a rally shot in mid-point).
+Input for adding a new shot to a tennis match.
+The backend will handle score calculation and state updates.
 """
 input AddShotInput {
   """
-  Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY, etc.
+  The match ID this shot belongs to.
+  """
+  matchUpId: ObjectID!
+
+  """
+  ID of the player who hit this shot.
+  """
+  hitterId: ObjectID!
+
+  """
+  Type of shot (serve, ground stroke, volley).
   """
   shotType: ShotType!
 
   """
-  If GROUND_STROKE: FOREHAND/BACKHAND. 
-  Otherwise null.
+  For ground strokes, specifies forehand or backhand.
+  Only required when shotType is GROUND_STROKE.
   """
   groundStrokeType: GroundStrokeType
 
   """
-  If GROUND_STROKE: SLICE, TOPSPIN, etc. 
-  Otherwise null.
+  Style of ground stroke (topspin, slice, etc).
+  Only applicable when shotType is GROUND_STROKE.
   """
   groundStrokeStyle: GroundStrokeStyle
 
   """
-  If SERVE: FLAT, KICK, SLICE, or OTHER. 
-  Otherwise null.
+  Style of serve (flat, kick, slice).
+  Only applicable when shotType is SERVE.
   """
   serveStyle: ServeStyle
+
+  """
+  Whether this is a first or second serve attempt.
+  Only applicable when shotType is SERVE.
+  """
+  serveNumber: ServeNumber
+
+  """
+  Which service box the serve was directed to.
+  Only applicable when shotType is SERVE.
+  """
+  serviceBoxSide: ServiceBoxSide
+
+  """
+  The outcome of this specific shot.
+  """
+  shotOutcome: ShotOutcome!
+
+  """
+  If this shot won the point, specifies how.
+  Only applicable when shotOutcome is WON_POINT.
+  """
+  pointWinReason: PointWinReason
 }

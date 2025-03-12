@@ -12,38 +12,35 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// Input for adding a completed point to a match.
-// This typically updates the scoreboard, ends the rally,
-// and records who won the point and how.
-type AddPointInput struct {
-	// Which match we're adding a point to.
-	MatchUpID string `json:"matchUpId" bson:"matchUpId"`
-	// Which team side won the point.
-	Winner TeamSide `json:"winner" bson:"winner"`
-	// The reason for the point being won
-	// (e.g., ACE, FORCED_ERROR, etc.).
-	WinReason *PointWinReason `json:"winReason,omitempty" bson:"winReason,omitempty"`
-	// Optional: An array of shots (SERVE, FOREHAND, etc.) that
-	// led up to this point. Some apps only pass the final shot,
-	// or pass them all if you recorded the entire rally.
-	Shots []*AddShotInput `json:"shots,omitempty" bson:"shots,omitempty"`
-}
-
-// Input for adding a single shot to an existing in-progress point.
-// Some shots do not end the point or change the score
-// (e.g., a rally shot in mid-point).
+// Input for adding a new shot to a tennis match.
+// The backend will handle score calculation and state updates.
 type AddShotInput struct {
-	// Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY, etc.
+	// The match ID this shot belongs to.
+	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
+	// ID of the player who hit this shot.
+	HitterID primitive.ObjectID `json:"hitterId" bson:"hitterId"`
+	// Type of shot (serve, ground stroke, volley).
 	ShotType ShotType `json:"shotType" bson:"shotType"`
-	// If GROUND_STROKE: FOREHAND/BACKHAND.
-	// Otherwise null.
+	// For ground strokes, specifies forehand or backhand.
+	// Only required when shotType is GROUND_STROKE.
 	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
-	// If GROUND_STROKE: SLICE, TOPSPIN, etc.
-	// Otherwise null.
+	// Style of ground stroke (topspin, slice, etc).
+	// Only applicable when shotType is GROUND_STROKE.
 	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
-	// If SERVE: FLAT, KICK, SLICE, or OTHER.
-	// Otherwise null.
+	// Style of serve (flat, kick, slice).
+	// Only applicable when shotType is SERVE.
 	ServeStyle *ServeStyle `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
+	// Whether this is a first or second serve attempt.
+	// Only applicable when shotType is SERVE.
+	ServeNumber *ServeNumber `json:"serveNumber,omitempty" bson:"serveNumber,omitempty"`
+	// Which service box the serve was directed to.
+	// Only applicable when shotType is SERVE.
+	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty" bson:"serviceBoxSide,omitempty"`
+	// The outcome of this specific shot.
+	ShotOutcome ShotOutcome `json:"shotOutcome" bson:"shotOutcome"`
+	// If this shot won the point, specifies how.
+	// Only applicable when shotOutcome is WON_POINT.
+	PointWinReason *PointWinReason `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
 }
 
 // Used to create a new tennis match with the specified type, format, and participants.
@@ -55,8 +52,7 @@ type InitiateMatchUpInput struct {
 	MatchUpFormat *MatchUpFormatInput `json:"matchUpFormat" bson:"matchUpFormat"`
 	// The players or teams participating in the match.
 	Participants []*ParticipantInput `json:"participants" bson:"participants"`
-	// A reference or ID used to track/log this match (e.g., analytics or
-	// a parent entity).
+	// A person who might not be a participant in a match but is helping to track it.
 	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
 	// The participant (by ObjectID) who will serve first.
 	InitialServer primitive.ObjectID `json:"initialServer" bson:"initialServer"`
@@ -74,25 +70,42 @@ type Location struct {
 	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
 }
 
+// Snapshot of the match state after a shot was played.
+type MatchStateSnapshot struct {
+	// Current score state after this shot.
+	Score *MatchUpScore `json:"score" bson:"score"`
+	// True if this shot completed a point.
+	PointCompleted bool `json:"pointCompleted" bson:"pointCompleted"`
+	// True if this shot completed a game.
+	GameCompleted bool `json:"gameCompleted" bson:"gameCompleted"`
+	// True if this shot completed a set.
+	SetCompleted bool `json:"setCompleted" bson:"setCompleted"`
+	// True if this shot completed the match.
+	MatchCompleted bool `json:"matchCompleted" bson:"matchCompleted"`
+	// If the point was completed, which team won it.
+	PointWinner *TeamSide `json:"pointWinner,omitempty" bson:"pointWinner,omitempty"`
+}
+
 type MatchUp struct {
-	ID                 primitive.ObjectID    `json:"id" bson:"_id"`
-	Owner              primitive.ObjectID    `json:"owner" bson:"owner"`
-	MatchUpFormat      *MatchUpFormat        `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpTracker     primitive.ObjectID    `json:"matchUpTracker" bson:"matchUpTracker"`
-	MatchUpType        MatchUpType           `json:"matchUpType" bson:"matchUpType"`
-	MatchUpStatus      MatchUpStatus         `json:"matchUpStatus" bson:"matchUpStatus"`
-	Participants       []*Participant        `json:"participants" bson:"participants"`
-	InitialServer      primitive.ObjectID    `json:"initialServer" bson:"initialServer"`
-	CurrentServer      primitive.ObjectID    `json:"currentServer" bson:"currentServer"`
-	TrackingStyle      *MatchUpTrackingStyle `json:"trackingStyle,omitempty" bson:"trackingStyle,omitempty"`
-	Winner             *TeamSide             `json:"winner,omitempty" bson:"winner,omitempty"`
-	Loser              *TeamSide             `json:"loser,omitempty" bson:"loser,omitempty"`
-	CurrentScore       *MatchUpScore         `json:"currentScore,omitempty" bson:"currentScore,omitempty"`
-	ScheduledStartTime *time.Time            `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
-	StartTime          *time.Time            `json:"startTime,omitempty" bson:"startTime,omitempty"`
-	EndTime            *time.Time            `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt          time.Time             `json:"createdAt" bson:"createdAt"`
-	LastUpdated        time.Time             `json:"lastUpdated" bson:"lastUpdated"`
+	ID                 primitive.ObjectID  `json:"id" bson:"_id"`
+	Owner              primitive.ObjectID  `json:"owner" bson:"owner"`
+	MatchUpFormat      *MatchUpFormat      `json:"matchUpFormat" bson:"matchUpFormat"`
+	MatchUpTracker     primitive.ObjectID  `json:"matchUpTracker" bson:"matchUpTracker"`
+	MatchUpType        MatchUpType         `json:"matchUpType" bson:"matchUpType"`
+	MatchUpStatus      MatchUpStatus       `json:"matchUpStatus" bson:"matchUpStatus"`
+	Participants       []*Participant      `json:"participants" bson:"participants"`
+	InitialServer      primitive.ObjectID  `json:"initialServer" bson:"initialServer"`
+	CurrentServer      primitive.ObjectID  `json:"currentServer" bson:"currentServer"`
+	CurrentScore       *MatchUpScore       `json:"currentScore" bson:"currentScore"`
+	FirstShot          *primitive.ObjectID `json:"firstShot,omitempty" bson:"firstShot,omitempty"`
+	LastShot           *primitive.ObjectID `json:"lastShot,omitempty" bson:"lastShot,omitempty"`
+	Winner             *TeamSide           `json:"winner,omitempty" bson:"winner,omitempty"`
+	Loser              *TeamSide           `json:"loser,omitempty" bson:"loser,omitempty"`
+	ScheduledStartTime *time.Time          `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
+	StartTime          *time.Time          `json:"startTime,omitempty" bson:"startTime,omitempty"`
+	EndTime            *time.Time          `json:"endTime,omitempty" bson:"endTime,omitempty"`
+	CreatedAt          time.Time           `json:"createdAt" bson:"createdAt"`
+	LastUpdated        time.Time           `json:"lastUpdated" bson:"lastUpdated"`
 }
 
 // Overall "ruleset" of a tennis match:
@@ -121,29 +134,6 @@ type MatchUpFormatInput struct {
 	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
 }
 
-// Represents one completed point in a tennis match.
-// Stores high-level details: who won, how, the previous scoreboard,
-// and an array of all shots taken during the rally.
-type MatchUpPoint struct {
-	ID        primitive.ObjectID `json:"id" bson:"_id"`
-	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
-	// Which side ultimately won this point?
-	Winner TeamSide `json:"winner" bson:"winner"`
-	// Why the winning side prevailed:
-	// e.g. ACE, FORCED_ERROR, UNFORCED_ERROR, etc.
-	WinReason *PointWinReason `json:"winReason,omitempty" bson:"winReason,omitempty"`
-	// The participant (player) who served on this point.
-	Server *Participant `json:"server" bson:"server"`
-	// A snapshot of the scoreboard right before this point was played.
-	// Useful for undo or replay logic.
-	ScoreBeforePoint *MatchUpScore `json:"scoreBeforePoint,omitempty" bson:"scoreBeforePoint,omitempty"`
-	// When the point ended.
-	Timestamp *time.Time `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
-	// The sequence of shots during the rally (if any).
-	// Could be an empty list if it was, for example, an immediate double fault or ace.
-	Shots []*MatchUpShot `json:"shots" bson:"shots"`
-}
-
 // The main container for a match's real-time or final scoring data.
 // - 'sets' contains an array of completed or in-progress sets.
 // - 'isMatchComplete' indicates whether the match is officially decided.
@@ -157,31 +147,52 @@ type MatchUpScore struct {
 	IsMatchComplete bool `json:"isMatchComplete" bson:"isMatchComplete"`
 }
 
-// Each shot in a single tennis point. Could be a serve, ground stroke, or volley.
-// Shot-level details (like the stroke style, serve style, or physical court side)
-// are stored here if relevant.
+// Represents an individual shot in a tennis match, forming a doubly-linked list
+// structure that allows for traversal and undo operations. Contains context about
+// the point, the shot details, and state changes resulting from the shot.
 type MatchUpShot struct {
-	// Basic category of shot: SERVE, GROUND_STROKE, or VOLLEY.
+	// Unique identifier for this shot.
+	ID primitive.ObjectID `json:"id" bson:"_id"`
+	// Reference to the match this shot belongs to.
+	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
+	// Reference to the previous shot in the sequence (null if first shot).
+	PrevShotID *primitive.ObjectID `json:"prevShotId,omitempty" bson:"prevShotId,omitempty"`
+	// Reference to the next shot in the sequence (null if most recent shot).
+	NextShotID *primitive.ObjectID `json:"nextShotId,omitempty" bson:"nextShotId,omitempty"`
+	// Player who hit this shot.
+	HitterID primitive.ObjectID `json:"hitterId" bson:"hitterId"`
+	// Team side of the player who hit this shot.
+	HitterSide TeamSide `json:"hitterSide" bson:"hitterSide"`
+	// Type of shot (serve, ground stroke, volley).
 	ShotType ShotType `json:"shotType" bson:"shotType"`
-	// If this is a ground stroke, was it FOREHAND or BACKHAND?
-	// Otherwise null.
+	// For ground strokes, specifies forehand or backhand.
+	// Only applicable when shotType is GROUND_STROKE.
 	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
-	// If this is a ground stroke, was it a SLICE, TOPSPIN, FLAT, LOB, etc.?
-	// Otherwise null.
+	// Style of ground stroke (topspin, slice, etc).
+	// Only applicable when shotType is GROUND_STROKE.
 	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
-	// If this is a serve, was it FLAT, KICK, SLICE, or OTHER?
-	// Otherwise null.
+	// Style of serve (flat, kick, slice).
+	// Only applicable when shotType is SERVE.
 	ServeStyle *ServeStyle `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
-	// Which side of the physical court was this shot taken from?
-	// Could be relevant for overhead sun, wind, camera angle, etc.
-	// If not used, can be null.
-	CourtSide *PhysicalCourtSide `json:"courtSide,omitempty" bson:"courtSide,omitempty"`
-	// Which service box was targeted or stood on if relevant:
-	// AD_SIDE or DEUCE_SIDE.
-	// Typically only meaningful for serve or return positions.
+	// Whether this is a first or second serve attempt.
+	// Only applicable when shotType is SERVE.
+	ServeNumber *ServeNumber `json:"serveNumber,omitempty" bson:"serveNumber,omitempty"`
+	// Which service box the serve was directed to.
+	// Only applicable when shotType is SERVE.
 	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty" bson:"serviceBoxSide,omitempty"`
-	// When the shot ended.
-	Timestamp *time.Time `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	// The outcome of this specific shot.
+	ShotOutcome ShotOutcome `json:"shotOutcome" bson:"shotOutcome"`
+	// If this shot won the point, specifies how.
+	// Only applicable when shotOutcome is WON_POINT.
+	PointWinReason *PointWinReason `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
+	// Special significance of this point, if any.
+	PointImportance PointImportance `json:"pointImportance" bson:"pointImportance"`
+	// Current point context within the match structure.
+	PointContext *PointContext `json:"pointContext" bson:"pointContext"`
+	// Score state after this shot.
+	MatchStateAfterShot *MatchStateSnapshot `json:"matchStateAfterShot" bson:"matchStateAfterShot"`
+	// When this shot occurred.
+	Timestamp time.Time `json:"timestamp" bson:"timestamp"`
 }
 
 type Mutation struct {
@@ -197,7 +208,7 @@ type Participant struct {
 	DisplayName string `json:"displayName" bson:"displayName"`
 	// The side (A or B) that this participant is associated with.
 	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
-	// Optinonal boolen to store if a participant is a guest or not.
+	// Optional boolen to store if a participant is a guest or not.
 	IsGuest bool `json:"isGuest" bson:"isGuest"`
 }
 
@@ -214,6 +225,22 @@ type ParticipantInput struct {
 	DisplayedName string `json:"displayedName" bson:"displayedName"`
 	// The side (TEAM_A or TEAM_B) that this participant will play on.
 	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
+}
+
+// Captures the context of a point within a match structure.
+type PointContext struct {
+	// Current set number (1-based index).
+	SetNumber int `json:"setNumber" bson:"setNumber"`
+	// Current game number within the set (1-based index).
+	GameNumber int `json:"gameNumber" bson:"gameNumber"`
+	// Current point number within the game (1-based index).
+	PointNumber int `json:"pointNumber" bson:"pointNumber"`
+	// ID of the player who is serving.
+	ServerID primitive.ObjectID `json:"serverId" bson:"serverId"`
+	// Team side of the server.
+	ServerSide TeamSide `json:"serverSide" bson:"serverSide"`
+	// Which service box is being served to.
+	ServiceBoxSide ServiceBoxSide `json:"serviceBoxSide" bson:"serviceBoxSide"`
 }
 
 type Query struct {
@@ -253,7 +280,7 @@ type SetFormatInput struct {
 // one side has won the set (e.g., 6–4 or via a tiebreak).
 type SetScore struct {
 	// Which set number this represents (e.g., set 1, set 2, etc.).
-	// Typically 0-based or 1-based depending on your UI.
+	// This is 1-based.
 	SetIndex int `json:"setIndex" bson:"setIndex"`
 	// The scores for both sides in this set, including games won
 	// and any tiebreak points.
@@ -722,6 +749,59 @@ func (e PhysicalCourtSide) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+// Denotes if a point has special significance in the context of the match.
+type PointImportance string
+
+const (
+	// Regular point with no special significance.
+	PointImportanceRegular PointImportance = "REGULAR"
+	// Break point - opportunity to win opponent's service game.
+	PointImportanceBreakPoint PointImportance = "BREAK_POINT"
+	// Set point - opportunity to win the current set.
+	PointImportanceSetPoint PointImportance = "SET_POINT"
+	// Match point - opportunity to win the entire match.
+	PointImportanceMatchPoint PointImportance = "MATCH_POINT"
+	// Game point - opportunity to win the current game.
+	PointImportanceGamePoint PointImportance = "GAME_POINT"
+)
+
+var AllPointImportance = []PointImportance{
+	PointImportanceRegular,
+	PointImportanceBreakPoint,
+	PointImportanceSetPoint,
+	PointImportanceMatchPoint,
+	PointImportanceGamePoint,
+}
+
+func (e PointImportance) IsValid() bool {
+	switch e {
+	case PointImportanceRegular, PointImportanceBreakPoint, PointImportanceSetPoint, PointImportanceMatchPoint, PointImportanceGamePoint:
+		return true
+	}
+	return false
+}
+
+func (e PointImportance) String() string {
+	return string(e)
+}
+
+func (e *PointImportance) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = PointImportance(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid PointImportance", str)
+	}
+	return nil
+}
+
+func (e PointImportance) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 // Describes the main reason why a particular side won a tennis point.
 type PointWinReason string
 
@@ -772,6 +852,50 @@ func (e *PointWinReason) UnmarshalGQL(v any) error {
 }
 
 func (e PointWinReason) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Indicates whether a serve is a first or second attempt.
+type ServeNumber string
+
+const (
+	// First serve attempt.
+	ServeNumberFirstServe ServeNumber = "FIRST_SERVE"
+	// Second serve attempt after a fault on the first serve.
+	ServeNumberSecondServe ServeNumber = "SECOND_SERVE"
+)
+
+var AllServeNumber = []ServeNumber{
+	ServeNumberFirstServe,
+	ServeNumberSecondServe,
+}
+
+func (e ServeNumber) IsValid() bool {
+	switch e {
+	case ServeNumberFirstServe, ServeNumberSecondServe:
+		return true
+	}
+	return false
+}
+
+func (e ServeNumber) String() string {
+	return string(e)
+}
+
+func (e *ServeNumber) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ServeNumber(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ServeNumber", str)
+	}
+	return nil
+}
+
+func (e ServeNumber) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
@@ -870,6 +994,58 @@ func (e *ServiceBoxSide) UnmarshalGQL(v any) error {
 }
 
 func (e ServiceBoxSide) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+// Represents the outcome of an individual shot in a tennis match.
+// Different from PointWinReason as it focuses on the immediate result
+// of the shot rather than the reason a point was won.
+type ShotOutcome string
+
+const (
+	// Shot continued the rally (opponent returned it).
+	ShotOutcomeContinuedRally ShotOutcome = "CONTINUED_RALLY"
+	// Shot won the point for the hitter.
+	ShotOutcomeWonPoint ShotOutcome = "WON_POINT"
+	// Shot resulted in an error by the hitter.
+	ShotOutcomeError ShotOutcome = "ERROR"
+	// First serve fault (not a double fault yet).
+	ShotOutcomeFirstFault ShotOutcome = "FIRST_FAULT"
+)
+
+var AllShotOutcome = []ShotOutcome{
+	ShotOutcomeContinuedRally,
+	ShotOutcomeWonPoint,
+	ShotOutcomeError,
+	ShotOutcomeFirstFault,
+}
+
+func (e ShotOutcome) IsValid() bool {
+	switch e {
+	case ShotOutcomeContinuedRally, ShotOutcomeWonPoint, ShotOutcomeError, ShotOutcomeFirstFault:
+		return true
+	}
+	return false
+}
+
+func (e ShotOutcome) String() string {
+	return string(e)
+}
+
+func (e *ShotOutcome) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ShotOutcome(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ShotOutcome", str)
+	}
+	return nil
+}
+
+func (e ShotOutcome) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

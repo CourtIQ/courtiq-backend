@@ -1,0 +1,25 @@
+extend type Query {
+  """
+  Get the most recent shot for a match.
+  """
+  getLastShot(matchUpId: ObjectID!): MatchUpShot
+  
+  """
+  Get all shots for a specific match.
+  """
+  getMatchShots(matchUpId: ObjectID!): [MatchUpShot!]!
+  
+  """
+  Get a specific shot by ID.
+  """
+  getShotById(shotId: ObjectID!): MatchUpShot
+  
+  """
+  Get shots for a specific game within a match.
+  """
+  getGameShots(
+    matchUpId: ObjectID!,
+    setNumber: Int!,
+    gameNumber: Int!
+  ): [MatchUpShot!]!
+}

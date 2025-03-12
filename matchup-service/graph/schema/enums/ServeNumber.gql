@@ -1,0 +1,14 @@
+"""
+Indicates whether a serve is a first or second attempt.
+"""
+enum ServeNumber {
+  """
+  First serve attempt.
+  """
+  FIRST_SERVE
+
+  """
+  Second serve attempt after a fault on the first serve.
+  """
+  SECOND_SERVE
+}

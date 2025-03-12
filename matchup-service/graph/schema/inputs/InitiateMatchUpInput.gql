@@ -19,8 +19,7 @@ input InitiateMatchUpInput {
   participants: [ParticipantInput!]!
 
   """
-  A reference or ID used to track/log this match (e.g., analytics or 
-  a parent entity).
+  A person who might not be a participant in a match but is helping to track it.
   """
   matchUpTracker: ObjectID!
 

@@ -1,0 +1,26 @@
+"""
+Represents the outcome of an individual shot in a tennis match.
+Different from PointWinReason as it focuses on the immediate result
+of the shot rather than the reason a point was won.
+"""
+enum ShotOutcome {
+  """
+  Shot continued the rally (opponent returned it).
+  """
+  CONTINUED_RALLY
+
+  """
+  Shot won the point for the hitter.
+  """
+  WON_POINT
+
+  """
+  Shot resulted in an error by the hitter.
+  """
+  ERROR
+
+  """
+  First serve fault (not a double fault yet).
+  """
+  FIRST_FAULT
+}

@@ -1,0 +1,16 @@
+extend type Mutation {
+  """
+  Add a new shot to a match. Returns the added shot with updated match state.
+  """
+  addShot(input: AddShotInput!): MatchUpShot!
+  
+  """
+  Undo the last shot in a match. Returns the new last shot after undo.
+  """
+  undoLastShot(matchUpId: ObjectID!): MatchUpShot
+  
+  """
+  Redo previously undone shot. Returns the redone shot.
+  """
+  redoShot(matchUpId: ObjectID!): MatchUpShot
+}

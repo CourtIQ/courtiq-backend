@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars"
@@ -15,16 +14,6 @@ import (
 // TestNumberOfSets is the resolver for the testNumberOfSets field.
 func (r *queryResolver) TestNumberOfSets(ctx context.Context, sets *scalars.NumberOfSets) (scalars.NumberOfSets, error) {
 	return *sets, nil
-}
-
-// TestNumberOfGames is the resolver for the testNumberOfGames field.
-func (r *queryResolver) TestNumberOfGames(ctx context.Context, games *scalars.NumberOfGames) (scalars.NumberOfGames, error) {
-	return *games, nil
-}
-
-// TestTiebreakPoints is the resolver for the testTiebreakPoints field.
-func (r *queryResolver) TestTiebreakPoints(ctx context.Context, games *string) (string, error) {
-	panic(fmt.Errorf("not implemented: TestTiebreakPoints - testTiebreakPoints"))
 }
 
 // Query returns graph.QueryResolver implementation.

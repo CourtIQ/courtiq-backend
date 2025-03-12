@@ -1,0 +1,172 @@
+"""
+Represents an individual shot in a tennis match, forming a doubly-linked list
+structure that allows for traversal and undo operations. Contains context about
+the point, the shot details, and state changes resulting from the shot.
+"""
+type MatchUpShot {
+  """
+  Unique identifier for this shot.
+  """
+  id: ObjectID!
+
+  """
+  Reference to the match this shot belongs to.
+  """
+  matchUpId: ObjectID!
+
+  """
+  Reference to the previous shot in the sequence (null if first shot).
+  """
+  prevShotId: ObjectID
+
+  """
+  Reference to the next shot in the sequence (null if most recent shot).
+  """
+  nextShotId: ObjectID
+
+  """
+  Player who hit this shot.
+  """
+  hitterId: ObjectID!
+
+  """
+  Team side of the player who hit this shot.
+  """
+  hitterSide: TeamSide!
+
+  """
+  Type of shot (serve, ground stroke, volley).
+  """
+  shotType: ShotType!
+
+  """
+  For ground strokes, specifies forehand or backhand.
+  Only applicable when shotType is GROUND_STROKE.
+  """
+  groundStrokeType: GroundStrokeType
+
+  """
+  Style of ground stroke (topspin, slice, etc).
+  Only applicable when shotType is GROUND_STROKE.
+  """
+  groundStrokeStyle: GroundStrokeStyle
+
+  """
+  Style of serve (flat, kick, slice).
+  Only applicable when shotType is SERVE.
+  """
+  serveStyle: ServeStyle
+
+  """
+  Whether this is a first or second serve attempt.
+  Only applicable when shotType is SERVE.
+  """
+  serveNumber: ServeNumber
+
+  """
+  Which service box the serve was directed to.
+  Only applicable when shotType is SERVE.
+  """
+  serviceBoxSide: ServiceBoxSide
+
+  """
+  The outcome of this specific shot.
+  """
+  shotOutcome: ShotOutcome!
+
+  """
+  If this shot won the point, specifies how.
+  Only applicable when shotOutcome is WON_POINT.
+  """
+  pointWinReason: PointWinReason
+
+  """
+  Special significance of this point, if any.
+  """
+  pointImportance: PointImportance!
+
+  """
+  Current point context within the match structure.
+  """
+  pointContext: PointContext!
+
+  """
+  Score state after this shot.
+  """
+  matchStateAfterShot: MatchStateSnapshot!
+
+  """
+  When this shot occurred.
+  """
+  timestamp: DateTime!
+}
+
+"""
+Captures the context of a point within a match structure.
+"""
+type PointContext {
+  """
+  Current set number (1-based index).
+  """
+  setNumber: Int!
+  
+  """
+  Current game number within the set (1-based index).
+  """
+  gameNumber: Int!
+  
+  """
+  Current point number within the game (1-based index).
+  """
+  pointNumber: Int!
+  
+  """
+  ID of the player who is serving.
+  """
+  serverId: ObjectID!
+  
+  """
+  Team side of the server.
+  """
+  serverSide: TeamSide!
+  
+  """
+  Which service box is being served to.
+  """
+  serviceBoxSide: ServiceBoxSide!
+}
+
+"""
+Snapshot of the match state after a shot was played.
+"""
+type MatchStateSnapshot {
+  """
+  Current score state after this shot.
+  """
+  score: MatchUpScore!
+  
+  """
+  True if this shot completed a point.
+  """
+  pointCompleted: Boolean!
+  
+  """
+  True if this shot completed a game.
+  """
+  gameCompleted: Boolean!
+  
+  """
+  True if this shot completed a set.
+  """
+  setCompleted: Boolean!
+  
+  """
+  True if this shot completed the match.
+  """
+  matchCompleted: Boolean!
+  
+  """
+  If the point was completed, which team won it.
+  """
+  pointWinner: TeamSide
+}

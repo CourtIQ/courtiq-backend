@@ -7,5 +7,5 @@ import "github.com/CourtIQ/courtiq-backend/matchup-service/internal/services"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	MatchUpServiceInterface services.MatchUpServiceInterface // Note: changed field name to be more idiomatic
+	MatchUpServiceInterface services.MatchUpServiceIntf // Note: changed field name to be more idiomatic
 }

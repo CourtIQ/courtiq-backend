@@ -25,7 +25,7 @@ one side has won the set (e.g., 6–4 or via a tiebreak).
 type SetScore {
   """
   Which set number this represents (e.g., set 1, set 2, etc.).
-  Typically 0-based or 1-based depending on your UI.
+  This is 1-based.
   """
   setIndex: Int!
 

@@ -2,44 +2,75 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// MatchUpServiceInterface defines the interface for matchup operations
-type MatchUpServiceInterface interface {
-	InitiateMatchUp(ctx context.Context, input model.InitiateMatchUpInput) (*model.MatchUp, error)
-}
+var (
+	ErrNotImplemented = errors.New("not implemented")
+)
 
-// MatchUpService implements the MatchUpServiceInterface
+// MatchUpService implements the MatchUpServiceIntf interface
 type MatchUpService struct {
-	matchupRepo repository.MatchUpRepositoryIntf
-	pointsRepo  repository.PointsRepository
+	matchupsRepo repository.MatchupsRepository
+	shotsRepo    repository.ShotsRepository
 }
 
 // NewMatchUpService creates a new instance of MatchUpService
-func NewMatchUpService(matchupRepo repository.MatchUpRepositoryIntf, pointsRepo repository.PointsRepository) MatchUpServiceInterface {
+func NewMatchUpService(
+	matchupsRepo repository.MatchupsRepository,
+	shotsRepo repository.ShotsRepository,
+) *MatchUpService {
 	return &MatchUpService{
-		matchupRepo: matchupRepo,
-		pointsRepo:  pointsRepo,
+		matchupsRepo: matchupsRepo,
+		shotsRepo:    shotsRepo,
 	}
 }
 
-// InitiateMatchUp creates a new MatchUp document in the database
+// GetMatchUpFormats retrieves all match up formats with pagination
+func (s *MatchUpService) GetMatchUpFormats(ctx context.Context, limit *int, offset *int) ([]*model.MatchUpFormat, error) {
+	return nil, ErrNotImplemented
+}
+
+// CreateMatchUpFormat creates a new match up format
+func (s *MatchUpService) CreateMatchUpFormat(ctx context.Context, input model.MatchUpFormatInput) (*model.MatchUpFormat, error) {
+	return nil, ErrNotImplemented
+}
+
+// InitiateMatchUp starts a new match up
 func (s *MatchUpService) InitiateMatchUp(ctx context.Context, input model.InitiateMatchUpInput) (*model.MatchUp, error) {
-	mu, err := NewMatchUpFromInitiateInput(ctx, &input)
-	if err != nil {
-		return nil, fmt.Errorf("failed to build MatchUp from input: %w", err)
-	}
+	return nil, ErrNotImplemented
+}
 
-	// 2) Insert the newly built MatchUp into the database
-	created, err := s.matchupRepo.CreateMatchUp(ctx, mu)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create MatchUp in repository: %w", err)
-	}
+// GetMatchUps retrieves all match ups with pagination
+func (s *MatchUpService) GetMatchUps(ctx context.Context, limit *int, offset *int) ([]*model.MatchUp, error) {
+	return nil, ErrNotImplemented
+}
 
-	// 3) Return the created document
-	return created, nil
+// GetMatchUpById retrieves a match up by its ID
+func (s *MatchUpService) GetMatchUpById(ctx context.Context, id primitive.ObjectID) (*model.MatchUp, error) {
+	return nil, ErrNotImplemented
+}
+
+// UpdateMatchUp updates a match up's status
+func (s *MatchUpService) UpdateMatchUp(ctx context.Context, id primitive.ObjectID, status model.MatchUpStatus) (*model.MatchUp, error) {
+	return nil, ErrNotImplemented
+}
+
+// AddShot adds a new shot to a match up
+func (s *MatchUpService) AddShot(ctx context.Context, input model.AddShotInput) (*model.MatchUpShot, error) {
+	return nil, ErrNotImplemented
+}
+
+// GetMatchUpShots retrieves all shots for a match up with pagination
+func (s *MatchUpService) GetMatchUpShots(ctx context.Context, matchUpId primitive.ObjectID, limit *int, offset *int) ([]*model.MatchUpShot, error) {
+	return nil, ErrNotImplemented
+}
+
+// GetShotsByGame retrieves all shots for a specific game in a match up
+func (s *MatchUpService) GetShotsByGame(ctx context.Context, matchUpId primitive.ObjectID, setNumber int, gameNumber int) ([]*model.MatchUpShot, error) {
+	return nil, ErrNotImplemented
 }

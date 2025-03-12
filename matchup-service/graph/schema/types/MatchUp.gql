@@ -3,17 +3,21 @@ type MatchUp {
     owner: ObjectID!
     matchUpFormat: MatchUpFormat!
     matchUpTracker: ObjectID!
+
     matchUpType: MatchUpType!
     matchUpStatus: MatchUpStatus!
     participants: [Participant!]!
     initialServer: ObjectID!
+    
     currentServer: ObjectID!
-    # points: [MatchUpPoint!]!
-    trackingStyle: MatchUpTrackingStyle
+    currentScore: MatchUpScore!
+
+    # Tail and Head for the shotss
+    firstShot: ObjectID
+    lastShot: ObjectID
 
     winner: TeamSide
     loser: TeamSide
-    currentScore: MatchUpScore
 
     # Not to worry about this field for now
     scheduledStartTime: DateTime

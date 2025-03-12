@@ -20,7 +20,7 @@ type Participant {
   teamSide: TeamSide!
 
   """
-  Optinonal boolen to store if a participant is a guest or not.
+  Optional boolen to store if a participant is a guest or not.
   """
   isGuest: Boolean!
 }

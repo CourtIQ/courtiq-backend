@@ -1,0 +1,29 @@
+"""
+Denotes if a point has special significance in the context of the match.
+"""
+enum PointImportance {
+  """
+  Regular point with no special significance.
+  """
+  REGULAR
+
+  """
+  Break point - opportunity to win opponent's service game.
+  """
+  BREAK_POINT
+
+  """
+  Set point - opportunity to win the current set.
+  """
+  SET_POINT
+
+  """
+  Match point - opportunity to win the entire match.
+  """
+  MATCH_POINT
+
+  """
+  Game point - opportunity to win the current game.
+  """
+  GAME_POINT
+}
