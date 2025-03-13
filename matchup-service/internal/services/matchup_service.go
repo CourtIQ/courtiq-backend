@@ -5,7 +5,10 @@ import (
 	"errors"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/factory"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/matchup-service/internal/validation"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/middleware"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -42,7 +45,37 @@ func (s *MatchUpService) CreateMatchUpFormat(ctx context.Context, input model.Ma
 
 // InitiateMatchUp starts a new match up
 func (s *MatchUpService) InitiateMatchUp(ctx context.Context, input model.InitiateMatchUpInput) (*model.MatchUp, error) {
-	return nil, ErrNotImplemented
+	// Get current user from context
+	ownerID, err := middleware.GetMongoIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate input using the matchup validator
+	matchupValidator := validation.NewMatchUpValidator()
+	if err := matchupValidator.ValidateInitiateMatchUpInput(ctx, input); err != nil {
+		return nil, err
+	}
+
+	// If matchUpFormat is provided, validate it using the format validator
+	if input.MatchUpFormat != nil {
+		formatValidator := validation.NewFormatValidator()
+		if err := formatValidator.ValidateMatchUpFormatInput(ctx, *input.MatchUpFormat); err != nil {
+			return nil, err
+		}
+	}
+
+	// Create a match factory and create a new match from the input
+	factory := factory.NewMatchUpFactory()
+	matchUp := factory.CreateMatchUpFromInitiateMatchUpInput(ownerID, input)
+
+	// Save the match to the database
+	createdMatchUp, err := s.matchupsRepo.Insert(ctx, matchUp)
+	if err != nil {
+		return nil, err
+	}
+
+	return createdMatchUp, nil
 }
 
 // GetMatchUps retrieves all match ups with pagination

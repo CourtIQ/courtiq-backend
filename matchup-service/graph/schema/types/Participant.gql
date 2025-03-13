@@ -7,7 +7,7 @@ type Participant {
   """
   A unique identifier for the participant.
   """
-  id: ID!
+  id: ObjectID!
 
   """
   The name to be displayed (e.g., on scoreboards or UIs).

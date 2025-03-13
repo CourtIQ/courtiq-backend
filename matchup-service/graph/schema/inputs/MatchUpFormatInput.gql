@@ -65,7 +65,6 @@ input TiebreakFormatInput {
 
   """
   Optional "trigger" at which a tiebreak starts (commonly 6).
-  If omitted or null, no tiebreak is triggered at any game score.
   """
-  tiebreakAt: Int
+  tiebreakAt: Int!
 }

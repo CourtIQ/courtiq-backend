@@ -16,96 +16,96 @@ import (
 // The backend will handle score calculation and state updates.
 type AddShotInput struct {
 	// The match ID this shot belongs to.
-	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
+	MatchUpID primitive.ObjectID `json:"matchUpId"`
 	// ID of the player who hit this shot.
-	HitterID primitive.ObjectID `json:"hitterId" bson:"hitterId"`
+	HitterID primitive.ObjectID `json:"hitterId"`
 	// Type of shot (serve, ground stroke, volley).
-	ShotType ShotType `json:"shotType" bson:"shotType"`
+	ShotType ShotType `json:"shotType"`
 	// For ground strokes, specifies forehand or backhand.
 	// Only required when shotType is GROUND_STROKE.
-	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
+	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty"`
 	// Style of ground stroke (topspin, slice, etc).
 	// Only applicable when shotType is GROUND_STROKE.
-	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty"`
 	// Style of serve (flat, kick, slice).
 	// Only applicable when shotType is SERVE.
-	ServeStyle *ServeStyle `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
+	ServeStyle *ServeStyle `json:"serveStyle,omitempty"`
 	// Whether this is a first or second serve attempt.
 	// Only applicable when shotType is SERVE.
-	ServeNumber *ServeNumber `json:"serveNumber,omitempty" bson:"serveNumber,omitempty"`
+	ServeNumber *ServeNumber `json:"serveNumber,omitempty"`
 	// Which service box the serve was directed to.
 	// Only applicable when shotType is SERVE.
-	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty" bson:"serviceBoxSide,omitempty"`
+	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty"`
 	// The outcome of this specific shot.
-	ShotOutcome ShotOutcome `json:"shotOutcome" bson:"shotOutcome"`
+	ShotOutcome ShotOutcome `json:"shotOutcome"`
 	// If this shot won the point, specifies how.
 	// Only applicable when shotOutcome is WON_POINT.
-	PointWinReason *PointWinReason `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
+	PointWinReason *PointWinReason `json:"pointWinReason,omitempty"`
 }
 
 // Used to create a new tennis match with the specified type, format, and participants.
 // If 'visibility' is not provided, it defaults to 'PRIVATE'.
 type InitiateMatchUpInput struct {
 	// The type of match, e.g., SINGLES or DOUBLES.
-	MatchUpType MatchUpType `json:"matchUpType" bson:"matchUpType"`
+	MatchUpType MatchUpType `json:"matchUpType"`
 	// The format and rules for this match (sets, tiebreak details, etc.).
-	MatchUpFormat *MatchUpFormatInput `json:"matchUpFormat" bson:"matchUpFormat"`
+	MatchUpFormat *MatchUpFormatInput `json:"matchUpFormat"`
 	// The players or teams participating in the match.
-	Participants []*ParticipantInput `json:"participants" bson:"participants"`
+	Participants []*ParticipantInput `json:"participants"`
 	// A person who might not be a participant in a match but is helping to track it.
-	MatchUpTracker primitive.ObjectID `json:"matchUpTracker" bson:"matchUpTracker"`
+	MatchUpTracker primitive.ObjectID `json:"matchUpTracker"`
 	// The participant (by ObjectID) who will serve first.
-	InitialServer primitive.ObjectID `json:"initialServer" bson:"initialServer"`
+	InitialServer primitive.ObjectID `json:"initialServer"`
 	// The style of tracking make used to record match data.
-	TrackingStyle *MatchUpTrackingStyle `json:"trackingStyle,omitempty" bson:"trackingStyle,omitempty"`
+	TrackingStyle *MatchUpTrackingStyle `json:"trackingStyle,omitempty"`
 }
 
 // Provides structured geographical details about a user's location.
 // All fields are optional and can be omitted if unknown.
 type Location struct {
-	City      *string  `json:"city,omitempty" bson:"city,omitempty"`
-	State     *string  `json:"state,omitempty" bson:"state,omitempty"`
-	Country   *string  `json:"country,omitempty" bson:"country,omitempty"`
-	Latitude  *float64 `json:"latitude,omitempty" bson:"latitude,omitempty"`
-	Longitude *float64 `json:"longitude,omitempty" bson:"longitude,omitempty"`
+	City      *string  `json:"city,omitempty"`
+	State     *string  `json:"state,omitempty"`
+	Country   *string  `json:"country,omitempty"`
+	Latitude  *float64 `json:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty"`
 }
 
 // Snapshot of the match state after a shot was played.
 type MatchStateSnapshot struct {
 	// Current score state after this shot.
-	Score *MatchUpScore `json:"score" bson:"score"`
+	Score *MatchUpScore `json:"score"`
 	// True if this shot completed a point.
-	PointCompleted bool `json:"pointCompleted" bson:"pointCompleted"`
+	PointCompleted bool `json:"pointCompleted"`
 	// True if this shot completed a game.
-	GameCompleted bool `json:"gameCompleted" bson:"gameCompleted"`
+	GameCompleted bool `json:"gameCompleted"`
 	// True if this shot completed a set.
-	SetCompleted bool `json:"setCompleted" bson:"setCompleted"`
+	SetCompleted bool `json:"setCompleted"`
 	// True if this shot completed the match.
-	MatchCompleted bool `json:"matchCompleted" bson:"matchCompleted"`
+	MatchCompleted bool `json:"matchCompleted"`
 	// If the point was completed, which team won it.
-	PointWinner *TeamSide `json:"pointWinner,omitempty" bson:"pointWinner,omitempty"`
+	PointWinner *TeamSide `json:"pointWinner,omitempty"`
 }
 
 type MatchUp struct {
-	ID                 primitive.ObjectID  `json:"id" bson:"_id"`
-	Owner              primitive.ObjectID  `json:"owner" bson:"owner"`
-	MatchUpFormat      *MatchUpFormat      `json:"matchUpFormat" bson:"matchUpFormat"`
-	MatchUpTracker     primitive.ObjectID  `json:"matchUpTracker" bson:"matchUpTracker"`
-	MatchUpType        MatchUpType         `json:"matchUpType" bson:"matchUpType"`
-	MatchUpStatus      MatchUpStatus       `json:"matchUpStatus" bson:"matchUpStatus"`
-	Participants       []*Participant      `json:"participants" bson:"participants"`
-	InitialServer      primitive.ObjectID  `json:"initialServer" bson:"initialServer"`
-	CurrentServer      primitive.ObjectID  `json:"currentServer" bson:"currentServer"`
-	CurrentScore       *MatchUpScore       `json:"currentScore" bson:"currentScore"`
-	FirstShot          *primitive.ObjectID `json:"firstShot,omitempty" bson:"firstShot,omitempty"`
-	LastShot           *primitive.ObjectID `json:"lastShot,omitempty" bson:"lastShot,omitempty"`
-	Winner             *TeamSide           `json:"winner,omitempty" bson:"winner,omitempty"`
-	Loser              *TeamSide           `json:"loser,omitempty" bson:"loser,omitempty"`
-	ScheduledStartTime *time.Time          `json:"scheduledStartTime,omitempty" bson:"scheduledStartTime,omitempty"`
-	StartTime          *time.Time          `json:"startTime,omitempty" bson:"startTime,omitempty"`
-	EndTime            *time.Time          `json:"endTime,omitempty" bson:"endTime,omitempty"`
-	CreatedAt          time.Time           `json:"createdAt" bson:"createdAt"`
-	LastUpdated        time.Time           `json:"lastUpdated" bson:"lastUpdated"`
+	ID                 primitive.ObjectID  `json:"id"`
+	Owner              primitive.ObjectID  `json:"owner"`
+	MatchUpFormat      *MatchUpFormat      `json:"matchUpFormat"`
+	MatchUpTracker     primitive.ObjectID  `json:"matchUpTracker"`
+	MatchUpType        MatchUpType         `json:"matchUpType"`
+	MatchUpStatus      MatchUpStatus       `json:"matchUpStatus"`
+	Participants       []*Participant      `json:"participants"`
+	InitialServer      primitive.ObjectID  `json:"initialServer"`
+	CurrentServer      primitive.ObjectID  `json:"currentServer"`
+	CurrentScore       *MatchUpScore       `json:"currentScore"`
+	FirstShot          *primitive.ObjectID `json:"firstShot,omitempty"`
+	LastShot           *primitive.ObjectID `json:"lastShot,omitempty"`
+	Winner             *TeamSide           `json:"winner,omitempty"`
+	Loser              *TeamSide           `json:"loser,omitempty"`
+	ScheduledStartTime *time.Time          `json:"scheduledStartTime,omitempty"`
+	StartTime          *time.Time          `json:"startTime,omitempty"`
+	EndTime            *time.Time          `json:"endTime,omitempty"`
+	CreatedAt          time.Time           `json:"createdAt"`
+	LastUpdated        time.Time           `json:"lastUpdated"`
 }
 
 // Overall "ruleset" of a tennis match:
@@ -114,24 +114,24 @@ type MatchUp struct {
 // - Optional alternate final set format
 type MatchUpFormat struct {
 	// How many sets will be played, restricted by the NumberOfSets scalar.
-	NumberOfSets scalars.NumberOfSets `json:"numberOfSets" bson:"numberOfSets"`
+	NumberOfSets scalars.NumberOfSets `json:"numberOfSets"`
 	// Default set format (e.g., games needed, deuce rules, etc.).
-	SetFormat *SetFormat `json:"setFormat" bson:"setFormat"`
+	SetFormat *SetFormat `json:"setFormat"`
 	// Alternate rules for the final set (e.g., 10-point tiebreak).
 	// May be null if not used.
-	FinalSetFormat *SetFormat `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
+	FinalSetFormat *SetFormat `json:"finalSetFormat,omitempty"`
 }
 
 // Input representation of MatchUpFormat,
 // mirroring the MatchUpFormat type.
 type MatchUpFormatInput struct {
 	// How many total sets are played, restricted by NumberOfSets (1, 3, 5).
-	NumberOfSets scalars.NumberOfSets `json:"numberOfSets" bson:"numberOfSets"`
+	NumberOfSets scalars.NumberOfSets `json:"numberOfSets"`
 	// The default format for all sets except possibly the final one.
-	SetFormat *SetFormatInput `json:"setFormat" bson:"setFormat"`
+	SetFormat *SetFormatInput `json:"setFormat"`
 	// Alternate final set format, e.g., to allow a 10-point tiebreak.
 	// Optional (null) if not used.
-	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty" bson:"finalSetFormat,omitempty"`
+	FinalSetFormat *SetFormatInput `json:"finalSetFormat,omitempty"`
 }
 
 // The main container for a match's real-time or final scoring data.
@@ -141,10 +141,10 @@ type MatchUpScore struct {
 	// A list of set-by-set scoring details.
 	// Each SetScore shows how many games each side has won
 	// and whether a tiebreak is active or finished.
-	Sets []*SetScore `json:"sets" bson:"sets"`
+	Sets []*SetScore `json:"sets"`
 	// Indicates if the match is fully decided. If true, one side has won
 	// the required number of sets as defined by the MatchUpFormat.
-	IsMatchComplete bool `json:"isMatchComplete" bson:"isMatchComplete"`
+	IsMatchComplete bool `json:"isMatchComplete"`
 }
 
 // Represents an individual shot in a tennis match, forming a doubly-linked list
@@ -152,47 +152,47 @@ type MatchUpScore struct {
 // the point, the shot details, and state changes resulting from the shot.
 type MatchUpShot struct {
 	// Unique identifier for this shot.
-	ID primitive.ObjectID `json:"id" bson:"_id"`
+	ID primitive.ObjectID `json:"id"`
 	// Reference to the match this shot belongs to.
-	MatchUpID primitive.ObjectID `json:"matchUpId" bson:"matchUpId"`
+	MatchUpID primitive.ObjectID `json:"matchUpId"`
 	// Reference to the previous shot in the sequence (null if first shot).
-	PrevShotID *primitive.ObjectID `json:"prevShotId,omitempty" bson:"prevShotId,omitempty"`
+	PrevShotID *primitive.ObjectID `json:"prevShotId,omitempty"`
 	// Reference to the next shot in the sequence (null if most recent shot).
-	NextShotID *primitive.ObjectID `json:"nextShotId,omitempty" bson:"nextShotId,omitempty"`
+	NextShotID *primitive.ObjectID `json:"nextShotId,omitempty"`
 	// Player who hit this shot.
-	HitterID primitive.ObjectID `json:"hitterId" bson:"hitterId"`
+	HitterID primitive.ObjectID `json:"hitterId"`
 	// Team side of the player who hit this shot.
-	HitterSide TeamSide `json:"hitterSide" bson:"hitterSide"`
+	HitterSide TeamSide `json:"hitterSide"`
 	// Type of shot (serve, ground stroke, volley).
-	ShotType ShotType `json:"shotType" bson:"shotType"`
+	ShotType ShotType `json:"shotType"`
 	// For ground strokes, specifies forehand or backhand.
 	// Only applicable when shotType is GROUND_STROKE.
-	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty" bson:"groundStrokeType,omitempty"`
+	GroundStrokeType *GroundStrokeType `json:"groundStrokeType,omitempty"`
 	// Style of ground stroke (topspin, slice, etc).
 	// Only applicable when shotType is GROUND_STROKE.
-	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty" bson:"groundStrokeStyle,omitempty"`
+	GroundStrokeStyle *GroundStrokeStyle `json:"groundStrokeStyle,omitempty"`
 	// Style of serve (flat, kick, slice).
 	// Only applicable when shotType is SERVE.
-	ServeStyle *ServeStyle `json:"serveStyle,omitempty" bson:"serveStyle,omitempty"`
+	ServeStyle *ServeStyle `json:"serveStyle,omitempty"`
 	// Whether this is a first or second serve attempt.
 	// Only applicable when shotType is SERVE.
-	ServeNumber *ServeNumber `json:"serveNumber,omitempty" bson:"serveNumber,omitempty"`
+	ServeNumber *ServeNumber `json:"serveNumber,omitempty"`
 	// Which service box the serve was directed to.
 	// Only applicable when shotType is SERVE.
-	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty" bson:"serviceBoxSide,omitempty"`
+	ServiceBoxSide *ServiceBoxSide `json:"serviceBoxSide,omitempty"`
 	// The outcome of this specific shot.
-	ShotOutcome ShotOutcome `json:"shotOutcome" bson:"shotOutcome"`
+	ShotOutcome ShotOutcome `json:"shotOutcome"`
 	// If this shot won the point, specifies how.
 	// Only applicable when shotOutcome is WON_POINT.
-	PointWinReason *PointWinReason `json:"pointWinReason,omitempty" bson:"pointWinReason,omitempty"`
+	PointWinReason *PointWinReason `json:"pointWinReason,omitempty"`
 	// Special significance of this point, if any.
-	PointImportance PointImportance `json:"pointImportance" bson:"pointImportance"`
+	PointImportance PointImportance `json:"pointImportance"`
 	// Current point context within the match structure.
-	PointContext *PointContext `json:"pointContext" bson:"pointContext"`
+	PointContext *PointContext `json:"pointContext"`
 	// Score state after this shot.
-	MatchStateAfterShot *MatchStateSnapshot `json:"matchStateAfterShot" bson:"matchStateAfterShot"`
+	MatchStateAfterShot *MatchStateSnapshot `json:"matchStateAfterShot"`
 	// When this shot occurred.
-	Timestamp time.Time `json:"timestamp" bson:"timestamp"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type Mutation struct {
@@ -203,13 +203,13 @@ type Mutation struct {
 // (e.g., Team A or Team B).
 type Participant struct {
 	// A unique identifier for the participant.
-	ID string `json:"id" bson:"_id"`
+	ID primitive.ObjectID `json:"id"`
 	// The name to be displayed (e.g., on scoreboards or UIs).
-	DisplayName string `json:"displayName" bson:"displayName"`
+	DisplayName string `json:"displayName"`
 	// The side (A or B) that this participant is associated with.
-	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
+	TeamSide TeamSide `json:"teamSide"`
 	// Optional boolen to store if a participant is a guest or not.
-	IsGuest bool `json:"isGuest" bson:"isGuest"`
+	IsGuest bool `json:"isGuest"`
 }
 
 // Represents the information needed to create or link a participant
@@ -220,27 +220,27 @@ type Participant struct {
 type ParticipantInput struct {
 	// If provided, this corresponds to an existing user in the database.
 	// If omitted or null, the participant is treated as a guest and stored separately.
-	ID *primitive.ObjectID `json:"id" bson:"_id"`
+	ID *primitive.ObjectID `json:"id,omitempty"`
 	// The participant's display name.
-	DisplayedName string `json:"displayedName" bson:"displayedName"`
+	DisplayedName string `json:"displayedName"`
 	// The side (TEAM_A or TEAM_B) that this participant will play on.
-	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
+	TeamSide TeamSide `json:"teamSide"`
 }
 
 // Captures the context of a point within a match structure.
 type PointContext struct {
 	// Current set number (1-based index).
-	SetNumber int `json:"setNumber" bson:"setNumber"`
+	SetNumber int `json:"setNumber"`
 	// Current game number within the set (1-based index).
-	GameNumber int `json:"gameNumber" bson:"gameNumber"`
+	GameNumber int `json:"gameNumber"`
 	// Current point number within the game (1-based index).
-	PointNumber int `json:"pointNumber" bson:"pointNumber"`
+	PointNumber int `json:"pointNumber"`
 	// ID of the player who is serving.
-	ServerID primitive.ObjectID `json:"serverId" bson:"serverId"`
+	ServerID primitive.ObjectID `json:"serverId"`
 	// Team side of the server.
-	ServerSide TeamSide `json:"serverSide" bson:"serverSide"`
+	ServerSide TeamSide `json:"serverSide"`
 	// Which service box is being served to.
-	ServiceBoxSide ServiceBoxSide `json:"serviceBoxSide" bson:"serviceBoxSide"`
+	ServiceBoxSide ServiceBoxSide `json:"serviceBoxSide"`
 }
 
 type Query struct {
@@ -252,28 +252,28 @@ type Query struct {
 // - Tiebreak rules
 type SetFormat struct {
 	// Number of games to win a set, enforced by the NumberOfGames scalar.
-	NumberOfGames scalars.NumberOfGames `json:"numberOfGames" bson:"numberOfGames"`
+	NumberOfGames scalars.NumberOfGames `json:"numberOfGames"`
 	// Deuce rule type (Advantage, No-Ad, etc.).
-	DeuceType DeuceType `json:"deuceType" bson:"deuceType"`
+	DeuceType DeuceType `json:"deuceType"`
 	// If true, a player must lead by two games when at deuce.
-	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	MustWinByTwo bool `json:"mustWinByTwo"`
 	// How the tiebreak is handled, if triggered.
-	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
+	TiebreakFormat *TiebreakFormat `json:"tiebreakFormat,omitempty"`
 }
 
 // Input representation of SetFormat,
 // mirroring the SetFormat type.
 type SetFormatInput struct {
 	// Number of games required to win a set (allowed values: 1, 3, 4, 5, 6, 10).
-	NumberOfGames scalars.NumberOfGames `json:"numberOfGames" bson:"numberOfGames"`
+	NumberOfGames scalars.NumberOfGames `json:"numberOfGames"`
 	// Deuce rule type (e.g., ADV or NO_AD).
 	// This remains required because you must specify some deuce rule.
-	DeuceType DeuceType `json:"deuceType" bson:"deuceType"`
+	DeuceType DeuceType `json:"deuceType"`
 	// Whether a two-game lead is required to close the set.
-	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	MustWinByTwo bool `json:"mustWinByTwo"`
 	// Optional tiebreak specification.
 	// If omitted, it implies that no tiebreak is used.
-	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty" bson:"tiebreakFormat,omitempty"`
+	TiebreakFormat *TiebreakFormatInput `json:"tiebreakFormat,omitempty"`
 }
 
 // Each set in a tennis match. If 'isCompleted' is true,
@@ -281,16 +281,16 @@ type SetFormatInput struct {
 type SetScore struct {
 	// Which set number this represents (e.g., set 1, set 2, etc.).
 	// This is 1-based.
-	SetIndex int `json:"setIndex" bson:"setIndex"`
+	SetIndex int `json:"setIndex"`
 	// The scores for both sides in this set, including games won
 	// and any tiebreak points.
-	Sides []*SideSetScore `json:"sides" bson:"sides"`
+	Sides []*SideSetScore `json:"sides"`
 	// True if this set has been won by one side (reached the required
 	// number of games, or won the tiebreak), otherwise false.
-	IsCompleted bool `json:"isCompleted" bson:"isCompleted"`
+	IsCompleted bool `json:"isCompleted"`
 	// True if a tiebreak is currently underway in this set.
 	// False if no tiebreak is needed or it's already completed.
-	IsTiebreakActive bool `json:"isTiebreakActive" bson:"isTiebreakActive"`
+	IsTiebreakActive bool `json:"isTiebreakActive"`
 }
 
 // Holds the game-level data for each side in a single set.
@@ -301,15 +301,15 @@ type SetScore struct {
 //     (e.g., ZERO, FIFTEEN, THIRTY, FORTY, ADV) if not in a tiebreak.
 type SideSetScore struct {
 	// Which 'team side' (TEAM_A or TEAM_B) these stats belong to.
-	Side TeamSide `json:"side" bson:"side"`
+	Side TeamSide `json:"side"`
 	// How many games this side has won so far in the current set.
-	GamesWon int `json:"gamesWon" bson:"gamesWon"`
+	GamesWon int `json:"gamesWon"`
 	// The side's point level in the current game (ZERO, FIFTEEN, etc.).
 	// If the match is in a tiebreak, this may be less relevant.
-	InGameScore InGameScore `json:"inGameScore" bson:"inGameScore"`
+	InGameScore InGameScore `json:"inGameScore"`
 	// The number of tiebreak points this side has, if a tiebreak is
 	// active or was recently completed. If no tiebreak, this may be 0 or null.
-	TiebreakPoints *int `json:"tiebreakPoints,omitempty" bson:"tiebreakPoints,omitempty"`
+	TiebreakPoints *int `json:"tiebreakPoints,omitempty"`
 }
 
 // Defines how a tiebreak is played:
@@ -318,23 +318,23 @@ type SideSetScore struct {
 type TiebreakFormat struct {
 	// How many points are needed to win the tiebreak
 	// (allowed values: 5, 6, 7, 8, 9, 10).
-	Points string `json:"points" bson:"points"`
+	Points string `json:"points"`
 	// If true, a two-point lead is required to win the tiebreak.
-	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	MustWinByTwo bool `json:"mustWinByTwo"`
 	// The set score at which a tiebreak starts (commonly 6).
-	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+	TiebreakAt *int `json:"tiebreakAt,omitempty"`
 }
 
 // Input representation of TiebreakFormat,
 // mirroring the TiebreakFormat type.
 type TiebreakFormatInput struct {
 	// Points needed to win the tiebreak (5, 6, 7, 8, 9, or 10).
-	Points string `json:"points" bson:"points"`
+	Points string `json:"points"`
 	// If true, a 2-point lead is required to win the tiebreak.
-	MustWinByTwo bool `json:"mustWinByTwo" bson:"mustWinByTwo"`
+	MustWinByTwo bool `json:"mustWinByTwo"`
 	// Optional "trigger" at which a tiebreak starts (commonly 6).
 	// If omitted or null, no tiebreak is triggered at any game score.
-	TiebreakAt *int `json:"tiebreakAt,omitempty" bson:"tiebreakAt,omitempty"`
+	TiebreakAt int `json:"tiebreakAt"`
 }
 
 // Specifies the deuce rule, i.e., how a game proceeds once it reaches a 40-40 score.

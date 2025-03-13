@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph"
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/schema/scalars"
@@ -13,7 +14,7 @@ import (
 
 // TestNumberOfSets is the resolver for the testNumberOfSets field.
 func (r *queryResolver) TestNumberOfSets(ctx context.Context, sets *scalars.NumberOfSets) (scalars.NumberOfSets, error) {
-	return *sets, nil
+	panic(fmt.Errorf("not implemented: TestNumberOfSets - testNumberOfSets"))
 }
 
 // Query returns graph.QueryResolver implementation.
