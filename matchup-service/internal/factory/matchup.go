@@ -21,7 +21,6 @@ func (f *MatchUpFactory) CreateMatchUpFromInitiateMatchUpInput(ownerID primitive
 
 	// Create base matchup
 	matchUp := &model.MatchUp{
-		ID:                 primitive.NewObjectID(),
 		Owner:              ownerID,
 		MatchUpTracker:     input.MatchUpTracker,
 		MatchUpType:        input.MatchUpType,

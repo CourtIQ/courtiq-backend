@@ -7,6 +7,7 @@ import (
 	"github.com/CourtIQ/courtiq-backend/matchup-service/graph/model"
 	internalErrors "github.com/CourtIQ/courtiq-backend/matchup-service/internal/errors"
 	sharedValidation "github.com/CourtIQ/courtiq-backend/shared/pkg/validation"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // ParticipantValidator validates participant-related inputs
@@ -38,10 +39,23 @@ func (v *ParticipantValidator) ValidateParticipantTeamDistribution(matchType mod
 	teamACounts := 0
 	teamBCounts := 0
 
+	// Map to track participant IDs and ensure uniqueness
+	participantIDs := make(map[primitive.ObjectID]struct{})
+
 	for _, participant := range participants {
 		// Validate individual participant
 		if err := v.ValidateParticipant(participant); err != nil {
 			return err
+		}
+
+		// Check for duplicate participant IDs
+		if participant.ID != nil { // Assuming ID is a string field in ParticipantInput
+			if _, exists := participantIDs[*participant.ID]; exists {
+				return internalErrors.NewInvalidTeamDistributionError(
+					"duplicate participant ID detected",
+				)
+			}
+			participantIDs[*participant.ID] = struct{}{}
 		}
 
 		// Count team distribution
