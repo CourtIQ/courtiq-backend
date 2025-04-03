@@ -1,0 +1,105 @@
+"""
+Aggregated statistics for an entire match.
+"""
+type MatchStatistics {
+  """
+  Total points played in the match (excluding lets).
+  """
+  totalPoints: Int!
+  """
+  Total games played in the match.
+  """
+  totalGames: Int!
+  """
+  Total sets played in the match.
+  """
+  totalSets: Int!
+  """
+  Total duration of the match in milliseconds.
+  Requires startTime and endTime on MatchUp.
+  """
+  durationMillis: Int
+  """
+  Statistics aggregated per team side.
+  """
+  teamStats: [TeamStatistics!]!
+}
+
+"""
+Aggregated statistics for a specific team (TEAM_A or TEAM_B) within a match.
+"""
+type TeamStatistics {
+  """
+  The team side these stats belong to.
+  """
+  teamSide: TeamSide!
+  """
+  Total points won by this team.
+  """
+  pointsWon: Int!
+  """
+  Total games won by this team.
+  """
+  gamesWon: Int!
+  """
+  Total sets won by this team.
+  """
+  setsWon: Int!
+  """
+  Number of aces served by this team.
+  """
+  aces: Int!
+  """
+  Number of double faults committed by this team.
+  """
+  doubleFaults: Int!
+  """
+  Number of winning shots hit by this team (excluding aces).
+  """
+  winners: Int!
+  """
+  Number of unforced errors committed by this team.
+  """
+  unforcedErrors: Int!
+  """
+  Number of forced errors induced by this team's shots against the opponent.
+  """
+  forcedErrorsInduced: Int!
+  # Add more stats as needed (e.g., break points)
+}
+
+"""
+Aggregated statistics for a specific player within a match.
+"""
+type PlayerStatistics {
+  """
+  The ID of the player these stats belong to.
+  """
+  playerId: ObjectID!
+  """
+  Total points won where this player was the hitter of the winning shot or opponent errored.
+  Note: This might require careful definition based on PointWinReason.
+  """
+  pointsWon: Int!
+   """
+  Number of aces served by this player.
+  """
+  aces: Int!
+  """
+  Number of double faults committed by this player.
+  """
+  doubleFaults: Int!
+  """
+  Number of winning shots hit by this player (excluding aces).
+  """
+  winners: Int!
+  """
+  Number of unforced errors committed by this player.
+  """
+  unforcedErrors: Int!
+   """
+  Number of forced errors induced by this player's shots against the opponent.
+  """
+  forcedErrorsInduced: Int!
+  # Add more player-specific stats as needed (e.g., serve percentages)
+}

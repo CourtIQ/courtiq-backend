@@ -86,6 +86,21 @@ type MatchStateSnapshot struct {
 	PointWinner *TeamSide `json:"pointWinner,omitempty" bson:"pointWinner,omitempty"`
 }
 
+// Aggregated statistics for an entire match.
+type MatchStatistics struct {
+	// Total points played in the match (excluding lets).
+	TotalPoints int `json:"totalPoints" bson:"totalPoints"`
+	// Total games played in the match.
+	TotalGames int `json:"totalGames" bson:"totalGames"`
+	// Total sets played in the match.
+	TotalSets int `json:"totalSets" bson:"totalSets"`
+	// Total duration of the match in milliseconds.
+	// Requires startTime and endTime on MatchUp.
+	DurationMillis *int `json:"durationMillis,omitempty" bson:"durationMillis,omitempty"`
+	// Statistics aggregated per team side.
+	TeamStats []*TeamStatistics `json:"teamStats" bson:"teamStats"`
+}
+
 type MatchUp struct {
 	ID                 primitive.ObjectID  `json:"id" bson:"_id"`
 	Owner              primitive.ObjectID  `json:"owner" bson:"owner"`
@@ -227,6 +242,25 @@ type ParticipantInput struct {
 	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
 }
 
+// Aggregated statistics for a specific player within a match.
+type PlayerStatistics struct {
+	// The ID of the player these stats belong to.
+	PlayerID primitive.ObjectID `json:"playerId" bson:"playerId"`
+	// Total points won where this player was the hitter of the winning shot or opponent errored.
+	// Note: This might require careful definition based on PointWinReason.
+	PointsWon int `json:"pointsWon" bson:"pointsWon"`
+	// Number of aces served by this player.
+	Aces int `json:"aces" bson:"aces"`
+	// Number of double faults committed by this player.
+	DoubleFaults int `json:"doubleFaults" bson:"doubleFaults"`
+	// Number of winning shots hit by this player (excluding aces).
+	Winners int `json:"winners" bson:"winners"`
+	// Number of unforced errors committed by this player.
+	UnforcedErrors int `json:"unforcedErrors" bson:"unforcedErrors"`
+	// Number of forced errors induced by this player's shots against the opponent.
+	ForcedErrorsInduced int `json:"forcedErrorsInduced" bson:"forcedErrorsInduced"`
+}
+
 // Captures the context of a point within a match structure.
 type PointContext struct {
 	// Current set number (1-based index).
@@ -310,6 +344,28 @@ type SideSetScore struct {
 	// The number of tiebreak points this side has, if a tiebreak is
 	// active or was recently completed. If no tiebreak, this may be 0 or null.
 	TiebreakPoints *int `json:"tiebreakPoints,omitempty" bson:"tiebreakPoints,omitempty"`
+}
+
+// Aggregated statistics for a specific team (TEAM_A or TEAM_B) within a match.
+type TeamStatistics struct {
+	// The team side these stats belong to.
+	TeamSide TeamSide `json:"teamSide" bson:"teamSide"`
+	// Total points won by this team.
+	PointsWon int `json:"pointsWon" bson:"pointsWon"`
+	// Total games won by this team.
+	GamesWon int `json:"gamesWon" bson:"gamesWon"`
+	// Total sets won by this team.
+	SetsWon int `json:"setsWon" bson:"setsWon"`
+	// Number of aces served by this team.
+	Aces int `json:"aces" bson:"aces"`
+	// Number of double faults committed by this team.
+	DoubleFaults int `json:"doubleFaults" bson:"doubleFaults"`
+	// Number of winning shots hit by this team (excluding aces).
+	Winners int `json:"winners" bson:"winners"`
+	// Number of unforced errors committed by this team.
+	UnforcedErrors int `json:"unforcedErrors" bson:"unforcedErrors"`
+	// Number of forced errors induced by this team's shots against the opponent.
+	ForcedErrorsInduced int `json:"forcedErrorsInduced" bson:"forcedErrorsInduced"`
 }
 
 // Defines how a tiebreak is played:
