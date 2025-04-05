@@ -1,10 +1,17 @@
-# Friendship relationship between two users
+"""Represents a friendship relationship between two users."""
 type Friendship implements Relationship @key(fields: "id") {
+  """The unique identifier for the friendship."""
   id: ObjectID!
+  """Always FRIENDSHIP for this type."""
   type: RelationshipType!
+  """The current status of the friendship (e.g., PENDING, ACCEPTED, BLOCKED)."""
   status: RelationshipStatus!
+  """The ID of the user who sent the friend request."""
   initiatorId: ObjectID!
+  """The ID of the user who received the friend request."""
   receiverId: ObjectID!
+  """Timestamp when the friendship request was sent or created."""
   createdAt: DateTime!
+  """Timestamp when the friendship status last changed."""
   updatedAt: DateTime
 }

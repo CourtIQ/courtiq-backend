@@ -1,28 +1,28 @@
 extend type Query {  
-  # Check if current user is a coach of the specified user
+  """Check the coaching status where the current user is the coach and the specified user is the student."""
   isCoachOf(userId: ObjectID!): RelationshipStatus!
   
-  # Check if current user is a student of the specified user
+  """Check the coaching status where the current user is the student and the specified user is the coach."""
   isStudentOf(userId: ObjectID!): RelationshipStatus!
   
-  # Get all coaching relationships for the current user (both as coach and student)
+  """Get all *accepted* coaching relationships for the current user (where they are either coach or student), with pagination."""
   getCoachships(limit: Int = 10, offset: Int = 0): [Coachship!]!
   
-  # Get all coaches of the current user
+  """Get all accepted coachships where the current user is the student (i.e., their coaches), with pagination."""
   getMyCoaches(limit: Int = 10, offset: Int = 0): [Coachship!]!
   
-  # Get all students of the current user
+  """Get all accepted coachships where the current user is the coach (i.e., their students), with pagination."""
   getMyStudents(limit: Int = 10, offset: Int = 0): [Coachship!]!
   
-  # Get requests sent by the current user to be a coach of someone
+  """Get pending requests sent *by* the current user asking to be someone's coach, with pagination."""
   getSentCoachRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
   
-  # Get requests received by the current user from users who want to be coached by them
+  """Get pending requests received *by* the current user from someone asking the current user to be their student, with pagination."""
   getReceivedCoachRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
   
-  # Get requests sent by the current user to be coached by someone
+  """Get pending requests sent *by* the current user asking someone to be their coach, with pagination."""
   getSentStudentRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
   
-  # Get requests received by the current user from users who want to coach them
+  """Get pending requests received *by* the current user from someone asking to be the current user's coach, with pagination."""
   getReceivedStudentRequests(limit: Int = 10, offset: Int = 0): [Coachship!]!
 }

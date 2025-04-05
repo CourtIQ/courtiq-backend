@@ -1,31 +1,31 @@
 extend type Mutation {
-  # Send a request to be a coach of another user
+  """Send a request to another user asking to be their coach."""
   requestToBeCoachOf(userId: ObjectID!): Coachship!
   
-  # Send a request to be coached by another user
+  """Send a request to another user asking them to be the current user's coach."""
   requestToBeCoachedBy(userId: ObjectID!): Coachship!
   
-  # Accept a request to be a coach of another user
+  """Accept a pending request where the current user was asked to be a coach."""
   acceptToBeCoachOf(requestId: ObjectID!): Coachship!
   
-  # Reject a request to be a coach of another user
+  """Reject a pending request where the current user was asked to be a coach."""
   rejectToBeCoachOf(requestId: ObjectID!): Coachship!
   
-  # Accept a request to be coached by another user
+  """Accept a pending request where the current user was asked to be a student."""
   acceptToBeCoachedBy(requestId: ObjectID!): Coachship!
   
-  # Reject a request to be coached by another user
+  """Reject a pending request where the current user was asked to be a student."""
   rejectToBeCoachedBy(requestId: ObjectID!): Coachship!
   
-  # Cancel a sent request to be a coach of another user
+  """Cancel a pending request that the current user sent asking to be someone's coach."""
   cancelCoachRequest(requestId: ObjectID!): Coachship!
   
-  # Cancel a sent request to be coached by another user
+  """Cancel a pending request that the current user sent asking to be someone's student."""
   cancelStudentRequest(requestId: ObjectID!): Coachship!
   
-  # End a coaching relationship where current user is the coach
+  """End an active coaching relationship identified by its ID, performed by the coach."""
   endCoachingAsCoach(coachshipId: ObjectID!): Boolean!
   
-  # End a coaching relationship where current user is the student
+  """End an active coaching relationship identified by its ID, performed by the student."""
   endCoachingAsStudent(coachshipId: ObjectID!): Boolean!
 }

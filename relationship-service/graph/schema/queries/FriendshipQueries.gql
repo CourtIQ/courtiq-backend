@@ -1,13 +1,13 @@
 extend type Query {
-  # Check if a user is friends with another user
+  """Check the friendship status between the current user and another user."""
   checkFriendshipStatus(withUser: ObjectID!): RelationshipStatus!
   
-  # Get all friends of the current user with pagination
+  """Get all accepted friendships (friends) of the current user, with pagination."""
   getMyFriends(limit: Int = 10, offset: Int = 0): [Friendship!]!
   
-  # Get pending friend requests sent by the current user
+  """Get pending friend requests sent *by* the current user, with pagination."""
   getSentFriendRequests(limit: Int = 10, offset: Int = 0): [Friendship!]!
   
-  # Get pending friend requests received by the current user
+  """Get pending friend requests received *by* the current user, with pagination."""
   getReceivedFriendRequests(limit: Int = 10, offset: Int = 0): [Friendship!]!
 }

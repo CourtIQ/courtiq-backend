@@ -1,13 +1,22 @@
-# Coaching relationship between two users
+"""Represents a coaching relationship between two users (a coach and a student)."""
 type Coachship implements Relationship @key(fields: "id") {
+  """The unique identifier for the coachship."""
   id: ObjectID!
+  """Always COACHSHIP for this type."""
   type: RelationshipType!
+  """The current status of the coachship (e.g., PENDING, ACCEPTED)."""
   status: RelationshipStatus!
+  """The ID of the user who initiated the coaching request (could be coach or student)."""
   initiatorId: ObjectID!
+  """The ID of the user who received the coaching request."""
   receiverId: ObjectID!
+  """Timestamp when the coaching request was sent or created."""
   createdAt: DateTime!
+  """Timestamp when the coachship status last changed."""
   updatedAt: DateTime
 
+  """The ID of the user designated as the coach in this relationship."""
   coach: ObjectID!
+  """The ID of the user designated as the student in this relationship."""
   student: ObjectID!
 }
