@@ -1,20 +1,5 @@
 extend type User @key(fields: "id") {
   """The unique identifier for the user."""
   id: ObjectID!
-  
-  """User's first name."""
-  firstName: String
-  
-  """User's last name."""
-  lastName: String @external
-  
-  """User's display name."""
-  displayName: String @external
-  
-  """User's chosen username."""
-  username: String @external
-  
-  """URL to the user's profile picture."""
-  profilePicture: String @external
 }
 
