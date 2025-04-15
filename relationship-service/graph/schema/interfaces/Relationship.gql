@@ -9,12 +9,14 @@ interface Relationship {
   type: RelationshipType!
   """The current status of the relationship (e.g., PENDING, ACCEPTED, BLOCKED)."""
   status: RelationshipStatus!
-  """The ID of the user who initiated the relationship or the request."""
-  initiatorId: ObjectID!
-  """The ID of the user who received the relationship request or is the target."""
-  receiverId: ObjectID!
+  """The user who initiated the relationship or the request."""
+  initiator: User! @goField(forceResolver: true)
+  """The user who received the relationship request or is the target."""
+  receiver: User! @goField(forceResolver: true)
   """Timestamp when the relationship was first created or requested."""
   createdAt: DateTime!
   """Timestamp when the relationship was last updated (e.g., status change)."""
   updatedAt: DateTime
 }
+
+directive @goField(forceResolver: Boolean) on FIELD_DEFINITION

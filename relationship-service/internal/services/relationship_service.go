@@ -26,10 +26,6 @@ func NewRelationshipService(friendshipRepo repository.FriendshipRepository, coac
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Entity Resolvers
-// ---------------------------------------------------------------------------
-
 // FindCoachshipByID finds a coachship by ID
 func (s *RelationshipService) FindCoachshipByID(ctx context.Context, id primitive.ObjectID) (*model.Coachship, error) {
 	return s.coachshipRepo.FindByID(ctx, id)
@@ -40,22 +36,16 @@ func (s *RelationshipService) FindFriendshipByID(ctx context.Context, id primiti
 	return s.friendshipRepo.FindByID(ctx, id)
 }
 
-// ---------------------------------------------------------------------------
-// Friendship Queries
-// ---------------------------------------------------------------------------
-
 // CheckFriendshipStatus checks the friendship status between the current user and another user
 func (s *RelationshipService) CheckFriendshipStatus(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error) {
 	currentUserID, err := middleware.GetMongoIDFromContext(ctx)
 	if err != nil {
 		return model.RelationshipStatusNone, err
 	}
-
 	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err != nil {
 		return model.RelationshipStatusNone, nil
 	}
-
 	return friendship.Status, nil
 }
 
@@ -65,7 +55,6 @@ func (s *RelationshipService) GetMyFriends(ctx context.Context, limit *int, offs
 	if err != nil {
 		return nil, err
 	}
-
 	return s.friendshipRepo.GetFriendships(ctx, currentUserID, model.RelationshipStatusAccepted, limit, offset)
 }
 
@@ -75,7 +64,6 @@ func (s *RelationshipService) GetSentFriendRequests(ctx context.Context, limit *
 	if err != nil {
 		return nil, err
 	}
-
 	return s.friendshipRepo.GetSentRequests(ctx, currentUserID, limit, offset)
 }
 
@@ -85,13 +73,8 @@ func (s *RelationshipService) GetReceivedFriendRequests(ctx context.Context, lim
 	if err != nil {
 		return nil, err
 	}
-
 	return s.friendshipRepo.GetReceivedRequests(ctx, currentUserID, limit, offset)
 }
-
-// ---------------------------------------------------------------------------
-// Friendship Mutations
-// ---------------------------------------------------------------------------
 
 // SendFriendRequest sends a friend request to another user
 func (s *RelationshipService) SendFriendRequest(ctx context.Context, userID primitive.ObjectID) (*model.Friendship, error) {
@@ -99,13 +82,9 @@ func (s *RelationshipService) SendFriendRequest(ctx context.Context, userID prim
 	if err != nil {
 		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Check if trying to friend self
 	if currentUserID == userID {
 		return nil, utils.NewSelfRequestError("friend")
 	}
-
-	// Check if a friendship already exists
 	existingFriendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err == nil && existingFriendship != nil {
 		if existingFriendship.Status == model.RelationshipStatusPending {
@@ -118,18 +97,15 @@ func (s *RelationshipService) SendFriendRequest(ctx context.Context, userID prim
 			return nil, utils.NewRelationshipForbiddenError("Unable to send friend request")
 		}
 	}
-
-	// Create a new friendship
 	now := time.Now()
 	friendship := &model.Friendship{
-		Type:        model.RelationshipTypeFriendship,
-		Status:      model.RelationshipStatusPending,
-		InitiatorID: currentUserID,
-		ReceiverID:  userID,
-		CreatedAt:   now,
-		UpdatedAt:   &now,
+		Type:      model.RelationshipTypeFriendship,
+		Status:    model.RelationshipStatusPending,
+		Initiator: &model.User{ID: currentUserID},
+		Receiver:  &model.User{ID: userID},
+		CreatedAt: now,
+		UpdatedAt: &now,
 	}
-
 	return s.friendshipRepo.Create(ctx, friendship)
 }
 
@@ -139,28 +115,19 @@ func (s *RelationshipService) AcceptFriendRequest(ctx context.Context, requestID
 	if err != nil {
 		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Get the friendship
 	friendship, err := s.friendshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, utils.NewFriendshipNotFoundError()
 	}
-
-	// Verify that the current user is the receiver of the request
-	if friendship.ReceiverID != currentUserID {
+	if friendship.Receiver.ID != currentUserID {
 		return nil, utils.NewRelationshipForbiddenError("You can only accept friend requests sent to you")
 	}
-
-	// Verify that the friendship is pending
 	if friendship.Status != model.RelationshipStatusPending {
 		return nil, utils.NewUIError("INVALID_REQUEST_STATUS", "You can only accept pending friend requests", nil)
 	}
-
-	// Update the friendship status
 	now := time.Now()
 	friendship.Status = model.RelationshipStatusAccepted
 	friendship.UpdatedAt = &now
-
 	return s.friendshipRepo.Update(ctx, friendship)
 }
 
@@ -170,28 +137,19 @@ func (s *RelationshipService) RejectFriendRequest(ctx context.Context, requestID
 	if err != nil {
 		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Get the friendship
 	friendship, err := s.friendshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, utils.NewFriendshipNotFoundError()
 	}
-
-	// Verify that the current user is the receiver of the request
-	if friendship.ReceiverID != currentUserID {
+	if friendship.Receiver.ID != currentUserID {
 		return nil, utils.NewRelationshipForbiddenError("You can only reject friend requests sent to you")
 	}
-
-	// Verify that the friendship is pending
 	if friendship.Status != model.RelationshipStatusPending {
 		return nil, utils.NewUIError("INVALID_REQUEST_STATUS", "You can only reject pending friend requests", nil)
 	}
-
-	// Update the friendship status
 	now := time.Now()
 	friendship.Status = model.RelationshipStatusDeclined
 	friendship.UpdatedAt = &now
-
 	return s.friendshipRepo.Update(ctx, friendship)
 }
 
@@ -201,28 +159,19 @@ func (s *RelationshipService) CancelFriendRequest(ctx context.Context, requestID
 	if err != nil {
 		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Get the friendship
 	friendship, err := s.friendshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, utils.NewFriendshipNotFoundError()
 	}
-
-	// Verify that the current user is the initiator of the request
-	if friendship.InitiatorID != currentUserID {
+	if friendship.Initiator.ID != currentUserID {
 		return nil, utils.NewRelationshipForbiddenError("You can only cancel friend requests you sent")
 	}
-
-	// Verify that the friendship is pending
 	if friendship.Status != model.RelationshipStatusPending {
 		return nil, utils.NewUIError("INVALID_REQUEST_STATUS", "You can only cancel pending friend requests", nil)
 	}
-
-	// Update the friendship status
 	now := time.Now()
 	friendship.Status = model.RelationshipStatusDeclined
 	friendship.UpdatedAt = &now
-
 	return s.friendshipRepo.Update(ctx, friendship)
 }
 
@@ -232,19 +181,13 @@ func (s *RelationshipService) RemoveFriend(ctx context.Context, friendID primiti
 	if err != nil {
 		return false, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Get the friendship
 	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, friendID)
 	if err != nil {
 		return false, utils.NewFriendshipNotFoundError()
 	}
-
-	// Verify that the friendship is accepted
 	if friendship.Status != model.RelationshipStatusAccepted {
 		return false, utils.NewUIError("NOT_FRIENDS", "You are not friends with this user", nil)
 	}
-
-	// Delete the friendship
 	return s.friendshipRepo.Delete(ctx, friendship.ID)
 }
 
@@ -254,13 +197,9 @@ func (s *RelationshipService) BlockUser(ctx context.Context, userID primitive.Ob
 	if err != nil {
 		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Check if trying to block self
 	if currentUserID == userID {
 		return nil, utils.NewSelfRequestError("block")
 	}
-
-	// Check if a friendship already exists
 	existingFriendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err == nil && existingFriendship != nil {
 		now := time.Now()
@@ -268,18 +207,15 @@ func (s *RelationshipService) BlockUser(ctx context.Context, userID primitive.Ob
 		existingFriendship.UpdatedAt = &now
 		return s.friendshipRepo.Update(ctx, existingFriendship)
 	}
-
-	// Create a new friendship with blocked status
 	now := time.Now()
 	friendship := &model.Friendship{
-		Type:        model.RelationshipTypeFriendship,
-		Status:      model.RelationshipStatusBlocked,
-		InitiatorID: currentUserID,
-		ReceiverID:  userID,
-		CreatedAt:   now,
-		UpdatedAt:   &now,
+		Type:      model.RelationshipTypeFriendship,
+		Status:    model.RelationshipStatusBlocked,
+		Initiator: &model.User{ID: currentUserID},
+		Receiver:  &model.User{ID: userID},
+		CreatedAt: now,
+		UpdatedAt: &now,
 	}
-
 	return s.friendshipRepo.Create(ctx, friendship)
 }
 
@@ -289,34 +225,21 @@ func (s *RelationshipService) UnblockUser(ctx context.Context, userID primitive.
 	if err != nil {
 		return nil, utils.NewUIError("UNAUTHORIZED", "Unable to determine user identity", err)
 	}
-
-	// Find the blocked relationship
 	friendship, err := s.friendshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err != nil {
 		return nil, utils.NewFriendshipNotFoundError()
 	}
-
-	// Verify that the relationship is blocked
 	if friendship.Status != model.RelationshipStatusBlocked {
 		return nil, utils.NewUIError("NOT_BLOCKED", "User is not blocked", nil)
 	}
-
-	// Verify that the current user is the one who blocked the other user
-	if friendship.InitiatorID != currentUserID {
+	if friendship.Initiator.ID != currentUserID {
 		return nil, utils.NewRelationshipForbiddenError("You cannot unblock this user")
 	}
-
-	// Update the relationship status
 	now := time.Now()
 	friendship.Status = model.RelationshipStatusNone
 	friendship.UpdatedAt = &now
-
 	return s.friendshipRepo.Update(ctx, friendship)
 }
-
-// ---------------------------------------------------------------------------
-// Coachship Queries
-// ---------------------------------------------------------------------------
 
 // IsCoachOf checks if the current user is a coach of the given user
 func (s *RelationshipService) IsCoachOf(ctx context.Context, userID primitive.ObjectID) (model.RelationshipStatus, error) {
@@ -324,18 +247,13 @@ func (s *RelationshipService) IsCoachOf(ctx context.Context, userID primitive.Ob
 	if err != nil {
 		return model.RelationshipStatusNone, err
 	}
-
-	// Find the coachship
 	coachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err != nil {
 		return model.RelationshipStatusNone, nil
 	}
-
-	// Check if current user is the coach
-	if coachship.Coach == currentUserID && coachship.Student == userID {
+	if coachship.Coach.ID == currentUserID && coachship.Student.ID == userID {
 		return coachship.Status, nil
 	}
-
 	return model.RelationshipStatusNone, nil
 }
 
@@ -345,18 +263,13 @@ func (s *RelationshipService) IsStudentOf(ctx context.Context, userID primitive.
 	if err != nil {
 		return model.RelationshipStatusNone, err
 	}
-
-	// Find the coachship
 	coachship, err := s.coachshipRepo.FindBetweenUsers(ctx, userID, currentUserID)
 	if err != nil {
 		return model.RelationshipStatusNone, nil
 	}
-
-	// Check if current user is the student
-	if coachship.Student == currentUserID && coachship.Coach == userID {
+	if coachship.Student.ID == currentUserID && coachship.Coach.ID == userID {
 		return coachship.Status, nil
 	}
-
 	return model.RelationshipStatusNone, nil
 }
 
@@ -366,7 +279,6 @@ func (s *RelationshipService) GetCoachships(ctx context.Context, limit *int, off
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetCoachships(ctx, currentUserID, model.RelationshipStatusAccepted, limit, offset)
 }
 
@@ -376,7 +288,6 @@ func (s *RelationshipService) GetMyCoaches(ctx context.Context, limit *int, offs
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetCoaches(ctx, currentUserID, limit, offset)
 }
 
@@ -386,7 +297,6 @@ func (s *RelationshipService) GetMyStudents(ctx context.Context, limit *int, off
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetStudents(ctx, currentUserID, limit, offset)
 }
 
@@ -396,7 +306,6 @@ func (s *RelationshipService) GetSentCoachRequests(ctx context.Context, limit *i
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetSentCoachRequests(ctx, currentUserID, limit, offset)
 }
 
@@ -406,7 +315,6 @@ func (s *RelationshipService) GetReceivedCoachRequests(ctx context.Context, limi
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetReceivedCoachRequests(ctx, currentUserID, limit, offset)
 }
 
@@ -416,7 +324,6 @@ func (s *RelationshipService) GetSentStudentRequests(ctx context.Context, limit 
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetSentStudentRequests(ctx, currentUserID, limit, offset)
 }
 
@@ -426,13 +333,8 @@ func (s *RelationshipService) GetReceivedStudentRequests(ctx context.Context, li
 	if err != nil {
 		return nil, err
 	}
-
 	return s.coachshipRepo.GetReceivedStudentRequests(ctx, currentUserID, limit, offset)
 }
-
-// ---------------------------------------------------------------------------
-// Coachship Mutations
-// ---------------------------------------------------------------------------
 
 // RequestToBeCoachOf sends a request to be a coach of another user
 func (s *RelationshipService) RequestToBeCoachOf(ctx context.Context, userID primitive.ObjectID) (*model.Coachship, error) {
@@ -440,31 +342,24 @@ func (s *RelationshipService) RequestToBeCoachOf(ctx context.Context, userID pri
 	if err != nil {
 		return nil, err
 	}
-
-	// Check if trying to coach self
 	if currentUserID == userID {
 		return nil, utils.NewSelfRequestError("coach")
 	}
-
-	// Check if a coachship already exists
 	existingCoachship, err := s.coachshipRepo.FindBetweenUsers(ctx, currentUserID, userID)
 	if err == nil && existingCoachship != nil {
 		return nil, fmt.Errorf("a coaching relationship already exists between you and this user")
 	}
-
-	// Create a new coachship
 	now := time.Now()
 	coachship := &model.Coachship{
-		Type:        model.RelationshipTypeCoachship,
-		Status:      model.RelationshipStatusPending,
-		InitiatorID: currentUserID,
-		ReceiverID:  userID,
-		CreatedAt:   now,
-		UpdatedAt:   &now,
-		Coach:       currentUserID, // Current user wants to be the coach
-		Student:     userID,        // Target user will be the student
+		Type:      model.RelationshipTypeCoachship,
+		Status:    model.RelationshipStatusPending,
+		Initiator: &model.User{ID: currentUserID},
+		Receiver:  &model.User{ID: userID},
+		Coach:     &model.User{ID: currentUserID},
+		Student:   &model.User{ID: userID},
+		CreatedAt: now,
+		UpdatedAt: &now,
 	}
-
 	return s.coachshipRepo.Create(ctx, coachship)
 }
 
@@ -474,31 +369,24 @@ func (s *RelationshipService) RequestToBeCoachedBy(ctx context.Context, userID p
 	if err != nil {
 		return nil, err
 	}
-
-	// Check if trying to be coached by self
 	if currentUserID == userID {
 		return nil, utils.NewSelfRequestError("be coached by")
 	}
-
-	// Check if a coachship already exists
 	existingCoachship, err := s.coachshipRepo.FindBetweenUsers(ctx, userID, currentUserID)
 	if err == nil && existingCoachship != nil {
 		return nil, fmt.Errorf("a coaching relationship already exists between you and this user")
 	}
-
-	// Create a new coachship
 	now := time.Now()
 	coachship := &model.Coachship{
-		Type:        model.RelationshipTypeCoachship,
-		Status:      model.RelationshipStatusPending,
-		InitiatorID: currentUserID,
-		ReceiverID:  userID,
-		CreatedAt:   now,
-		UpdatedAt:   &now,
-		Coach:       userID,        // Target user will be the coach
-		Student:     currentUserID, // Current user wants to be the student
+		Type:      model.RelationshipTypeCoachship,
+		Status:    model.RelationshipStatusPending,
+		Initiator: &model.User{ID: currentUserID},
+		Receiver:  &model.User{ID: userID},
+		Coach:     &model.User{ID: userID},
+		Student:   &model.User{ID: currentUserID},
+		CreatedAt: now,
+		UpdatedAt: &now,
 	}
-
 	return s.coachshipRepo.Create(ctx, coachship)
 }
 
@@ -508,28 +396,19 @@ func (s *RelationshipService) AcceptToBeCoachOf(ctx context.Context, requestID p
 	if err != nil {
 		return nil, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("coaching request not found: %v", err)
 	}
-
-	// Verify that the current user is the coach and receiver of the request
-	if coachship.Coach != currentUserID || coachship.ReceiverID != currentUserID {
+	if coachship.Coach.ID != currentUserID || coachship.Receiver.ID != currentUserID {
 		return nil, fmt.Errorf("you can only accept requests to be a coach that were sent to you")
 	}
-
-	// Verify that the coachship is pending
 	if coachship.Status != model.RelationshipStatusPending {
 		return nil, fmt.Errorf("you can only accept pending coaching requests")
 	}
-
-	// Update the coachship status
 	now := time.Now()
 	coachship.Status = model.RelationshipStatusAccepted
 	coachship.UpdatedAt = &now
-
 	return s.coachshipRepo.Update(ctx, coachship)
 }
 
@@ -539,28 +418,19 @@ func (s *RelationshipService) RejectToBeCoachOf(ctx context.Context, requestID p
 	if err != nil {
 		return nil, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("coaching request not found: %v", err)
 	}
-
-	// Verify that the current user is the coach and receiver of the request
-	if coachship.Coach != currentUserID || coachship.ReceiverID != currentUserID {
+	if coachship.Coach.ID != currentUserID || coachship.Receiver.ID != currentUserID {
 		return nil, fmt.Errorf("you can only reject requests to be a coach that were sent to you")
 	}
-
-	// Verify that the coachship is pending
 	if coachship.Status != model.RelationshipStatusPending {
 		return nil, fmt.Errorf("you can only reject pending coaching requests")
 	}
-
-	// Update the coachship status
 	now := time.Now()
 	coachship.Status = model.RelationshipStatusDeclined
 	coachship.UpdatedAt = &now
-
 	return s.coachshipRepo.Update(ctx, coachship)
 }
 
@@ -570,28 +440,19 @@ func (s *RelationshipService) AcceptToBeCoachedBy(ctx context.Context, requestID
 	if err != nil {
 		return nil, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("coaching request not found: %v", err)
 	}
-
-	// Verify that the current user is the student and receiver of the request
-	if coachship.Student != currentUserID || coachship.ReceiverID != currentUserID {
+	if coachship.Student.ID != currentUserID || coachship.Receiver.ID != currentUserID {
 		return nil, fmt.Errorf("you can only accept requests to be coached that were sent to you")
 	}
-
-	// Verify that the coachship is pending
 	if coachship.Status != model.RelationshipStatusPending {
 		return nil, fmt.Errorf("you can only accept pending coaching requests")
 	}
-
-	// Update the coachship status
 	now := time.Now()
 	coachship.Status = model.RelationshipStatusAccepted
 	coachship.UpdatedAt = &now
-
 	return s.coachshipRepo.Update(ctx, coachship)
 }
 
@@ -601,28 +462,19 @@ func (s *RelationshipService) RejectToBeCoachedBy(ctx context.Context, requestID
 	if err != nil {
 		return nil, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("coaching request not found: %v", err)
 	}
-
-	// Verify that the current user is the student and receiver of the request
-	if coachship.Student != currentUserID || coachship.ReceiverID != currentUserID {
+	if coachship.Student.ID != currentUserID || coachship.Receiver.ID != currentUserID {
 		return nil, fmt.Errorf("you can only reject requests to be coached that were sent to you")
 	}
-
-	// Verify that the coachship is pending
 	if coachship.Status != model.RelationshipStatusPending {
 		return nil, fmt.Errorf("you can only reject pending coaching requests")
 	}
-
-	// Update the coachship status
 	now := time.Now()
 	coachship.Status = model.RelationshipStatusDeclined
 	coachship.UpdatedAt = &now
-
 	return s.coachshipRepo.Update(ctx, coachship)
 }
 
@@ -632,28 +484,19 @@ func (s *RelationshipService) CancelCoachRequest(ctx context.Context, requestID 
 	if err != nil {
 		return nil, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("coaching request not found: %v", err)
 	}
-
-	// Verify that the current user is the coach and initiator of the request
-	if coachship.Coach != currentUserID || coachship.InitiatorID != currentUserID {
+	if coachship.Coach.ID != currentUserID || coachship.Initiator.ID != currentUserID {
 		return nil, fmt.Errorf("you can only cancel coach requests you sent as a coach")
 	}
-
-	// Verify that the coachship is pending
 	if coachship.Status != model.RelationshipStatusPending {
 		return nil, fmt.Errorf("you can only cancel pending coaching requests")
 	}
-
-	// Update the coachship status
 	now := time.Now()
 	coachship.Status = model.RelationshipStatusDeclined
 	coachship.UpdatedAt = &now
-
 	return s.coachshipRepo.Update(ctx, coachship)
 }
 
@@ -663,28 +506,19 @@ func (s *RelationshipService) CancelStudentRequest(ctx context.Context, requestI
 	if err != nil {
 		return nil, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, requestID)
 	if err != nil {
 		return nil, fmt.Errorf("coaching request not found: %v", err)
 	}
-
-	// Verify that the current user is the student and initiator of the request
-	if coachship.Student != currentUserID || coachship.InitiatorID != currentUserID {
+	if coachship.Student.ID != currentUserID || coachship.Initiator.ID != currentUserID {
 		return nil, fmt.Errorf("you can only cancel student requests you sent as a student")
 	}
-
-	// Verify that the coachship is pending
 	if coachship.Status != model.RelationshipStatusPending {
 		return nil, fmt.Errorf("you can only cancel pending coaching requests")
 	}
-
-	// Update the coachship status
 	now := time.Now()
 	coachship.Status = model.RelationshipStatusDeclined
 	coachship.UpdatedAt = &now
-
 	return s.coachshipRepo.Update(ctx, coachship)
 }
 
@@ -694,24 +528,16 @@ func (s *RelationshipService) EndCoachingAsCoach(ctx context.Context, coachshipI
 	if err != nil {
 		return false, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, coachshipID)
 	if err != nil {
 		return false, fmt.Errorf("coaching relationship not found: %v", err)
 	}
-
-	// Verify that the current user is the coach
-	if coachship.Coach != currentUserID {
+	if coachship.Coach.ID != currentUserID {
 		return false, fmt.Errorf("you can only end coaching relationships where you are the coach")
 	}
-
-	// Verify that the coachship is accepted
 	if coachship.Status != model.RelationshipStatusAccepted {
 		return false, fmt.Errorf("you can only end active coaching relationships")
 	}
-
-	// Delete the coachship
 	return s.coachshipRepo.Delete(ctx, coachshipID)
 }
 
@@ -721,23 +547,15 @@ func (s *RelationshipService) EndCoachingAsStudent(ctx context.Context, coachshi
 	if err != nil {
 		return false, err
 	}
-
-	// Get the coachship
 	coachship, err := s.coachshipRepo.FindByID(ctx, coachshipID)
 	if err != nil {
 		return false, fmt.Errorf("coaching relationship not found: %v", err)
 	}
-
-	// Verify that the current user is the student
-	if coachship.Student != currentUserID {
+	if coachship.Student.ID != currentUserID {
 		return false, fmt.Errorf("you can only end coaching relationships where you are the student")
 	}
-
-	// Verify that the coachship is accepted
 	if coachship.Status != model.RelationshipStatusAccepted {
 		return false, fmt.Errorf("you can only end active coaching relationships")
 	}
-
-	// Delete the coachship
 	return s.coachshipRepo.Delete(ctx, coachshipID)
 }

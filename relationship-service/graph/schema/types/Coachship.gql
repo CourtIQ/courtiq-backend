@@ -6,17 +6,17 @@ type Coachship implements Relationship @key(fields: "id") {
   type: RelationshipType!
   """The current status of the coachship (e.g., PENDING, ACCEPTED)."""
   status: RelationshipStatus!
-  """The ID of the user who initiated the coaching request (could be coach or student)."""
-  initiatorId: ObjectID!
-  """The ID of the user who received the coaching request."""
-  receiverId: ObjectID!
+  """The user who initiated the coaching request."""
+  initiator: User! @goField(forceResolver: true)
+  """The user who received the coaching request."""
+  receiver: User! @goField(forceResolver: true)
   """Timestamp when the coaching request was sent or created."""
   createdAt: DateTime!
   """Timestamp when the coachship status last changed."""
   updatedAt: DateTime
 
-  """The ID of the user designated as the coach in this relationship."""
-  coach: ObjectID!
-  """The ID of the user designated as the student in this relationship."""
-  student: ObjectID!
+  """The user acting as the coach in this relationship."""
+  coach: User! @goField(forceResolver: true)
+  """The user acting as the student in this relationship."""
+  student: User! @goField(forceResolver: true)
 }

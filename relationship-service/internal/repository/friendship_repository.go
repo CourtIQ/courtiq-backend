@@ -41,12 +41,12 @@ func (r *FriendshipRepositoryImpl) FindBetweenUsers(ctx context.Context, userID1
 	filter := bson.M{
 		"$or": []bson.M{
 			{
-				"initiatorId": userID1,
-				"receiverId":  userID2,
+				"initiator._id": userID1,
+				"receiver._id":  userID2,
 			},
 			{
-				"initiatorId": userID2,
-				"receiverId":  userID1,
+				"initiator._id": userID2,
+				"receiver._id":  userID1,
 			},
 		},
 		"type": model.RelationshipTypeFriendship,
@@ -63,8 +63,8 @@ func (r *FriendshipRepositoryImpl) FindBetweenUsers(ctx context.Context, userID1
 func (r *FriendshipRepositoryImpl) GetFriendships(ctx context.Context, userID primitive.ObjectID, status model.RelationshipStatus, limit, offset *int) ([]*model.Friendship, error) {
 	filter := bson.M{
 		"$or": []bson.M{
-			{"initiatorId": userID},
-			{"receiverId": userID},
+			{"initiator._id": userID},
+			{"receiver._id": userID},
 		},
 		"status": status,
 		"type":   model.RelationshipTypeFriendship,
@@ -84,7 +84,7 @@ func (r *FriendshipRepositoryImpl) GetFriendships(ctx context.Context, userID pr
 // GetSentRequests gets all friend requests sent by a user
 func (r *FriendshipRepositoryImpl) GetSentRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Friendship, error) {
 	filter := bson.M{
-		"initiatorId": userID,
+		"initiator._id": userID,
 		"status":      model.RelationshipStatusPending,
 		"type":        model.RelationshipTypeFriendship,
 	}
@@ -103,7 +103,7 @@ func (r *FriendshipRepositoryImpl) GetSentRequests(ctx context.Context, userID p
 // GetReceivedRequests gets all friend requests received by a user
 func (r *FriendshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Friendship, error) {
 	filter := bson.M{
-		"receiverId": userID,
+		"receiver._id": userID,
 		"status":     model.RelationshipStatusPending,
 		"type":       model.RelationshipTypeFriendship,
 	}

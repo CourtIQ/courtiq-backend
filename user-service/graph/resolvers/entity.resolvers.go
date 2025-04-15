@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/CourtIQ/courtiq-backend/user-service/graph"
 	"github.com/CourtIQ/courtiq-backend/user-service/graph/model"
@@ -15,7 +14,7 @@ import (
 
 // FindUserByID is the resolver for the findUserByID field.
 func (r *entityResolver) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: FindUserByID - findUserByID"))
+	return r.UserService.GetUser(ctx, id)
 }
 
 // Entity returns graph.EntityResolver implementation.

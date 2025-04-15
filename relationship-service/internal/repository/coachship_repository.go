@@ -39,8 +39,8 @@ func (r *CoachshipRepositoryImpl) FindByID(ctx context.Context, id primitive.Obj
 // FindBetweenUsers finds a coachship between two users
 func (r *CoachshipRepositoryImpl) FindBetweenUsers(ctx context.Context, coachID, studentID primitive.ObjectID) (*model.Coachship, error) {
 	filter := bson.M{
-		"coach":   coachID,
-		"student": studentID,
+		"coach._id":   coachID,
+		"student._id": studentID,
 		"type":    model.RelationshipTypeCoachship,
 	}
 	coachship, err := r.baseRepo.FindOne(ctx, filter)
@@ -54,8 +54,8 @@ func (r *CoachshipRepositoryImpl) FindBetweenUsers(ctx context.Context, coachID,
 func (r *CoachshipRepositoryImpl) GetCoachships(ctx context.Context, userID primitive.ObjectID, status model.RelationshipStatus, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
 		"$or": []bson.M{
-			{"coach": userID},
-			{"student": userID},
+			{"coach._id": userID},
+			{"student._id": userID},
 		},
 		"status": status,
 		"type":   model.RelationshipTypeCoachship,
@@ -75,8 +75,8 @@ func (r *CoachshipRepositoryImpl) GetCoachships(ctx context.Context, userID prim
 // GetCoaches gets all coaches for a student
 func (r *CoachshipRepositoryImpl) GetCoaches(ctx context.Context, studentID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"student": studentID,
-		"status":  model.RelationshipStatusAccepted,
+		"student._id": studentID,
+		"status._id":  model.RelationshipStatusAccepted,
 		"type":    model.RelationshipTypeCoachship,
 	}
 
@@ -94,7 +94,7 @@ func (r *CoachshipRepositoryImpl) GetCoaches(ctx context.Context, studentID prim
 // GetStudents gets all students for a coach
 func (r *CoachshipRepositoryImpl) GetStudents(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"coach":  coachID,
+		"coach._id":  coachID,
 		"status": model.RelationshipStatusAccepted,
 		"type":   model.RelationshipTypeCoachship,
 	}
@@ -113,7 +113,7 @@ func (r *CoachshipRepositoryImpl) GetStudents(ctx context.Context, coachID primi
 // GetSentRequests gets all coaching requests sent by a user as either a coach or student
 func (r *CoachshipRepositoryImpl) GetSentRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"initiatorId": userID,
+		"initiator._id": userID,
 		"status":      model.RelationshipStatusPending,
 		"type":        model.RelationshipTypeCoachship,
 	}
@@ -132,7 +132,7 @@ func (r *CoachshipRepositoryImpl) GetSentRequests(ctx context.Context, userID pr
 // GetReceivedRequests gets all coaching requests received by a user as either a coach or student
 func (r *CoachshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"receiverId": userID,
+		"receiver._id": userID,
 		"status":     model.RelationshipStatusPending,
 		"type":       model.RelationshipTypeCoachship,
 	}
@@ -151,8 +151,8 @@ func (r *CoachshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userI
 // GetSentCoachRequests gets coaching requests sent by a user as a coach
 func (r *CoachshipRepositoryImpl) GetSentCoachRequests(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"coach":       coachID,
-		"initiatorId": coachID, // User initiated as coach
+		"coach._id":       coachID,
+		"initiator._id": coachID, // User initiated as coach
 		"status":      model.RelationshipStatusPending,
 		"type":        model.RelationshipTypeCoachship,
 	}
@@ -171,8 +171,8 @@ func (r *CoachshipRepositoryImpl) GetSentCoachRequests(ctx context.Context, coac
 // GetReceivedCoachRequests gets coaching requests received by a user as a coach
 func (r *CoachshipRepositoryImpl) GetReceivedCoachRequests(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"coach":      coachID,
-		"receiverId": coachID, // User received as coach
+		"coach._id":      coachID,
+		"receiver._id": coachID, // User received as coach
 		"status":     model.RelationshipStatusPending,
 		"type":       model.RelationshipTypeCoachship,
 	}
@@ -191,8 +191,8 @@ func (r *CoachshipRepositoryImpl) GetReceivedCoachRequests(ctx context.Context, 
 // GetSentStudentRequests gets coaching requests sent by a user as a student
 func (r *CoachshipRepositoryImpl) GetSentStudentRequests(ctx context.Context, studentID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"student":     studentID,
-		"initiatorId": studentID, // User initiated as student
+		"student._id":     studentID,
+		"initiator._id": studentID, // User initiated as student
 		"status":      model.RelationshipStatusPending,
 		"type":        model.RelationshipTypeCoachship,
 	}
@@ -211,8 +211,8 @@ func (r *CoachshipRepositoryImpl) GetSentStudentRequests(ctx context.Context, st
 // GetReceivedStudentRequests gets coaching requests received by a user as a student
 func (r *CoachshipRepositoryImpl) GetReceivedStudentRequests(ctx context.Context, studentID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"student":    studentID,
-		"receiverId": studentID, // User received as student
+		"student._id":    studentID,
+		"receiver._id": studentID, // User received as student
 		"status":     model.RelationshipStatusPending,
 		"type":       model.RelationshipTypeCoachship,
 	}

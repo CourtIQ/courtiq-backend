@@ -6,10 +6,10 @@ type Friendship implements Relationship @key(fields: "id") {
   type: RelationshipType!
   """The current status of the friendship (e.g., PENDING, ACCEPTED, BLOCKED)."""
   status: RelationshipStatus!
-  """The ID of the user who sent the friend request."""
-  initiatorId: ObjectID!
-  """The ID of the user who received the friend request."""
-  receiverId: ObjectID!
+  """The user who sent the friend request."""
+  initiator: User! @goField(forceResolver: true)
+  """The user who received the friend request."""
+  receiver: User! @goField(forceResolver: true)
   """Timestamp when the friendship request was sent or created."""
   createdAt: DateTime!
   """Timestamp when the friendship status last changed."""
