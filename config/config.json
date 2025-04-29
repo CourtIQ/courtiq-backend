@@ -156,7 +156,31 @@
           "GIN_MODE": "release"
         }
       }
-    }
+    },
+    "services": {
+      "chat_service": {
+        "name": "chat-service",
+        "port": 8086,
+        "internal_port": 8080,
+        "graphql_path": "/graphql",
+        "env_variables": {
+          "development": {
+            "NODE_ENV": "development",
+            "GRAPHQL_PLAYGROUND": true,
+            "LOG_LEVEL": "debug"
+          },
+          "staging": {
+            "NODE_ENV": "production",
+            "GRAPHQL_PLAYGROUND": true,
+            "LOG_LEVEL": "info"
+          },
+          "production": {
+            "NODE_ENV": "production",
+            "GRAPHQL_PLAYGROUND": true,
+            "LOG_LEVEL": "warn"
+          }
+        }
+      }
   },
   "environments": {
     "development": {
