@@ -1,0 +1,12 @@
+# Go Build Files
+/equipment-service
+**/*.test
+*.out
+*.a
+
+# Go Modules
+/vendor/
+
+# Local Environment Configs
+.env
+.env.*

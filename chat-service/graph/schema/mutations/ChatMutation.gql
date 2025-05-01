@@ -1,0 +1,32 @@
+extend type Mutation {
+    createPrivateChat(
+        userId: ObjectID!
+    ): PrivateChat!
+    createGroupChat(
+        name: String!
+        image: String
+        members: [ObjectID!]!
+    ): GroupChat!
+    updateGroupChat(
+        id: ObjectID!
+        name: String
+        image: String
+    ): GroupChat!
+    deleteGroupChat(
+        id: ObjectID!
+    ): GroupChat!
+    deletePrivateChat(
+        id: ObjectID!
+    ): PrivateChat!
+    addMembersToGroupChat(
+        id: ObjectID!
+        members: [ObjectID!]!
+    ): GroupChat!
+    removeMembersFromGroupChat(
+        id: ObjectID!
+        members: [ObjectID!]!
+    ): GroupChat!
+    leaveGroupChat(
+        id: ObjectID!
+    ): GroupChat!
+}

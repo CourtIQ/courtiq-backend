@@ -85,8 +85,8 @@ func (r *FriendshipRepositoryImpl) GetFriendships(ctx context.Context, userID pr
 func (r *FriendshipRepositoryImpl) GetSentRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Friendship, error) {
 	filter := bson.M{
 		"initiator._id": userID,
-		"status":      model.RelationshipStatusPending,
-		"type":        model.RelationshipTypeFriendship,
+		"status":        model.RelationshipStatusPending,
+		"type":          model.RelationshipTypeFriendship,
 	}
 
 	opts := options.Find()
@@ -104,8 +104,8 @@ func (r *FriendshipRepositoryImpl) GetSentRequests(ctx context.Context, userID p
 func (r *FriendshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Friendship, error) {
 	filter := bson.M{
 		"receiver._id": userID,
-		"status":     model.RelationshipStatusPending,
-		"type":       model.RelationshipTypeFriendship,
+		"status":       model.RelationshipStatusPending,
+		"type":         model.RelationshipTypeFriendship,
 	}
 
 	opts := options.Find()
@@ -133,7 +133,7 @@ func (r *FriendshipRepositoryImpl) Create(ctx context.Context, friendship *model
 	if err != nil {
 		return nil, WrapRepositoryError(err, "create", "friendship")
 	}
-	return created, nil
+	return created.(*model.Friendship), nil
 }
 
 // Update updates an existing friendship

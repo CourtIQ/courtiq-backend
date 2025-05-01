@@ -1,0 +1,5 @@
+extend type Query {
+    chats(limit: Int = 20, offset: Int = 0): [Chat!]!
+    myPrivateChat(id: ObjectID!): PrivateChat
+    myGroupChat(id: ObjectID!): GroupChat
+}

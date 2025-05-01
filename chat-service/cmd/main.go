@@ -1,46 +1,44 @@
-// cmd/main.go
 package main
 
 import (
 	"context"
 	"log"
 
-	"github.com/CourtIQ/courtiq-backend/relationship-service/graph"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/graph/resolvers"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/repository"
-	"github.com/CourtIQ/courtiq-backend/relationship-service/internal/services"
+	"github.com/CourtIQ/courtiq-backend/chat-service/graph"
+	"github.com/CourtIQ/courtiq-backend/chat-service/graph/resolvers"
+	chatRepo "github.com/CourtIQ/courtiq-backend/chat-service/internal/repository"
+	"github.com/CourtIQ/courtiq-backend/chat-service/internal/services"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/configs"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/db"
-	sharedRepo "github.com/CourtIQ/courtiq-backend/shared/pkg/repository"
+	"github.com/CourtIQ/courtiq-backend/shared/pkg/repository"
 	"github.com/CourtIQ/courtiq-backend/shared/pkg/server"
 )
 
 func main() {
+	// Create server config from shared config
 	// Load configuration
 	config := configs.LoadConfig()
 
 	// Setup logging
 	configs.SetupLogging(config)
 
-	// Initialize MongoDB connection
+	// Initialize MongoDB client
 	mongodb, err := db.NewMongoDB(context.Background(), config.MongoDBURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to MongoDB: %v", err)
 	}
 
-	// Create repository factory from shared package
-	repoFactory := sharedRepo.NewRepositoryFactory(mongodb)
+	// Create Repository Factory
+	repoFactory := repository.NewRepositoryFactory(mongodb)
 
-	// Initialize repositories using factory
-	friendshipRepo := repository.NewFriendshipRepository(repoFactory)
-	coachshipRepo := repository.NewCoachshipRepository(repoFactory)
+	// Instantiate repositories
+	messageRepo := chatRepo.NewMessageRepository(repoFactory)
+	chatRepo := chatRepo.NewChatRepository(repoFactory) // Assuming this exists or will be created
 
-	// Initialize services
-	relationshipService := services.NewRelationshipService(friendshipRepo, coachshipRepo)
+	chatService := services.NewChatService(chatRepo, messageRepo)
 
-	// Initialize resolver with service dependency
 	resolver := &resolvers.Resolver{
-		RelationshipService: relationshipService,
+		ChatService: chatService,
 	}
 
 	// Initialize GraphQL server
@@ -65,4 +63,5 @@ func main() {
 	if err := gqlServer.Serve(); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
+
 }

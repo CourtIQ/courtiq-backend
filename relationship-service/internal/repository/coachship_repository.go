@@ -41,7 +41,7 @@ func (r *CoachshipRepositoryImpl) FindBetweenUsers(ctx context.Context, coachID,
 	filter := bson.M{
 		"coach._id":   coachID,
 		"student._id": studentID,
-		"type":    model.RelationshipTypeCoachship,
+		"type":        model.RelationshipTypeCoachship,
 	}
 	coachship, err := r.baseRepo.FindOne(ctx, filter)
 	if err != nil {
@@ -77,7 +77,7 @@ func (r *CoachshipRepositoryImpl) GetCoaches(ctx context.Context, studentID prim
 	filter := bson.M{
 		"student._id": studentID,
 		"status._id":  model.RelationshipStatusAccepted,
-		"type":    model.RelationshipTypeCoachship,
+		"type":        model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -94,9 +94,9 @@ func (r *CoachshipRepositoryImpl) GetCoaches(ctx context.Context, studentID prim
 // GetStudents gets all students for a coach
 func (r *CoachshipRepositoryImpl) GetStudents(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"coach._id":  coachID,
-		"status": model.RelationshipStatusAccepted,
-		"type":   model.RelationshipTypeCoachship,
+		"coach._id": coachID,
+		"status":    model.RelationshipStatusAccepted,
+		"type":      model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -114,8 +114,8 @@ func (r *CoachshipRepositoryImpl) GetStudents(ctx context.Context, coachID primi
 func (r *CoachshipRepositoryImpl) GetSentRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
 		"initiator._id": userID,
-		"status":      model.RelationshipStatusPending,
-		"type":        model.RelationshipTypeCoachship,
+		"status":        model.RelationshipStatusPending,
+		"type":          model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -133,8 +133,8 @@ func (r *CoachshipRepositoryImpl) GetSentRequests(ctx context.Context, userID pr
 func (r *CoachshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
 		"receiver._id": userID,
-		"status":     model.RelationshipStatusPending,
-		"type":       model.RelationshipTypeCoachship,
+		"status":       model.RelationshipStatusPending,
+		"type":         model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -151,10 +151,10 @@ func (r *CoachshipRepositoryImpl) GetReceivedRequests(ctx context.Context, userI
 // GetSentCoachRequests gets coaching requests sent by a user as a coach
 func (r *CoachshipRepositoryImpl) GetSentCoachRequests(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"coach._id":       coachID,
+		"coach._id":     coachID,
 		"initiator._id": coachID, // User initiated as coach
-		"status":      model.RelationshipStatusPending,
-		"type":        model.RelationshipTypeCoachship,
+		"status":        model.RelationshipStatusPending,
+		"type":          model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -171,10 +171,10 @@ func (r *CoachshipRepositoryImpl) GetSentCoachRequests(ctx context.Context, coac
 // GetReceivedCoachRequests gets coaching requests received by a user as a coach
 func (r *CoachshipRepositoryImpl) GetReceivedCoachRequests(ctx context.Context, coachID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"coach._id":      coachID,
+		"coach._id":    coachID,
 		"receiver._id": coachID, // User received as coach
-		"status":     model.RelationshipStatusPending,
-		"type":       model.RelationshipTypeCoachship,
+		"status":       model.RelationshipStatusPending,
+		"type":         model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -191,10 +191,10 @@ func (r *CoachshipRepositoryImpl) GetReceivedCoachRequests(ctx context.Context, 
 // GetSentStudentRequests gets coaching requests sent by a user as a student
 func (r *CoachshipRepositoryImpl) GetSentStudentRequests(ctx context.Context, studentID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"student._id":     studentID,
+		"student._id":   studentID,
 		"initiator._id": studentID, // User initiated as student
-		"status":      model.RelationshipStatusPending,
-		"type":        model.RelationshipTypeCoachship,
+		"status":        model.RelationshipStatusPending,
+		"type":          model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -211,10 +211,10 @@ func (r *CoachshipRepositoryImpl) GetSentStudentRequests(ctx context.Context, st
 // GetReceivedStudentRequests gets coaching requests received by a user as a student
 func (r *CoachshipRepositoryImpl) GetReceivedStudentRequests(ctx context.Context, studentID primitive.ObjectID, limit, offset *int) ([]*model.Coachship, error) {
 	filter := bson.M{
-		"student._id":    studentID,
+		"student._id":  studentID,
 		"receiver._id": studentID, // User received as student
-		"status":     model.RelationshipStatusPending,
-		"type":       model.RelationshipTypeCoachship,
+		"status":       model.RelationshipStatusPending,
+		"type":         model.RelationshipTypeCoachship,
 	}
 
 	opts := options.Find()
@@ -242,7 +242,7 @@ func (r *CoachshipRepositoryImpl) Create(ctx context.Context, coachship *model.C
 	if err != nil {
 		return nil, WrapRepositoryError(err, "create", "coachship")
 	}
-	return created, nil
+	return created.(*model.Coachship), nil
 }
 
 // Update updates an existing coachship

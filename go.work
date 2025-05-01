@@ -7,4 +7,5 @@ use (
 	./search-service
 	./shared
 	./user-service
+	./chat-service
 )

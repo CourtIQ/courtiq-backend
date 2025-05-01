@@ -108,7 +108,7 @@ func (r *ShotsRepositoryImpl) Insert(ctx context.Context, shot *model.MatchUpSho
 	if err != nil {
 		return nil, err
 	}
-	return created, nil
+	return created.(*model.MatchUpShot), nil
 }
 
 // Update updates an existing shot

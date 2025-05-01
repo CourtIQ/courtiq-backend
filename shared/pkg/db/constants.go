@@ -12,4 +12,6 @@ const (
 	TennisCourtsCollection        = "tennis_courts"
 	TennisMatchupsCollection      = "tennis_matchups"
 	TennisMatchupsShotsCollection = "tennis_matchups_shots"
+	MessagesCollection            = "messages"
+	ChatsCollection               = "chats"
 )

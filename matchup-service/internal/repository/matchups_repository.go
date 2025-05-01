@@ -50,11 +50,11 @@ func (r *MatchupsRepositoryImpl) Insert(ctx context.Context, matchup *model.Matc
 		matchup.ID = primitive.NewObjectID()
 	}
 
-	created, err := r.baseRepo.Insert(ctx, matchup)
+	_, err := r.baseRepo.Insert(ctx, matchup)
 	if err != nil {
 		return nil, err
 	}
-	return created, nil
+	return matchup, nil
 }
 
 // Update updates an existing matchup
@@ -78,7 +78,7 @@ func (r *MatchupsRepositoryImpl) Delete(ctx context.Context, id primitive.Object
 // GetMatchups retrieves matchups with optional pagination
 func (r *MatchupsRepositoryImpl) GetMatchups(ctx context.Context, limit, offset *int) ([]*model.MatchUp, error) {
 	filter := bson.M{}
-	
+
 	opts := options.Find()
 	if limit != nil {
 		opts.SetLimit(int64(*limit))
@@ -86,7 +86,7 @@ func (r *MatchupsRepositoryImpl) GetMatchups(ctx context.Context, limit, offset 
 	if offset != nil {
 		opts.SetSkip(int64(*offset))
 	}
-	
+
 	matchups, err := r.baseRepo.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (r *MatchupsRepositoryImpl) GetMatchupsByTeam(ctx context.Context, teamID p
 			{"participants.teamId": teamID},
 		},
 	}
-	
+
 	opts := options.Find()
 	if limit != nil {
 		opts.SetLimit(int64(*limit))
@@ -109,7 +109,7 @@ func (r *MatchupsRepositoryImpl) GetMatchupsByTeam(ctx context.Context, teamID p
 	if offset != nil {
 		opts.SetSkip(int64(*offset))
 	}
-	
+
 	matchups, err := r.baseRepo.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (r *MatchupsRepositoryImpl) GetMyMatchupsByStatus(ctx context.Context, stat
 	filter := bson.M{
 		"status": status,
 	}
-	
+
 	opts := options.Find()
 	if limit != nil {
 		opts.SetLimit(int64(*limit))
@@ -130,7 +130,7 @@ func (r *MatchupsRepositoryImpl) GetMyMatchupsByStatus(ctx context.Context, stat
 	if offset != nil {
 		opts.SetSkip(int64(*offset))
 	}
-	
+
 	matchups, err := r.baseRepo.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err

@@ -1,0 +1,10 @@
+type TextMessage implements Message @key(fields: "id") {
+    id: ObjectID!                         # Unique identifier for the message
+    chatId: ObjectID!                     # ID of the chat associated with the message
+    senderId: ObjectID!                    # ID of the user who sent the message
+    createdAt: DateTime!                   # Timestamp for when the message was created
+    updatedAt: DateTime!                   # Timestamp for the last update
+    type: MessageType!                    # Type of the message (e.g., TEXT, IMAGE, VIDEO)
+
+    text: String!                         # The text content of the message
+}

@@ -1,0 +1,17 @@
+extend type Mutation {
+    sendTextMessage(
+        chatId: ObjectID!
+        text: String!
+    ): Message!
+    sendImageMessage(
+        chatId: ObjectID!
+        url: String!
+    ): Message!
+    updateTextMessage(
+        id: ObjectID!
+        text: String!
+    ): Message!
+    deleteMessage(
+        id: ObjectID!
+    ): Message!
+}

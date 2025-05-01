@@ -1,0 +1,3 @@
+extend type Query {
+    messages(id: ObjectID!, limit: Int = 20, offset: Int = 0): [Message!]!
+}

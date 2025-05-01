@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"reflect" // Add reflection package
 
 	sharedErrors "github.com/CourtIQ/courtiq-backend/shared/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,8 +19,10 @@ type Repository[T any] interface {
 	FindOne(ctx context.Context, filter interface{}) (*T, error)
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) ([]*T, error)
 	Count(ctx context.Context, filter interface{}) (int64, error)
-	Insert(ctx context.Context, entity *T) (*T, error)
-	Update(ctx context.Context, id primitive.ObjectID, entity *T) (*T, error)
+	// Change Insert signature to return the inserted entity (interface{}) and error
+	Insert(ctx context.Context, entity interface{}) (interface{}, error)
+	// Change Update signature to accept interface{}
+	Update(ctx context.Context, id primitive.ObjectID, entity interface{}) (*T, error)
 	Delete(ctx context.Context, id primitive.ObjectID) error
 	FindOneAndUpdate(ctx context.Context, filter interface{}, update interface{}, opts ...*options.FindOneAndUpdateOptions) (*T, error)
 	FindOneAndDelete(ctx context.Context, filter interface{}, opts ...*options.FindOneAndDeleteOptions) (*T, error)
@@ -98,19 +101,55 @@ func (r *BaseRepository[T]) Count(ctx context.Context, filter interface{}) (int6
 	return count, nil
 }
 
-// Insert creates a new entity
-func (r *BaseRepository[T]) Insert(ctx context.Context, entity *T) (*T, error) {
-	_, err := r.collection.InsertOne(ctx, entity)
+// Insert creates a new entity and attempts to set its ID field using reflection.
+// It returns the original entity interface (potentially modified with the ID) and an error.
+func (r *BaseRepository[T]) Insert(ctx context.Context, entity interface{}) (interface{}, error) {
+	result, err := r.collection.InsertOne(ctx, entity)
 	if err != nil {
+		// Check for duplicate key errors specifically if needed
+		// if mongo.IsDuplicateKeyError(err) { ... }
 		return nil, sharedErrors.WrapError(err, "failed to insert entity")
 	}
 
+	// Assert the inserted ID to primitive.ObjectID
+	insertedID, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		// This should not happen with standard MongoDB ObjectID usage
+		// Return the entity without ID set in this edge case, but log the error.
+		// log.Printf("Warning: InsertedID was not a primitive.ObjectID: %T", result.InsertedID)
+		return entity, sharedErrors.WrapError(errors.New("invalid type for inserted ID"), "failed to get inserted ID type")
+
+	}
+
+	// Use reflection to set the ID field on the entity
+	// This assumes the entity is a pointer to a struct with an exported field named "ID" of type primitive.ObjectID
+	entityValue := reflect.ValueOf(entity)
+	if entityValue.Kind() == reflect.Ptr {
+		entityElem := entityValue.Elem()
+		if entityElem.Kind() == reflect.Struct {
+			idField := entityElem.FieldByName("ID")
+			// Check if field exists, is the correct type, and is settable
+			if idField.IsValid() && idField.Type() == reflect.TypeOf(primitive.ObjectID{}) && idField.CanSet() {
+				idField.Set(reflect.ValueOf(insertedID))
+			} else {
+				// Optional: Log a warning if ID field couldn't be set
+				// log.Printf("Warning: Could not set ID field on inserted entity type %T", entity)
+			}
+		}
+	} else {
+		// Optional: Log a warning if entity is not a pointer
+		// log.Printf("Warning: Inserted entity is not a pointer type %T, ID field cannot be set", entity)
+	}
+
+	// Return the original entity interface, potentially updated with the ID
 	return entity, nil
 }
 
 // Update updates an existing entity
-func (r *BaseRepository[T]) Update(ctx context.Context, id primitive.ObjectID, entity *T) (*T, error) {
+// Modify entity parameter to interface{} for flexibility
+func (r *BaseRepository[T]) Update(ctx context.Context, id primitive.ObjectID, entity interface{}) (*T, error) {
 	filter := bson.M{"_id": id}
+	// Use bson.M{"$set": entity} which works well if entity is a struct or map
 	update := bson.M{"$set": entity}
 
 	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)

@@ -64,6 +64,11 @@ const SERVICES = {
     url: process.env.SEARCH_SERVICE_URL || '',
     required: true,
   },
+  chatService: {
+    name: 'chat-service',
+    url: process.env.CHAT_SERVICE_URL || '',
+    required: true,
+  },
 };
 
 // Validate configuration

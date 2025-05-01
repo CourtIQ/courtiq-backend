@@ -10,19 +10,19 @@ import (
 // ServerConfig holds configuration for GraphQL server
 type ServerConfig struct {
 	// Basic server settings
-	ServiceName      string
-	Port             int
-	Environment      string
+	ServiceName       string
+	Port              int
+	Environment       string
 	PlaygroundEnabled bool
 
 	// Database settings
-	MongoDBURL       string
-	DatabaseName     string
+	MongoDBURL   string
+	DatabaseName string
 
 	// Optional settings
-	EnableMetrics     bool
+	EnableMetrics       bool
 	EnableAccessControl bool
-	RelationshipDBURL  string // For access control
+	RelationshipDBURL   string // For access control
 }
 
 // DefaultServerConfig returns a default configuration with values from environment
@@ -78,13 +78,13 @@ func DefaultServerConfig() ServerConfig {
 	}
 
 	return ServerConfig{
-		ServiceName:        serviceName,
-		Port:               port,
-		Environment:        env,
-		PlaygroundEnabled:  playgroundEnabled,
-		MongoDBURL:         mongoURL,
-		DatabaseName:       dbName,
-		EnableMetrics:      enableMetrics,
+		ServiceName:         serviceName,
+		Port:                port,
+		Environment:         env,
+		PlaygroundEnabled:   playgroundEnabled,
+		MongoDBURL:          mongoURL,
+		DatabaseName:        dbName,
+		EnableMetrics:       enableMetrics,
 		EnableAccessControl: enableAccessControl,
 		RelationshipDBURL:   mongoURL, // Default same as main DB
 	}

@@ -34,7 +34,7 @@ npm run "gen:$ENV"
 
 # Verify all services have .env files
 cd ..
-services=("api-gateway" "user-service" "relationship-service" "matchup-service" "equipment-service" "search-service")
+services=("api-gateway" "user-service" "relationship-service" "matchup-service" "equipment-service" "search-service" "chat-service")
 for service in "${services[@]}"; do
     if [ ! -f "$service/.env" ]; then
         echo "Error: .env file not generated for $service"

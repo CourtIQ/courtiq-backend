@@ -1,0 +1,11 @@
+type GroupChat implements Chat @key(fields: "id") {
+    id: ObjectID!                         # Unique identifier for the message
+    participantIds: [ObjectID!]!          # List of user IDs participating in the chat
+    type: ChatType!                       # Type of the chat (e.g., GROUP, PRIVATE)
+    createdAt: DateTime!                  # Timestamp for when the chat was created
+    updatedAt: DateTime!                  # Timestamp for the last update
+
+    name: String!                         # Name of the group chat
+    imageUrl: String                      # URL of the group chat image
+    ownerId: ObjectID!                   # ID of the user who created the group chat
+}
